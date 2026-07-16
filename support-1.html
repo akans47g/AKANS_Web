@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Help & Support — AKANS Web Development Services</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;800;900&family=DM+Sans:wght@300;400;500;600;700&family=Cinzel:wght@500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:#f5f7ff; --surface:#ffffff; --surface2:#eef1fb; --border:#dde2f5;
+  --blue:#2563eb; --blue-lt:#eff4ff; --blue-dk:#1d4ed8;
+  --purple:#7c3aed; --purple-lt:#f3eeff;
+  --cyan:#0891b2; --gold:#d4a017; --gold-lt:#fffbeb;
+  --text:#1a1f3c; --text-2:#4b5280; --text-3:#8890b5;
+  --green:#16a34a; --green-lt:#dcfce7; --green-bd:#86efac;
+  --teal:#0088cc; --teal-lt:#dbeafe; --teal-bd:#93c5fd;
+  --red:#dc2626; --red-lt:#fef2f2; --red-bd:#fca5a5;
+  --shadow-sm:0 1px 4px rgba(37,99,235,0.07);
+  --shadow-md:0 4px 20px rgba(37,99,235,0.10);
+  --shadow-lg:0 8px 36px rgba(37,99,235,0.14);
+  --radius:14px; --radius-lg:20px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden;}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 50% at 10% 0%,rgba(37,99,235,0.06) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 50% at 90% 100%,rgba(124,58,237,0.05) 0%,transparent 60%);
+}
+
+/* ── HEADER ── */
+header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(255,255,255,0.93);backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--border);box-shadow:var(--shadow-sm);
+}
+.header-inner{
+  max-width:1100px;margin:0 auto;
+  display:flex;align-items:center;gap:1rem;padding:0.65rem 1.4rem;
+}
+.brand-card{
+  flex:1;min-width:0;background:#fff;border-radius:18px;
+  padding:0.6rem 1rem;
+  box-shadow:0 3px 16px rgba(37,99,235,0.10),0 1px 4px rgba(0,0,0,0.06);
+  border:1px solid var(--border);
+  display:flex;align-items:center;gap:0.9rem;
+}
+.brand-active{
+  display:flex;align-items:center;gap:0.38rem;
+  flex-shrink:0;font-size:0.75rem;font-weight:700;color:#16a34a;
+}
+.active-dot{
+  width:9px;height:9px;border-radius:50%;
+  background:#22c55e;flex-shrink:0;
+  animation:pulse-green 2s infinite;
+}
+@keyframes pulse-green{
+  0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.5);}
+  50%{box-shadow:0 0 0 5px rgba(34,197,94,0);}
+}
+.brand-text{flex:1;min-width:0;text-align:center;}
+.brand-name{
+  font-family:'DM Sans',sans-serif;font-size:0.88rem;font-weight:800;
+  color:var(--text);letter-spacing:0.01em;line-height:1.2;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.brand-tagline{font-size:0.72rem;font-weight:600;color:var(--blue);margin-top:0.1rem;}
+.logo-wrap{
+  width:44px;height:44px;border-radius:11px;flex-shrink:0;
+  border:1.5px solid var(--border);overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--surface2);font-size:1.5rem;box-shadow:var(--shadow-sm);
+}
+.logo-wrap img{width:100%;height:100%;object-fit:cover;}
+.header-right{display:none!important;}
+
+/* ── PAGE ── */
+.page{position:relative;z-index:1;max-width:640px;margin:0 auto;padding:0 1.3rem 3rem;}
+
+/* ── HERO BANNER ── */
+.support-hero{
+  background:linear-gradient(135deg,var(--blue) 0%,var(--purple) 100%);
+  margin:0 -1.3rem 2rem;
+  padding:2.2rem 1.8rem 2rem;
+  position:relative;overflow:hidden;
+}
+.support-hero::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 85% 20%,rgba(255,255,255,0.12) 0%,transparent 55%);
+}
+.support-hero::after{
+  content:'';position:absolute;
+  width:180px;height:180px;border-radius:50%;
+  border:1.5px solid rgba(255,255,255,0.1);
+  bottom:-60px;right:-40px;
+}
+.back-btn{
+  display:inline-flex;align-items:center;gap:0.4rem;
+  font-size:0.78rem;font-weight:600;color:rgba(255,255,255,0.75);
+  text-decoration:none;margin-bottom:1.1rem;
+  transition:color 0.2s,gap 0.2s;
+  position:relative;z-index:1;
+}
+.back-btn:hover{color:#fff;gap:0.65rem;}
+.hero-icon{font-size:2.4rem;margin-bottom:0.6rem;position:relative;z-index:1;display:block;}
+.hero-title{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(1.5rem,5vw,2rem);
+  font-weight:800;color:#fff;
+  margin-bottom:0.35rem;
+  position:relative;z-index:1;
+}
+.hero-sub{
+  font-size:0.85rem;color:rgba(255,255,255,0.75);
+  position:relative;z-index:1;
+}
+
+/* ── SECTION LABEL ── */
+.sec-label{
+  font-size:0.66rem;font-weight:700;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--text-3);
+  margin:0 0.2rem 0.75rem;
+  display:flex;align-items:center;gap:0.5rem;
+}
+.sec-label::after{
+  content:'';flex:1;height:1px;background:var(--border);
+}
+
+/* ── CONTACT CARDS ── */
+.contacts{display:flex;flex-direction:column;gap:0.85rem;margin-bottom:2rem;}
+
+.contact-card{
+  display:flex;align-items:center;gap:1rem;
+  padding:1.15rem 1.2rem;
+  border-radius:var(--radius-lg);
+  text-decoration:none;
+  border:1.5px solid transparent;
+  transition:transform 0.28s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.25s ease;
+  animation:cardIn 0.45s ease both;
+  position:relative;overflow:hidden;
+}
+.contact-card::before{
+  content:'';
+  position:absolute;inset:0;
+  background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,0.22) 50%,transparent 70%);
+  transform:translateX(-100%);
+  transition:transform 0.5s ease;
+  pointer-events:none;
+}
+.contact-card:hover::before{transform:translateX(100%);}
+.contact-card:hover{transform:translateY(-5px) scale(1.01);}
+
+/* WhatsApp */
+.contact-card.whatsapp{
+  background:linear-gradient(135deg,#f0fdf4,#dcfce7);
+  border-color:var(--green-bd);
+  box-shadow:0 4px 20px rgba(22,163,74,0.12);
+}
+.contact-card.whatsapp:hover{box-shadow:0 12px 32px rgba(22,163,74,0.22);}
+
+/* Telegram */
+.contact-card.telegram{
+  background:linear-gradient(135deg,#eff6ff,#dbeafe);
+  border-color:var(--teal-bd);
+  box-shadow:0 4px 20px rgba(37,99,235,0.11);
+}
+.contact-card.telegram:hover{box-shadow:0 12px 32px rgba(37,99,235,0.2);}
+
+/* Email */
+.contact-card.email{
+  background:linear-gradient(135deg,#fdf4ff,#f3e8ff);
+  border-color:#d8b4fe;
+  box-shadow:0 4px 20px rgba(124,58,237,0.11);
+}
+.contact-card.email:hover{box-shadow:0 12px 32px rgba(124,58,237,0.2);}
+
+.c-icon-wrap{
+  width:54px;height:54px;border-radius:15px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.65rem;background:#fff;
+  box-shadow:0 2px 12px rgba(0,0,0,0.09);
+  transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.contact-card:hover .c-icon-wrap{transform:scale(1.14) rotate(-8deg);}
+
+.c-body{flex:1;min-width:0;}
+.c-platform{
+  font-size:0.65rem;font-weight:700;letter-spacing:0.12em;
+  text-transform:uppercase;margin-bottom:0.18rem;
+}
+.whatsapp .c-platform{color:#15803d;}
+.telegram .c-platform{color:#1d4ed8;}
+.email   .c-platform{color:#7c3aed;}
+
+.c-name{
+  font-family:'Playfair Display',serif;
+  font-size:1rem;font-weight:700;color:var(--text);
+  margin-bottom:0.12rem;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;
+}
+.c-hint{font-size:0.75rem;color:var(--text-2);}
+
+.c-badge{
+  flex-shrink:0;
+  font-size:0.62rem;font-weight:700;letter-spacing:0.04em;
+  padding:0.28rem 0.65rem;border-radius:20px;
+}
+.whatsapp .c-badge{background:#dcfce7;color:#15803d;border:1px solid #bbf7d0;}
+.telegram .c-badge{background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;}
+.email   .c-badge{background:#f3e8ff;color:#7c3aed;border:1px solid #e9d5ff;}
+
+.c-arrow{
+  flex-shrink:0;font-size:1.1rem;color:var(--text-3);
+  margin-left:0.3rem;
+  transition:transform 0.22s ease,color 0.2s;
+}
+.contact-card:hover .c-arrow{transform:translateX(5px);color:var(--text-2);}
+
+/* ── FAQ ── */
+.faq-list{display:flex;flex-direction:column;gap:0.6rem;}
+.faq-item{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;
+  box-shadow:var(--shadow-sm);
+  animation:cardIn 0.4s ease both;
+  transition:border-color 0.2s,box-shadow 0.2s;
+}
+.faq-item.open{border-color:rgba(37,99,235,0.3);box-shadow:var(--shadow-md);}
+
+.faq-q{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:0.8rem;padding:1rem 1.1rem;
+  font-size:0.87rem;font-weight:600;color:var(--text);
+  cursor:pointer;transition:background 0.2s;
+  user-select:none;
+}
+.faq-q:hover{background:var(--blue-lt);}
+.faq-item.open .faq-q{background:var(--blue-lt);color:var(--blue);}
+
+.faq-icon{
+  width:28px;height:28px;border-radius:8px;flex-shrink:0;
+  background:var(--blue-lt);border:1px solid rgba(37,99,235,0.15);
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.75rem;color:var(--blue);font-weight:700;
+  transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1),background 0.2s;
+}
+.faq-item.open .faq-icon{
+  transform:rotate(45deg);
+  background:var(--blue);color:#fff;border-color:var(--blue);
+}
+
+.faq-a{
+  max-height:0;overflow:hidden;
+  transition:max-height 0.38s ease,padding 0.3s ease;
+  font-size:0.84rem;color:var(--text-2);line-height:1.8;
+  padding:0 1.1rem 0 1.1rem;
+  border-top:0px solid var(--border);
+}
+.faq-item.open .faq-a{
+  max-height:200px;
+  padding:0.9rem 1.1rem 1rem;
+  border-top:1px solid var(--border);
+}
+
+.faq-item:nth-child(1){animation-delay:0.08s}
+.faq-item:nth-child(2){animation-delay:0.14s}
+.faq-item:nth-child(3){animation-delay:0.2s}
+.faq-item:nth-child(4){animation-delay:0.26s}
+.faq-item:nth-child(5){animation-delay:0.32s}
+
+/* ── RESPONSE TIME STRIP ── */
+.response-strip{
+  display:flex;gap:0.6rem;margin-bottom:2rem;flex-wrap:wrap;
+}
+.resp-item{
+  flex:1;min-width:0;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:0.8rem 0.9rem;
+  text-align:center;box-shadow:var(--shadow-sm);
+  animation:cardIn 0.4s ease both;
+}
+.resp-item:nth-child(1){animation-delay:0.05s;}
+.resp-item:nth-child(2){animation-delay:0.1s;}
+.resp-item:nth-child(3){animation-delay:0.15s;}
+.resp-emoji{font-size:1.3rem;display:block;margin-bottom:0.3rem;}
+.resp-time{font-size:0.82rem;font-weight:700;color:var(--text);display:block;}
+.resp-label{font-size:0.68rem;color:var(--text-3);display:block;margin-top:0.1rem;}
+
+/* ── FOOTER ── */
+footer{
+  position:relative;z-index:1;
+  padding:1.6rem 1.5rem;border-top:1px solid var(--border);
+  background:var(--surface);text-align:center;
+  font-size:0.77rem;color:var(--text-3);
+}
+footer span{color:var(--text-2);font-weight:500;}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:200;
+  background:linear-gradient(135deg,#0f1c4d 0%,#1a2e6e 100%);
+  border-top:1px solid rgba(99,153,255,0.3);
+  display:flex;align-items:stretch;
+  box-shadow:0 -6px 30px rgba(37,99,235,0.3),0 -1px 0 rgba(99,153,255,0.2);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  backdrop-filter:blur(12px);min-height:68px;
+}
+.bottom-nav a{
+  flex:1;text-decoration:none;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:0;padding:0.85rem 0.4rem 0.8rem;
+  color:rgba(180,200,255,0.45);
+  font-size:0.76rem;font-weight:700;letter-spacing:0.04em;
+  transition:color 0.25s ease,transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  position:relative;overflow:hidden;
+}
+.bottom-nav a::before{
+  content:'';position:absolute;inset:8px 6px;
+  border-radius:14px;background:rgba(99,153,255,0);
+  transition:background 0.25s ease,transform 0.25s ease;
+  transform:scaleX(0.7);opacity:0;
+}
+.bottom-nav a:hover::before{background:rgba(99,153,255,0.1);transform:scaleX(1);opacity:1;}
+.bottom-nav a.active::before{background:rgba(99,153,255,0.18);transform:scaleX(1);opacity:1;}
+.bottom-nav a span{position:relative;z-index:1;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);display:block;}
+.bottom-nav a:hover{color:rgba(180,200,255,0.9);}
+.bottom-nav a:hover span{transform:translateY(-2px) scale(1.06);}
+.bottom-nav a.active{color:#fff;}
+.bottom-nav a.active span{
+  transform:translateY(-2px) scale(1.1);
+  text-shadow:0 0 12px rgba(147,197,253,0.8),0 0 24px rgba(99,153,255,0.5);
+  animation:label-pop 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.bottom-nav a.active::after{
+  content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:36px;height:3px;
+  background:linear-gradient(90deg,#60a5fa,#818cf8);
+  border-radius:0 0 4px 4px;
+  box-shadow:0 0 12px rgba(96,165,250,0.8);
+  animation:pill-appear 0.3s ease both;
+}
+.bottom-nav a:active{transform:scale(0.92);}
+@keyframes label-pop{0%{transform:translateY(0) scale(1);opacity:0.6}50%{transform:translateY(-4px) scale(1.14)}100%{transform:translateY(-2px) scale(1.1);opacity:1}}
+@keyframes pill-appear{from{width:0;opacity:0}to{width:36px;opacity:1}}
+body{padding-bottom:86px;}
+
+/* ── ANIMATIONS ── */
+@keyframes cardIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:700px){
+  .header-inner{flex-wrap:wrap;gap:0.5rem;padding:0.6rem 0.9rem;}
+  .brand-card{padding:0.45rem 0.7rem;}
+  .brand-name{font-size:0.68rem;}
+  .response-strip{gap:0.45rem;}
+  .resp-item{padding:0.65rem 0.5rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div class="brand-card">
+      <div class="brand-active"><span class="active-dot"></span>Active</div>
+      <div class="brand-text">
+        <div class="brand-name">AKANS Website</div>
+        <div class="brand-tagline">Development Services</div>
+      </div>
+      <div class="logo-wrap">
+        <img src="logo.jpg" alt="AKANS Logo" onerror="this.style.display='none';this.parentNode.innerHTML='🦅'"/>
+      </div>
+    </div>
+    <div class="header-right"></div>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- HERO BANNER -->
+  <div class="support-hero">
+    <a href="account.html" class="back-btn">← Back to Account</a>
+    <span class="hero-icon">🆘</span>
+    <div class="hero-title">Help &amp; Support</div>
+    <div class="hero-sub">We're always here — reach us through any channel below</div>
+  </div>
+
+  <!-- RESPONSE TIME STRIP -->
+  <div class="response-strip">
+    <div class="resp-item">
+      <span class="resp-emoji">💬</span>
+      <span class="resp-time">~2 hrs</span>
+      <span class="resp-label">WhatsApp</span>
+    </div>
+    <div class="resp-item">
+      <span class="resp-emoji">✈️</span>
+      <span class="resp-time">~3 hrs</span>
+      <span class="resp-label">Telegram</span>
+    </div>
+    <div class="resp-item">
+      <span class="resp-emoji">📧</span>
+      <span class="resp-time">~24 hrs</span>
+      <span class="resp-label">Email</span>
+    </div>
+  </div>
+
+  <!-- CONTACT CARDS -->
+  <div class="sec-label">Contact Us</div>
+  <div class="contacts">
+
+    <!-- WhatsApp -->
+    <a href="https://wa.me/919673840137" target="_blank" rel="noopener" class="contact-card whatsapp">
+      <div class="c-icon-wrap">💬</div>
+      <div class="c-body">
+        <div class="c-platform">WhatsApp</div>
+        <div class="c-name">+91 96738 40137</div>
+        <div class="c-hint">Tap to open WhatsApp chat</div>
+      </div>
+      <div class="c-badge">~2 hrs</div>
+      <div class="c-arrow">›</div>
+    </a>
+
+    <!-- Telegram -->
+    <a href="https://t.me/AKANS_M7" target="_blank" rel="noopener" class="contact-card telegram">
+      <div class="c-icon-wrap">✈️</div>
+      <div class="c-body">
+        <div class="c-platform">Telegram</div>
+        <div class="c-name">@AKANS_M7</div>
+        <div class="c-hint">Message us on Telegram</div>
+      </div>
+      <div class="c-badge">~3 hrs</div>
+      <div class="c-arrow">›</div>
+    </a>
+
+    <!-- Email -->
+    <a href="mailto:akans47g@gmail.com" class="contact-card email">
+      <div class="c-icon-wrap">📧</div>
+      <div class="c-body">
+        <div class="c-platform">Email</div>
+        <div class="c-name">akans47g@gmail.com</div>
+        <div class="c-hint">Send us a detailed message</div>
+      </div>
+      <div class="c-badge">~24 hrs</div>
+      <div class="c-arrow">›</div>
+    </a>
+
+  </div>
+
+  <!-- FAQ -->
+  <div class="sec-label">Frequently Asked Questions</div>
+  <div class="faq-list">
+
+    <div class="faq-item">
+      <div class="faq-q">
+        How long does it take to get my wedding card?
+        <div class="faq-icon">+</div>
+      </div>
+      <div class="faq-a">Your digital wedding invitation is ready almost instantly after completing your order. You'll receive a shareable link right away — no waiting at all.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">
+        Can I edit my invitation after sending it?
+        <div class="faq-icon">+</div>
+      </div>
+      <div class="faq-a">Yes! You can make unlimited edits right up until your wedding date. Changed the venue or timing? Just update it — all changes reflect instantly for your guests.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">
+        Is there a limit on how many guests I can share with?
+        <div class="faq-icon">+</div>
+      </div>
+      <div class="faq-a">No limit at all. One link, unlimited guests — no per-guest charges, ever. Share it on WhatsApp, Instagram, or anywhere you like.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">
+        What happens to my invitation after the wedding?
+        <div class="faq-icon">+</div>
+      </div>
+      <div class="faq-a">Your invitation stays publicly shareable for 30 days after your wedding, then automatically turns private to protect your privacy.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">
+        How do I add my own photos to the invitation?
+        <div class="faq-icon">+</div>
+      </div>
+      <div class="faq-a">You can upload your own couple photos as a slideshow or hero background when creating or editing your invitation. Contact us for help with this!</div>
+    </div>
+
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2025 <span>AKANS Web Development Services</span> · All Rights Reserved</p>
+  <p style="margin-top:0.35rem">Verified Business · Only M.7 Limited</p>
+</footer>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <a href="index.html"><span>Wedding</span></a>
+  <a href="social.html"><span>Social M.</span></a>
+  <a href="other.html"><span>Others</span></a>
+  <a href="account.html" class="active"><span>Account</span></a>
+</nav>
+
+<script>
+document.querySelectorAll('.faq-q').forEach(q => {
+  q.addEventListener('click', () => {
+    const item = q.parentElement;
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  });
+});
+</script>
+</body>
+</html>
