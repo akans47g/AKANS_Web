@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Reviews — AKANS Web Development Services</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;800;900&family=DM+Sans:wght@300;400;500;600;700&family=Cinzel:wght@500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ─── DESIGN TOKENS ─── */
+:root {
+  --bg:        #f5f7ff;
+  --surface:   #ffffff;
+  --surface2:  #eef1fb;
+  --border:    #dde2f5;
+  --blue:      #2563eb;
+  --blue-lt:   #eff4ff;
+  --purple:    #7c3aed;
+  --purple-lt: #f3eeff;
+  --cyan:      #0891b2;
+  --gold:      #d4a017;
+  --gold-lt:   #fffbeb;
+  --text:      #1a1f3c;
+  --text-2:    #4b5280;
+  --text-3:    #8890b5;
+  --green:     #16a34a;
+  --red:       #ef4444;
+  --shadow-sm: 0 1px 4px rgba(37,99,235,0.07);
+  --shadow-md: 0 4px 20px rgba(37,99,235,0.10);
+  --shadow-lg: 0 8px 36px rgba(37,99,235,0.14);
+  --radius:    14px;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  overflow-x: hidden;
+}
+
+/* subtle bg pattern */
+body::before {
+  content:'';
+  position: fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 50% at 10% 0%, rgba(37,99,235,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 90% 100%, rgba(124,58,237,0.05) 0%, transparent 60%);
+}
+
+/* ─── HEADER ─── */
+header {
+  position: sticky; top:0; z-index:100;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+.header-inner {
+  max-width: 1100px; margin:0 auto;
+  display: flex; align-items: center;
+  gap: 1rem; padding: 0.65rem 1.4rem;
+}
+
+/* Active badge — leftmost */
+.active-badge {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-size: 0.68rem; font-weight: 700; color: #16a34a;
+  background: #dcfce7; border: 1px solid #bbf7d0;
+  padding: 0.22rem 0.65rem; border-radius: 20px;
+  white-space: nowrap; flex-shrink: 0;
+}
+.active-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #22c55e; animation: pulse-green 2s infinite;
+}
+@keyframes pulse-green {
+  0%,100%{ box-shadow:0 0 0 0 rgba(34,197,94,0.5); }
+  50%{ box-shadow:0 0 0 5px rgba(34,197,94,0); }
+}
+
+/* ── BRAND CARD BOX — Only M.7 style: left=active, center=text, right=logo ── */
+.brand-card {
+  flex: 1; min-width: 0;
+  background: #fff;
+  border-radius: 18px;
+  padding: 0.6rem 1rem;
+  box-shadow: 0 3px 16px rgba(37,99,235,0.10), 0 1px 4px rgba(0,0,0,0.06);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; gap: 0.9rem;
+}
+
+/* LEFT — active badge inside card */
+.brand-active {
+  display: flex; align-items: center; gap: 0.38rem;
+  flex-shrink: 0;
+  font-size: 0.75rem; font-weight: 700; color: #16a34a;
+}
+.active-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: #22c55e; flex-shrink: 0;
+  animation: pulse-green 2s infinite;
+}
+
+/* CENTER — brand name + tagline */
+.brand-text {
+  flex: 1; min-width: 0; text-align: center;
+}
+.brand-name {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem; font-weight: 800;
+  color: var(--text); letter-spacing: 0.01em;
+  line-height: 1.2;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.brand-tagline {
+  font-size: 0.72rem; font-weight: 600;
+  color: var(--blue); margin-top: 0.1rem;
+  letter-spacing: 0.01em;
+}
+
+/* RIGHT — logo image */
+.logo-wrap {
+  width: 44px; height: 44px; border-radius: 11px; flex-shrink: 0;
+  border: 1.5px solid var(--border);
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface2);
+  box-shadow: var(--shadow-sm);
+  font-size: 1.5rem;
+}
+.logo-wrap img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+
+/* header-right still hidden (nav is bottom) */
+.header-right {
+  display: flex; flex-direction: column; align-items: flex-end;
+  gap: 0.3rem; flex-shrink: 0;
+}
+nav {
+  display: flex; gap: 0.25rem;
+}
+nav a {
+  text-decoration: none; font-size: 0.74rem; font-weight: 600;
+  padding: 0.3rem 0.8rem; border-radius: 8px;
+  color: var(--text-2); border: 1px solid transparent;
+  transition: all 0.2s; letter-spacing: 0.01em; white-space: nowrap;
+}
+nav a:hover {
+  background: var(--blue-lt); border-color: rgba(37,99,235,0.25); color: var(--blue);
+}
+nav a.active {
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  color: #fff; border-color: transparent;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+}
+
+/* ─── HERO ─── */
+.hero {
+  position: relative; z-index:1;
+  min-height: 90vh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 5rem 1.5rem 3.5rem;
+  overflow: hidden;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  background: var(--gold-lt); border: 1px solid rgba(212,160,23,0.4);
+  padding: 0.38rem 1rem; border-radius: 30px;
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 1.8rem;
+  animation: fadeDown 0.6s ease both;
+}
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.1rem, 7vw, 4rem);
+  font-weight: 900; line-height: 1.1; margin-bottom: 0.9rem; color: var(--text);
+  animation: fadeUp 0.7s 0.1s ease both;
+}
+.hero h1 .grad {
+  background: linear-gradient(135deg, var(--blue) 0%, var(--cyan) 45%, var(--purple) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero h1 .gold { color: var(--gold); -webkit-text-fill-color: var(--gold); }
+.hero-sub {
+  font-size: clamp(0.9rem, 2vw, 1.08rem); color: var(--text-2);
+  max-width: 480px; line-height: 1.75; margin-bottom: 2.5rem;
+  animation: fadeUp 0.7s 0.2s ease both;
+}
+.hero-cta {
+  display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+  animation: fadeUp 0.7s 0.32s ease both;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  color: #fff; border: none; padding: 0.85rem 2rem; border-radius: 12px;
+  font-size: 0.95rem; font-weight: 600; cursor: pointer; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  box-shadow: 0 4px 20px rgba(37,99,235,0.35);
+  transition: transform 0.2s, box-shadow 0.2s; font-family: 'DM Sans', sans-serif;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(37,99,235,0.45); }
+.btn-secondary {
+  background: var(--surface); color: var(--text);
+  border: 1.5px solid var(--border); padding: 0.85rem 2rem; border-radius: 12px;
+  font-size: 0.95rem; font-weight: 500; cursor: pointer; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+  box-shadow: var(--shadow-sm);
+}
+.btn-secondary:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-lt); }
+
+/* floating deco circles */
+.deco {
+  position: absolute; border-radius: 50%; pointer-events: none; opacity: 0.35;
+}
+.deco-1 {
+  width: 380px; height: 380px;
+  background: radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 70%);
+  top: -80px; right: -100px;
+}
+.deco-2 {
+  width: 260px; height: 260px;
+  background: radial-gradient(circle, rgba(124,58,237,0.10) 0%, transparent 70%);
+  bottom: 40px; left: -80px;
+}
+
+/* ─── TRUST BAR ─── */
+.trust-bar {
+  position: relative; z-index:1;
+  background: var(--surface);
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  padding: 0.9rem 1.5rem;
+  display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;
+  font-size: 0.79rem; color: var(--text-3);
+}
+.trust-item { display: flex; align-items: center; gap: 0.4rem; }
+.trust-item strong { color: var(--text-2); }
+
+/* ─── DIVIDER ─── */
+.divider {
+  position: relative; z-index:1; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+
+/* ─── SECTIONS ─── */
+section { position: relative; z-index:1; padding: 5rem 1.5rem; max-width: 1100px; margin: 0 auto; }
+
+.section-label {
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--blue); margin-bottom: 0.5rem;
+}
+.section-title {
+  font-family: 'Playfair Display', serif; font-size: clamp(1.7rem, 5vw, 2.5rem);
+  font-weight: 700; line-height: 1.2; margin-bottom: 0.8rem; color: var(--text);
+}
+.section-title span {
+  background: linear-gradient(90deg, var(--blue), var(--purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.section-desc { color: var(--text-2); font-size: 0.96rem; line-height: 1.75; max-width: 550px; margin-bottom: 2.6rem; }
+
+/* ─── DETAILS CARDS ─── */
+.details-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.1rem; }
+.detail-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 1.5rem; transition: transform 0.22s, box-shadow 0.22s, border-color 0.22s;
+  box-shadow: var(--shadow-sm);
+}
+.detail-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: rgba(37,99,235,0.3); }
+.card-icon {
+  width: 44px; height: 44px; border-radius: 12px; font-size: 1.25rem;
+  display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;
+  background: var(--blue-lt); border: 1px solid rgba(37,99,235,0.15);
+}
+.card-title { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; color: var(--text); }
+.card-desc { font-size: 0.85rem; color: var(--text-2); line-height: 1.65; }
+
+/* ─── COMPARISON TABLE ─── */
+.compare-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+table.compare {
+  width: 100%; border-collapse: collapse; min-width: 340px;
+}
+table.compare thead tr {
+  background: linear-gradient(135deg, var(--blue-lt), var(--purple-lt));
+}
+table.compare th {
+  padding: 1rem 1.2rem; font-size: 0.82rem; font-weight: 700;
+  letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-2);
+  border-bottom: 2px solid var(--border); text-align: center;
+}
+table.compare th:first-child { text-align: left; }
+table.compare th.col-digital { color: var(--blue); }
+
+table.compare tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+table.compare tbody tr:last-child { border-bottom: none; }
+table.compare tbody tr:hover { background: var(--bg); }
+
+table.compare td {
+  padding: 0.88rem 1.2rem; font-size: 0.88rem; color: var(--text-2);
+  text-align: center; vertical-align: middle;
+}
+table.compare td:first-child { text-align: left; font-weight: 500; color: var(--text); }
+
+/* cost & delivery special rows */
+td.val-paper { color: var(--text-3); font-size: 0.84rem; }
+td.val-digital { color: var(--blue); font-weight: 700; font-size: 0.88rem; }
+td.val-digital-instant { color: var(--blue); font-weight: 700; }
+
+.tick { color: #16a34a; font-size: 1.1rem; font-weight: 700; }
+.cross { color: #ef4444; font-size: 1rem; }
+
+/* ─── FEATURES ─── */
+.features-list { display: flex; flex-direction: column; gap: 0.7rem; }
+.feature-row {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 0.95rem 1.2rem; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; transition: all 0.2s; box-shadow: var(--shadow-sm);
+}
+.feature-row:hover { border-color: rgba(37,99,235,0.35); transform: translateX(4px); box-shadow: var(--shadow-md); }
+.feature-icon {
+  width: 40px; height: 40px; flex-shrink: 0; border-radius: 10px;
+  background: var(--blue-lt); border: 1px solid rgba(37,99,235,0.15);
+  display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+}
+.feature-info strong { display:block; font-size: 0.9rem; margin-bottom: 0.13rem; color: var(--text); }
+.feature-info span { font-size: 0.78rem; color: var(--text-2); }
+
+/* ─── TEMPLATES ─── */
+.templates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: 1.1rem; }
+.template-card {
+  border-radius: var(--radius); overflow: hidden;
+  border: 1px solid var(--border); background: var(--surface);
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease;
+  cursor: pointer; box-shadow: var(--shadow-sm);
+  text-decoration: none; color: inherit; display: block;
+}
+.template-card:hover {
+  transform: translateY(-7px) scale(1.02);
+  box-shadow: 0 16px 45px rgba(37,99,235,0.2);
+  border-color: rgba(37,99,235,0.35);
+}
+/* Shine sweep on hover */
+.template-card .template-img::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%);
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+  pointer-events: none; z-index: 3;
+}
+.template-card:hover .template-img::after { transform: translateX(100%); }
+
+.template-img {
+  width: 100%; aspect-ratio: 2/3;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+}
+/* image slot — replace src with timage1.jpg etc */
+.template-img img {
+  width:100%; height:100%; object-fit:cover; display:block;
+}
+/* fallback gradient shown when no image */
+.template-img .img-fallback {
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+}
+.preview-label {
+  font-family: 'Playfair Display', serif; font-size: 1.1rem;
+  font-weight: 400; opacity: 0.4; letter-spacing: 0.05em;
+  position: relative; z-index:1;
+}
+.t1 { background: linear-gradient(155deg, #0d3b1a, #1a5c2a, #0a2812); }
+.t1 .preview-label { color: rgba(255,255,255,0.7); }
+.t2 { background: linear-gradient(155deg, #2d0a14, #4a1020, #1a0208); }
+.t2 .preview-label { color: rgba(255,255,255,0.7); }
+.t3 { background: linear-gradient(155deg, #f5f0e0, #ece5c8); }
+.t3 .preview-label { color: rgba(0,0,0,0.3); }
+.t4 { background: linear-gradient(155deg, #fce4ec, #f8bbd0); }
+.t4 .preview-label { color: rgba(150,50,80,0.4); }
+.t5 { background: linear-gradient(155deg, #fce4ec, #f8d7e3); }
+.t5 .preview-label { color: rgba(150,50,80,0.4); }
+.t6 { background: linear-gradient(155deg, #1a0a3a, #2e1065, #0d0520); }
+.t6 .preview-label { color: rgba(255,255,255,0.7); }
+
+.badge {
+  position: absolute; top: 10px; left: 10px; z-index:2;
+  font-size: 0.6rem; font-weight: 700; padding: 0.22rem 0.55rem;
+  border-radius: 20px; letter-spacing: 0.04em; text-transform: uppercase;
+}
+.badge-hot     { background: #ef4444; color:#fff; }
+.badge-new     { background: #f97316; color:#fff; }
+.badge-liked   { background: var(--purple); color:#fff; }
+.badge-limited { background: #16a34a; color:#fff; }
+
+.template-info { padding: 0.85rem 1rem; background: var(--surface); }
+.template-name { font-family: 'Playfair Display', serif; font-size: 0.92rem; font-weight: 700; margin-bottom: 0.28rem; color: var(--text); }
+.template-desc { font-size: 0.73rem; color: var(--text-2); line-height: 1.5; margin-bottom: 0.75rem; }
+.btn-select {
+  width: 100%; background: linear-gradient(135deg, var(--blue), var(--purple));
+  color: #fff; border: none; padding: 0.52rem; border-radius: 8px;
+  font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+  font-family: 'DM Sans', sans-serif;
+}
+.btn-select:hover { opacity: 0.82; }
+
+/* ─── CTA BAND ─── */
+.cta-band {
+  position: relative; z-index:1; padding: 4rem 1.5rem; text-align: center;
+  background: linear-gradient(135deg, var(--blue-lt), var(--purple-lt));
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+}
+.cta-band h2 { font-family:'Playfair Display',serif; font-size:clamp(1.5rem,5vw,2.3rem); margin-bottom:0.8rem; color:var(--text); }
+.cta-band p { color:var(--text-2); margin-bottom:2rem; font-size:0.96rem; }
+
+/* ─── FOOTER ─── */
+footer {
+  position: relative; z-index:1;
+  padding: 1.6rem 1.5rem; border-top: 1px solid var(--border);
+  background: var(--surface); text-align: center;
+  font-size: 0.77rem; color: var(--text-3);
+}
+footer span { color: var(--text-2); font-weight: 500; }
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeDown { from{opacity:0;transform:translateY(-14px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeUp   { from{opacity:0;transform:translateY(18px)}  to{opacity:1;transform:translateY(0)} }
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:700px){
+  .header-inner { flex-wrap: wrap; gap: 0.5rem; padding: 0.6rem 0.9rem; }
+  .brand-card { padding: 0.45rem 0.7rem; }
+  .brand-name { font-size: 0.68rem; }
+  .header-right { flex-direction: row; align-items: center; gap: 0.5rem; width: 100%; justify-content: space-between; }
+  nav { flex-wrap: wrap; gap: 0.2rem; }
+  nav a { font-size: 0.68rem; padding: 0.26rem 0.55rem; }
+  .templates-grid { grid-template-columns: 1fr 1fr; }
+  .trust-bar { gap: 0.8rem; font-size: 0.72rem; }
+  table.compare th, table.compare td { padding: 0.65rem 0.6rem; font-size: 0.78rem; }
+}
+
+/* ── BOTTOM NAV BAR — Professional Blue Style ── */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+  background: linear-gradient(135deg, #0f1c4d 0%, #1a2e6e 100%);
+  border-top: 1px solid rgba(99,153,255,0.3);
+  display: flex; align-items: stretch;
+  box-shadow: 0 -6px 30px rgba(37,99,235,0.3), 0 -1px 0 rgba(99,153,255,0.2);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  backdrop-filter: blur(12px);
+  min-height: 68px;
+}
+.bottom-nav a {
+  flex: 1; text-decoration: none;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 0; padding: 0.85rem 0.4rem 0.8rem;
+  color: rgba(180,200,255,0.45);
+  font-size: 0.76rem; font-weight: 700; letter-spacing: 0.04em;
+  transition: color 0.25s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  position: relative; overflow: hidden;
+}
+
+/* ripple pill bg */
+.bottom-nav a::before {
+  content: '';
+  position: absolute; inset: 8px 6px;
+  border-radius: 14px;
+  background: rgba(99,153,255,0.0);
+  transition: background 0.25s ease, transform 0.25s ease;
+  transform: scaleX(0.7); opacity: 0;
+}
+.bottom-nav a:hover::before {
+  background: rgba(99,153,255,0.1);
+  transform: scaleX(1); opacity: 1;
+}
+.bottom-nav a.active::before {
+  background: rgba(99,153,255,0.18);
+  transform: scaleX(1); opacity: 1;
+}
+
+/* text label */
+.bottom-nav a span {
+  position: relative; z-index: 1;
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), color 0.2s;
+  display: block;
+}
+
+/* hover */
+.bottom-nav a:hover { color: rgba(180,200,255,0.9); }
+.bottom-nav a:hover span { transform: translateY(-2px) scale(1.06); }
+
+/* active */
+.bottom-nav a.active { color: #ffffff; }
+.bottom-nav a.active span {
+  transform: translateY(-2px) scale(1.1);
+  text-shadow: 0 0 12px rgba(147,197,253,0.8), 0 0 24px rgba(99,153,255,0.5);
+  animation: label-pop 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+/* active glowing pill indicator top */
+.bottom-nav a.active::after {
+  content: '';
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 36px; height: 3px;
+  background: linear-gradient(90deg, #60a5fa, #818cf8);
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 0 12px rgba(96,165,250,0.8), 0 0 24px rgba(96,165,250,0.4);
+  animation: pill-appear 0.3s ease both;
+}
+
+/* click ripple effect */
+.bottom-nav a:active { transform: scale(0.92); }
+
+@keyframes label-pop {
+  0%   { transform: translateY(0) scale(1); opacity: 0.6; }
+  50%  { transform: translateY(-4px) scale(1.14); }
+  100% { transform: translateY(-2px) scale(1.1); opacity: 1; }
+}
+@keyframes pill-appear {
+  from { width: 0; opacity: 0; }
+  to   { width: 36px; opacity: 1; }
+}
+
+/* push page content up */
+body { padding-bottom: 86px; }
+/* hide old header nav */
+.header-right { display: none !important; }
+
+body { padding-bottom: 86px; }
+.page { position:relative; z-index:1; max-width:720px; margin:0 auto; padding:0 1.2rem 3rem; }
+
+/* Hero */
+.review-hero {
+  background: linear-gradient(135deg, #f59e0b 0%, #dc2626 100%);
+  margin:0 -1.2rem 1.8rem; padding:2rem 1.8rem 1.6rem;
+  position:relative; overflow:hidden;
+}
+.review-hero::before {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(circle at 80% 20%, rgba(255,255,255,0.13) 0%, transparent 55%);
+}
+.review-hero::after {
+  content:''; position:absolute; width:200px; height:200px; border-radius:50%;
+  border:1.5px solid rgba(255,255,255,0.08); bottom:-70px; right:-50px;
+}
+.back-btn {
+  display:inline-flex; align-items:center; gap:0.4rem;
+  font-size:0.78rem; font-weight:600; color:rgba(255,255,255,0.75);
+  text-decoration:none; margin-bottom:1rem;
+  transition:color 0.2s, gap 0.2s; position:relative; z-index:1;
+}
+.back-btn:hover { color:#fff; gap:0.65rem; }
+.hero-top { display:flex; align-items:center; gap:0.8rem; position:relative; z-index:1; }
+.hero-icon { font-size:2rem; }
+.hero-title { font-family:'Playfair Display',serif; font-size:clamp(1.4rem,5vw,1.9rem); font-weight:800; color:#fff; }
+.hero-sub { font-size:0.8rem; color:rgba(255,255,255,0.75); margin-top:0.18rem; }
+
+/* Rating Summary */
+.rating-summary {
+  display:flex; gap:1rem; align-items:stretch;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:18px; padding:1.3rem 1.4rem;
+  box-shadow:var(--shadow-md); margin-bottom:1.5rem;
+  animation:cardIn 0.4s ease both;
+}
+.rating-big { text-align:center; min-width:80px; }
+.rating-number {
+  font-family:'Playfair Display',serif; font-size:3.2rem;
+  font-weight:900; color:var(--text); line-height:1; display:block;
+}
+.rating-stars { font-size:1rem; letter-spacing:1px; margin:0.3rem 0 0.2rem; }
+.rating-count { font-size:0.72rem; color:var(--text-3); font-weight:600; }
+.rating-divider { width:1px; background:var(--border); flex-shrink:0; }
+.rating-bars { flex:1; display:flex; flex-direction:column; gap:0.4rem; justify-content:center; }
+.bar-row { display:flex; align-items:center; gap:0.6rem; }
+.bar-label { font-size:0.72rem; font-weight:600; color:var(--text-2); width:18px; text-align:right; flex-shrink:0; }
+.bar-track { flex:1; height:7px; background:var(--border); border-radius:10px; overflow:hidden; }
+.bar-fill { height:100%; border-radius:10px; transition:width 1s ease; }
+.bar-5 { background:linear-gradient(90deg,#22c55e,#16a34a); }
+.bar-4 { background:linear-gradient(90deg,#84cc16,#65a30d); }
+.bar-3 { background:linear-gradient(90deg,#f59e0b,#d97706); }
+.bar-2 { background:linear-gradient(90deg,#f97316,#ea580c); }
+.bar-1 { background:linear-gradient(90deg,#ef4444,#dc2626); }
+.bar-count { font-size:0.68rem; color:var(--text-3); width:20px; flex-shrink:0; }
+
+/* Filter + Sort bar */
+.controls { display:flex; gap:0.6rem; align-items:center; margin-bottom:1.2rem; flex-wrap:wrap; }
+.filter-tabs { display:flex; gap:0.4rem; flex:1; overflow-x:auto; scrollbar-width:none; }
+.filter-tabs::-webkit-scrollbar { display:none; }
+.tab {
+  flex-shrink:0; padding:0.38rem 0.9rem; border-radius:30px;
+  border:1.5px solid var(--border); background:var(--surface);
+  font-size:0.74rem; font-weight:600; color:var(--text-2);
+  cursor:pointer; transition:all 0.2s; white-space:nowrap;
+}
+.tab:hover { border-color:rgba(245,158,11,0.4); color:#b45309; background:#fffbeb; }
+.tab.active { background:linear-gradient(135deg,#f59e0b,#dc2626); color:#fff; border-color:transparent; box-shadow:0 3px 10px rgba(245,158,11,0.3); }
+.sort-select {
+  padding:0.38rem 0.7rem; border-radius:10px;
+  border:1.5px solid var(--border); background:var(--surface);
+  font-size:0.74rem; font-weight:600; color:var(--text-2);
+  cursor:pointer; font-family:'DM Sans',sans-serif; outline:none;
+  flex-shrink:0;
+}
+
+/* Results count */
+.results-count { font-size:0.75rem; color:var(--text-3); margin-bottom:1rem; }
+
+/* Review Cards Grid */
+.reviews-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.9rem; }
+@media(max-width:560px){ .reviews-grid { grid-template-columns:1fr; } }
+
+.review-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:16px; padding:1.1rem; box-shadow:var(--shadow-sm);
+  animation:cardIn 0.4s ease both;
+  transition:border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  position:relative;
+}
+.review-card:hover { border-color:rgba(245,158,11,0.3); box-shadow:var(--shadow-md); transform:translateY(-2px); }
+
+.card-head { display:flex; align-items:center; gap:0.65rem; margin-bottom:0.75rem; }
+.r-avatar {
+  width:36px; height:36px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:0.72rem; font-weight:800; color:#fff;
+  background:linear-gradient(135deg, var(--blue), var(--purple));
+}
+.r-name { font-size:0.86rem; font-weight:700; color:var(--text); line-height:1.2; }
+.r-template { font-size:0.68rem; color:var(--text-3); margin-top:0.06rem; }
+.r-stars { font-size:0.8rem; letter-spacing:1px; margin-bottom:0.6rem; display:flex; align-items:center; gap:0.4rem; }
+.r-stars span { font-size:0.68rem; color:var(--text-3); }
+.r-text { font-size:0.82rem; color:var(--text-2); line-height:1.7; margin-bottom:0.75rem; }
+.r-footer { display:flex; align-items:center; justify-content:space-between; }
+.r-date { font-size:0.67rem; color:var(--text-3); }
+.helpful-btn {
+  display:flex; align-items:center; gap:0.25rem;
+  font-size:0.68rem; color:var(--text-3); background:none;
+  border:1px solid var(--border); border-radius:20px;
+  padding:0.2rem 0.55rem; cursor:pointer; font-family:'DM Sans',sans-serif;
+  transition:all 0.2s;
+}
+.helpful-btn:hover { border-color:rgba(37,99,235,0.3); color:var(--blue); background:var(--blue-lt); }
+.helpful-btn.liked { border-color:var(--blue); color:var(--blue); background:var(--blue-lt); }
+
+/* Admin edit buttons (hidden by default) */
+.admin-actions { display:none; gap:0.4rem; margin-top:0.7rem; padding-top:0.7rem; border-top:1px dashed #fde68a; }
+.admin-actions.visible { display:flex; }
+.admin-btn {
+  flex:1; padding:0.38rem; border-radius:8px; font-size:0.7rem;
+  font-weight:700; cursor:pointer; border:none; font-family:'DM Sans',sans-serif; transition:all 0.2s;
+}
+.admin-edit { background:#fef9c3; color:#92400e; border:1px solid #fde68a; }
+.admin-edit:hover { background:#f59e0b; color:#fff; }
+.admin-del  { background:#fef2f2; color:#dc2626; border:1px solid #fecaca; }
+.admin-del:hover  { background:#dc2626; color:#fff; }
+
+/* Admin mode indicator */
+.admin-bar {
+  display:none; align-items:center; justify-content:space-between;
+  background:#fef9c3; border:1.5px dashed #f59e0b;
+  border-radius:12px; padding:0.7rem 1rem; margin-bottom:1rem;
+  font-size:0.8rem; font-weight:700; color:#92400e;
+  animation:cardIn 0.3s ease both;
+}
+.admin-bar.visible { display:flex; }
+.admin-exit { background:#f59e0b; color:#fff; border:none; border-radius:8px; padding:0.3rem 0.8rem; font-size:0.72rem; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif; }
+
+/* Load more */
+.load-more-wrap { text-align:center; margin-top:1.5rem; }
+.load-more-btn {
+  background:var(--surface); border:1.5px solid var(--border);
+  color:var(--text-2); padding:0.7rem 2rem; border-radius:12px;
+  font-size:0.85rem; font-weight:700; cursor:pointer;
+  font-family:'DM Sans',sans-serif; transition:all 0.22s;
+}
+.load-more-btn:hover { background:var(--text); color:#fff; border-color:var(--text); }
+
+/* Write Review CTA */
+.write-review-cta {
+  display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  background:linear-gradient(135deg, #fff9c4, #fffbeb);
+  border:1.5px solid #fde68a; border-radius:18px;
+  padding:1.3rem 1.4rem; margin-top:1.8rem; margin-bottom:0;
+  animation:cardIn 0.5s ease both;
+}
+.cta-text strong { display:block; font-size:0.95rem; font-weight:700; color:var(--text); margin-bottom:0.2rem; }
+.cta-text span { font-size:0.78rem; color:var(--text-2); }
+.write-btn {
+  flex-shrink:0; background:linear-gradient(135deg,#f59e0b,#dc2626);
+  color:#fff; border:none; padding:0.65rem 1.3rem; border-radius:11px;
+  font-size:0.82rem; font-weight:700; cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+  box-shadow:0 4px 14px rgba(245,158,11,0.35);
+  transition:transform 0.2s, box-shadow 0.2s;
+}
+.write-btn:hover { transform:translateY(-2px); box-shadow:0 7px 20px rgba(245,158,11,0.45); }
+
+/* Edit Modal */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:500;
+  display:none; align-items:center; justify-content:center; padding:1.2rem;
+}
+.modal-overlay.open { display:flex; }
+.modal {
+  background:#fff; border-radius:20px; padding:1.6rem;
+  width:100%; max-width:440px; box-shadow:0 20px 60px rgba(0,0,0,0.25);
+  animation:cardIn 0.3s ease both;
+}
+.modal h3 { font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:700; margin-bottom:1rem; }
+.modal label { display:block; font-size:0.75rem; font-weight:700; color:var(--text-2); margin-bottom:0.3rem; margin-top:0.8rem; }
+.modal input, .modal textarea, .modal select {
+  width:100%; padding:0.6rem 0.8rem; border:1.5px solid var(--border);
+  border-radius:10px; font-size:0.85rem; font-family:'DM Sans',sans-serif;
+  color:var(--text); outline:none; transition:border-color 0.2s;
+}
+.modal input:focus, .modal textarea:focus, .modal select:focus { border-color:var(--blue); }
+.modal textarea { resize:vertical; min-height:90px; }
+.modal-btns { display:flex; gap:0.6rem; margin-top:1.2rem; }
+.modal-save {
+  flex:1; background:linear-gradient(135deg,var(--blue),var(--purple));
+  color:#fff; border:none; padding:0.7rem; border-radius:11px;
+  font-size:0.85rem; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif;
+}
+.modal-cancel {
+  flex:1; background:var(--bg); border:1.5px solid var(--border);
+  color:var(--text-2); padding:0.7rem; border-radius:11px;
+  font-size:0.85rem; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif;
+}
+
+/* Toast */
+.toast {
+  position:fixed; bottom:100px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:#1a1f3c; color:#fff; font-size:0.8rem; font-weight:600;
+  padding:0.6rem 1.3rem; border-radius:30px; opacity:0;
+  transition:opacity 0.25s, transform 0.25s; z-index:300;
+  pointer-events:none; white-space:nowrap;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.empty-state { text-align:center; padding:3rem 1.5rem; display:none; }
+.empty-state.visible { display:block; }
+.empty-state .empty-icon { font-size:2.5rem; margin-bottom:0.8rem; opacity:0.5; }
+.empty-state p { color:var(--text-3); font-size:0.9rem; }
+
+@keyframes cardIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── WRITE REVIEW MODAL ── */
+.write-modal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,0.55);
+  z-index:600; display:none; align-items:center;
+  justify-content:center; padding:1.2rem;
+}
+.write-modal-overlay.open { display:flex; }
+.write-modal {
+  background:#fff; border-radius:22px;
+  padding:1.8rem 1.6rem;
+  width:100%; max-width:460px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.22);
+  animation:cardIn 0.35s ease both;
+  max-height:90vh; overflow-y:auto;
+}
+.write-modal h3 {
+  font-family:'Playfair Display',serif;
+  font-size:1.2rem; font-weight:800;
+  margin-bottom:1.1rem; color:var(--text);
+}
+.star-picker {
+  display:flex; gap:0.5rem; margin-bottom:1rem;
+}
+.star-pick {
+  font-size:1.8rem; cursor:pointer;
+  transition:transform 0.2s;
+  filter:grayscale(1); opacity:0.4;
+}
+.star-pick.selected { filter:none; opacity:1; transform:scale(1.15); }
+.star-pick:hover    { transform:scale(1.2); filter:none; opacity:0.8; }
+.wm-label {
+  font-size:0.75rem; font-weight:700; color:var(--text-2);
+  margin-bottom:0.35rem; display:block; margin-top:0.8rem;
+}
+.wm-input {
+  width:100%; padding:0.65rem 0.85rem;
+  border:1.5px solid var(--border); border-radius:11px;
+  font-size:0.88rem; font-family:'DM Sans',sans-serif;
+  color:var(--text); outline:none;
+  transition:border-color 0.2s;
+}
+.wm-input:focus { border-color:var(--blue); }
+.wm-textarea {
+  width:100%; padding:0.65rem 0.85rem;
+  border:1.5px solid var(--border); border-radius:11px;
+  font-size:0.86rem; font-family:'DM Sans',sans-serif;
+  color:var(--text); outline:none; resize:vertical;
+  min-height:100px; transition:border-color 0.2s;
+}
+.wm-textarea:focus { border-color:var(--blue); }
+.wm-btns { display:flex; gap:0.7rem; margin-top:1.3rem; }
+.wm-submit {
+  flex:1; background:linear-gradient(135deg,#f59e0b,#dc2626);
+  color:#fff; border:none; padding:0.75rem; border-radius:12px;
+  font-size:0.9rem; font-weight:700; cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+  box-shadow:0 4px 14px rgba(245,158,11,0.3);
+  transition:transform 0.2s, opacity 0.2s;
+}
+.wm-submit:hover { transform:translateY(-2px); }
+.wm-submit:disabled { opacity:0.6; cursor:not-allowed; }
+.wm-cancel {
+  flex:1; background:var(--bg); border:1.5px solid var(--border);
+  color:var(--text-2); padding:0.75rem; border-radius:12px;
+  font-size:0.9rem; font-weight:700; cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+}
+.pending-badge {
+  display:inline-flex; align-items:center; gap:0.3rem;
+  background:#fef9c3; border:1px solid #fde68a;
+  color:#92400e; font-size:0.7rem; font-weight:700;
+  padding:0.2rem 0.6rem; border-radius:20px; margin-left:0.4rem;
+}
+
+</style>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand-card">
+      <div class="brand-active"><span class="active-dot"></span>Active</div>
+      <div class="brand-text">
+        <div class="brand-name">AKANS Website</div>
+        <div class="brand-tagline">Development Services</div>
+      </div>
+      <div class="logo-wrap">
+        <img src="logo.jpg" alt="AKANS Logo" onerror="this.style.display='none';this.parentNode.innerHTML='🦅'"/>
+      </div>
+    </div>
+    <div class="header-right"></div>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- HERO -->
+  <div class="review-hero">
+    <a href="account.html" class="back-btn">← Back to Account</a>
+    <div class="hero-top">
+      <span class="hero-icon">⭐</span>
+      <div>
+        <div class="hero-title">Customer Reviews</div>
+        <div class="hero-sub">Real experiences from our happy couples</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN BAR (hidden until admin mode) -->
+  <div class="admin-bar" id="adminBar">
+    🔐 Admin Mode Active — You can edit or delete reviews
+    <button class="admin-exit" onclick="exitAdmin()">Exit</button>
+  </div>
+
+  <!-- RATING SUMMARY -->
+  <div class="rating-summary" id="ratingSummary">
+    <div class="rating-big" id="ratingTapZone" title="Tap 5 times for admin">
+      <span class="rating-number">4.7</span>
+      <div class="rating-stars">⭐⭐⭐⭐⭐</div>
+      <div class="rating-count">67 reviews</div>
+    </div>
+    <div class="rating-divider"></div>
+    <div class="rating-bars">
+      <div class="bar-row"><span class="bar-label">5</span><div class="bar-track"><div class="bar-fill bar-5" style="width:0%" data-w="77.6%"></div></div><span class="bar-count">52</span></div>
+      <div class="bar-row"><span class="bar-label">4</span><div class="bar-track"><div class="bar-fill bar-4" style="width:0%" data-w="16.4%"></div></div><span class="bar-count">11</span></div>
+      <div class="bar-row"><span class="bar-label">3</span><div class="bar-track"><div class="bar-fill bar-3" style="width:0%" data-w="3%"  ></div></div><span class="bar-count">2</span></div>
+      <div class="bar-row"><span class="bar-label">2</span><div class="bar-track"><div class="bar-fill bar-2" style="width:0%" data-w="1.5%"></div></div><span class="bar-count">1</span></div>
+      <div class="bar-row"><span class="bar-label">1</span><div class="bar-track"><div class="bar-fill bar-1" style="width:0%" data-w="1.5%"></div></div><span class="bar-count">1</span></div>
+    </div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <div class="filter-tabs">
+      <div class="tab active" data-filter="all">All (67)</div>
+      <div class="tab" data-filter="5">⭐⭐⭐⭐⭐ (52)</div>
+      <div class="tab" data-filter="4">⭐⭐⭐⭐ (11)</div>
+      <div class="tab" data-filter="3">⭐⭐⭐ (2)</div>
+      <div class="tab" data-filter="low">⭐⭐ & below (2)</div>
+    </div>
+    <select class="sort-select" id="sortSelect">
+      <option value="newest">Newest</option>
+      <option value="oldest">Oldest</option>
+      <option value="highest">Highest ★</option>
+      <option value="lowest">Lowest ★</option>
+    </select>
+  </div>
+
+  <div class="results-count" id="resultsCount">Showing 12 of 67 reviews</div>
+
+  <!-- REVIEWS GRID -->
+  <div class="reviews-grid" id="reviewsGrid"></div>
+  <div class="empty-state" id="emptyState">
+    <div class="empty-icon">🔍</div>
+    <p>No reviews found in this category.</p>
+  </div>
+
+  <!-- LOAD MORE -->
+  <div class="load-more-wrap" id="loadMoreWrap">
+    <button class="load-more-btn" id="loadMoreBtn" onclick="loadMore()">Load More Reviews ↓</button>
+  </div>
+
+  <!-- WRITE REVIEW CTA -->
+  <div class="write-review-cta">
+    <div class="cta-text">
+      <strong>Share Your Experience 💬</strong>
+      <span>Help other couples decide — leave a review!</span>
+    </div>
+    <button class="write-btn" onclick="openWriteReview()">✍️ Write Review</button>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2025 <span>AKANS Web Development Services</span> · All Rights Reserved</p>
+  <p style="margin-top:0.35rem">Verified Business · Only M.7 Limited</p>
+</footer>
+
+<nav class="bottom-nav">
+  <a href="index.html"><span>Wedding</span></a>
+  <a href="social.html"><span>Social M.</span></a>
+  <a href="other.html"><span>Others</span></a>
+  <a href="account.html" class="active"><span>Account</span></a>
+</nav>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <h3>✏️ Edit Review</h3>
+    <label>Reviewer Name</label>
+    <input type="text" id="editName" placeholder="Name"/>
+    <label>Rating</label>
+    <select id="editRating">
+      <option value="5">⭐⭐⭐⭐⭐ — 5 Stars</option>
+      <option value="4">⭐⭐⭐⭐ — 4 Stars</option>
+      <option value="3">⭐⭐⭐ — 3 Stars</option>
+      <option value="2">⭐⭐ — 2 Stars</option>
+      <option value="1">⭐ — 1 Star</option>
+    </select>
+    <label>Template</label>
+    <input type="text" id="editTemplate" placeholder="Template name"/>
+    <label>Review Text</label>
+    <textarea id="editText" placeholder="Review content..."></textarea>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-save" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ─────────────────────────────────────────────────
+const reviews = [
+  // ── 5★ REVIEWS (52) ──────────────────────────────────
+  {id:1,name:"Rahul Mishra",avatar:"RM",rating:5,template:"Crimson Royale",date:"12 Jan 2025",
+   text:"Bhai ekdum mast service hai! Hamare sabhi relatives ko card bheja toh sab log WhatsApp pe message karne lage ki itna sundar card kahan se banvaya. 100% recommend karta hun 🔥"},
+  {id:2,name:"Priya Singh",avatar:"PS",rating:5,template:"Rose Gold Blush",date:"15 Jan 2025",
+   text:"Honestly mai toh thoda nervous thi digital card ke baare mein... but jab dekha toh literally aansu aa gaye. Music aur animations ne sab kuch perfect bana diya 😭❤️"},
+  {id:3,name:"Anjali Sharma",avatar:"AS",rating:5,template:"Royal Elegance",date:"18 Jan 2025",
+   text:"Kya service hai yaar! Link milne ke baad ek baar edit bhi karni padi aur turant update ho gaya. Paper wale cards ki jagah ye lena bilkul sahi decision tha"},
+  {id:4,name:"Mohammed Arif",avatar:"MA",rating:5,template:"Midnight Royal",date:"20 Jan 2025",
+   text:"MashaAllah bahut achha kaam hai bhai. Hamare walida ne kaha ke yeh card dekh ke dil khush ho gaya. Tamam rishtedaaron ko bheja sabne tarif ki 🙏"},
+  {id:5,name:"Deepika Tomar",avatar:"DT",rating:5,template:"Emerald Noir",date:"22 Jan 2025",
+   text:"Yaar 3 minute mein link ready tha!! Maine socha tha 1-2 din lagenge but nahi. Template bhi gorgeous tha. Sab dost bol rahe the LINK SHARE KARO LINK SHARE KARO 😂"},
+  {id:6,name:"Vishal Pawar",avatar:"VP",rating:5,template:"Crimson Royale",date:"24 Jan 2025",
+   text:"Shaadi se 2 din pehle order kiya tha kyunki paper wale card late aa rahe the. Yahan pe turant ho gaya aur sach bolun toh paper card se zyada achha tha 💯"},
+  {id:7,name:"Sunita Yadav",avatar:"SY",rating:5,template:"Garden Romance",date:"26 Jan 2025",
+   text:"Itna beautiful tha hamara card ki meri saas ne literally video call pe dekha aur boli 'yeh card phone mein rakhna chahte hai' 😂 Best investment ever!"},
+  {id:8,name:"Arjun Kapoor",avatar:"AK",rating:5,template:"Rose Gold Blush",date:"28 Jan 2025",
+   text:"Perfect service. No complaints at all. Delivered fast, design was amazing, and when I wanted to change the venue detail they updated it instantly. Highly recommended!"},
+  {id:9,name:"Zainab Khan",avatar:"ZK",rating:5,template:"Royal Elegance",date:"30 Jan 2025",
+   text:"Subhanallah kitna sundar card bana hai. Hamare mehmaan bahut impress hue. Khas tor par jo countdown timer tha usne sab ko bahut pasand aaya. Shukran ❤️"},
+  {id:10,name:"Saurabh Jain",avatar:"SJ",rating:5,template:"Midnight Royal",date:"1 Feb 2025",
+   text:"Bhai aisa lag raha tha jaise professionally kisi bade studio se banvaya ho. Budget mein itni quality? Seriously inka koi jawab nahi 🙌"},
+  {id:11,name:"Rekha Devi",avatar:"RD",rating:5,template:"Crimson Royale",date:"3 Feb 2025",
+   text:"Meri ladki ki shaadi mein yeh card banvaya tha. Bahut sundar laga. Sare mehmano ne tarif ki. Bhagwan aapko khush rakhe 🙏"},
+  {id:12,name:"Nikhil Verma",avatar:"NV",rating:5,template:"Emerald Noir",date:"5 Feb 2025",
+   text:"Ekdum next level service hai. Maine pehle ek aur jagah try kiya tha lekin wahan quality thodi average thi. Yahan aaya toh mast tha sab. Definitely coming back for bhai ki shaadi!"},
+  {id:13,name:"Pooja Gupta",avatar:"PG",rating:5,template:"Rose Gold Blush",date:"7 Feb 2025",
+   text:"Ek word mein bolun toh - STUNNING 😍 Meri friend ne bhi order kar liya mera card dekh ke. Best digital card service in India honestly"},
+  {id:14,name:"Farhan Ahmed",avatar:"FA",rating:5,template:"Garden Romance",date:"9 Feb 2025",
+   text:"Bhai ye service bohot acha hai. Maine apni sister ki wedding ke liye order kiya. Template selection se lekar delivery tak sab smooth tha. Koi jhanjhat nahi. Full marks!"},
+  {id:15,name:"Kavita Rao",avatar:"KR",rating:5,template:"Royal Elegance",date:"11 Feb 2025",
+   text:"5 saal mein 3 shaadiyaan ho chuki hain ghar mein. Pehli baar digital card try kiya aur seriously yeh sab se achha raha. Bahut hi elegant aur classy tha hamara card"},
+  {id:16,name:"Rohan Mehta",avatar:"RM",rating:5,template:"Midnight Royal",date:"13 Feb 2025",
+   text:"Bro the scratch to reveal feature is genuinely the coolest thing ever. Everyone was like 'wait HOW IS THIS POSSIBLE IN AN INVITATION' lmao 😂 Amazing work!"},
+  {id:17,name:"Sana Parveen",avatar:"SP",rating:5,template:"Crimson Royale",date:"14 Feb 2025",
+   text:"Mujhe honestly bohot darr tha digital card ka... sochti thi bade log accept nahi karenge. But sab ne taarif ki even mere naana abba ne bola ye bahut sundar hai. Koi doubt mat karo 💕"},
+  {id:18,name:"Devendra Singh",avatar:"DS",rating:5,template:"Emerald Noir",date:"16 Feb 2025",
+   text:"Gaon se hain hum, net slow rehta hai, phir bhi card seedha khul gaya sab ke phone pe. Quality ekdum first class. Price bhi fit hai budget mein. Dhanyawad! 🙏"},
+  {id:19,name:"Meera Krishnan",avatar:"MK",rating:5,template:"Rose Gold Blush",date:"18 Feb 2025",
+   text:"The background music gave me chills! Exactly the romantic ambiance we wanted. Our guests from Bangalore to Mumbai all loved it. Truly beautiful work 🌸"},
+  {id:20,name:"Imran Shaikh",avatar:"IS",rating:5,template:"Garden Romance",date:"20 Feb 2025",
+   text:"Bahut hi professional team hai. Maine ek baar galat date daal di thi accidentally, turant WhatsApp pe message kiya aur 5 minute mein fix ho gaya. Yahi hai asli service!"},
+  {id:21,name:"Alka Pandey",avatar:"AP",rating:5,template:"Royal Elegance",date:"22 Feb 2025",
+   text:"Meri bahu ke liye order kiya tha. Sab rishtedaaron ne bahut achha kaha. Ye naya zamana hai, paper card ki kya zaroorat 😊 Bahut achha business hai aapka"},
+  {id:22,name:"Gaurav Nair",avatar:"GN",rating:5,template:"Midnight Royal",date:"24 Feb 2025",
+   text:"Ordered on a Sunday night and link was ready by Monday morning. The design was top notch. Guests thought we hired some fancy designer. Haha 😄 Great stuff!"},
+  {id:23,name:"Ritu Joshi",avatar:"RJ",rating:5,template:"Crimson Royale",date:"26 Feb 2025",
+   text:"Jo Google Maps integration thi usne bahut help ki. Mere bahut saare guests bahar se aa rahe the, venue dhundhne mein bilkul time waste nahi hua 👏 Super helpful!"},
+  {id:24,name:"Karan Malhotra",avatar:"KM",rating:5,template:"Emerald Noir",date:"1 Mar 2025",
+   text:"Bhai price mein itni quality? Mujhe seriously believe nahi hua pehle. Phir dekha toh muh khula ka khula reh gaya. Family ne bola kya shandaar card hai 🙌"},
+  {id:25,name:"Shreya Chopra",avatar:"SC",rating:5,template:"Rose Gold Blush",date:"3 Mar 2025",
+   text:"Zyada kuch nahi bolungi sirf itna ki - agar digital wedding card lena ho toh AKANS ke alawa mat socho. Seedha yahan aao. I'm already a repeat customer! ⭐⭐⭐⭐⭐"},
+  {id:26,name:"Wasim Ansari",avatar:"WA",rating:5,template:"Garden Romance",date:"5 Mar 2025",
+   text:"Shukriya AKANS. Bohot mehnat se banaya hai yeh card. Hamari shaadi ki yaad mein ek khoobsoorat cheez ban gayi. Allah aapko iska ajr de 🤲"},
+  {id:27,name:"Tanvi Desai",avatar:"TD",rating:5,template:"Royal Elegance",date:"7 Mar 2025",
+   text:"Yaar ekdum mast tha. Mere sasural wale toh dekhte hi reh gaye. Sab bol rahe the modern zamane ki shuruaat ho gayi hamari family mein 😂 Super happy with it!"},
+  {id:28,name:"Rohit Sharma",avatar:"RS",rating:5,template:"Midnight Royal",date:"9 Mar 2025",
+   text:"Speed of delivery - 10/10. Design quality - 10/10. Customer support - 10/10. Price - 10/10. Kya bolun yaar sab kuch perfect tha 🔥"},
+  {id:29,name:"Noor Fatima",avatar:"NF",rating:5,template:"Crimson Royale",date:"11 Mar 2025",
+   text:"Card dekh ke aankhon mein aansu aa gaye. Itna beautiful tha. Hamare mehman dono mulkon se aaye the (India aur UAE) aur sabne ek jaise tarif ki. Dil se shukriya 💖"},
+  {id:30,name:"Manish Tiwari",avatar:"MT",rating:5,template:"Emerald Noir",date:"13 Mar 2025",
+   text:"Ek baar WhatsApp pe puch liya tha kuch, turant jawab mila. Yahi cheez company ko best banati hai. Design toh was already amazing 👍 Will definitely use again"},
+  {id:31,name:"Divya Bhatt",avatar:"DB",rating:5,template:"Rose Gold Blush",date:"15 Mar 2025",
+   text:"GIRLS if you want a beautiful wedding invitation that will make everyone go WOW please please please get it from here. I'm obsessed with how ours turned out 💕✨"},
+  {id:32,name:"Suresh Pillai",avatar:"SP",rating:5,template:"Garden Romance",date:"17 Mar 2025",
+   text:"Kerala se order kiya tha. Local shops mein paper card ke liye kaafi paisa maang rahe the. Yahan pe itne mein itna achha digital card mila. Maa ke samne play kiya toh wo bhi khush 😊"},
+  {id:33,name:"Aarti Mishra",avatar:"AM",rating:5,template:"Royal Elegance",date:"19 Mar 2025",
+   text:"Bhai humne toh 3 baar edit ki apni details, ek baar photo change ki, ek baar time change kiya. Koi bhi problem nahi aai. Full marks for patience aur service 💯"},
+  {id:34,name:"Adnan Qureshi",avatar:"AQ",rating:5,template:"Midnight Royal",date:"21 Mar 2025",
+   text:"Waqt pe delivery, design umda, koi technical masla nahi aaya. Hamare buzurg afraad ko bhi itna pasand aaya digital card. Bahut badhiya service hai 🌟"},
+  {id:35,name:"Pinki Sharma",avatar:"PS",rating:5,template:"Crimson Royale",date:"23 Mar 2025",
+   text:"Mere bhaiya ki shaadi ke liye order kiya. Sab rishtedar puch rahe the 'ye card kahan se banvaya?' Bahut garv hua hamari choice pe. Thank you AKANS team! 😍"},
+  {id:36,name:"Kartik Iyer",avatar:"KI",rating:5,template:"Emerald Noir",date:"25 Mar 2025",
+   text:"When my mom saw the invitation she called it 'a piece of art'. That is honestly the best review I can give. Absolutely stunning work by the AKANS team 🎨"},
+  {id:37,name:"Preethi Nair",avatar:"PN",rating:5,template:"Rose Gold Blush",date:"27 Mar 2025",
+   text:"South India se hun, yahan paper card mein kafi kharcha hota hai. Yeh liya toh sach mein best decision tha. Ek baar lene ke baad dost bhi le rahe hain 😊"},
+  {id:38,name:"Sameer Shaikh",avatar:"SS",rating:5,template:"Garden Romance",date:"29 Mar 2025",
+   text:"Ekdum mast bhai. Maine already 2 logon ko refer kar diya. Dono ne order kar liya. Aisi hi service chahiye - fast, sundar, aur price mein bhi sahi 💪"},
+  {id:39,name:"Lata Kumari",avatar:"LK",rating:5,template:"Royal Elegance",date:"31 Mar 2025",
+   text:"Bahut achha kaam hai. Pehli baar digital card banvaya tha, thoda dar laga tha lekin sab kuch sahi raha. Gaane ne toh dil khush kar diya 🎵🙏"},
+  {id:40,name:"Harshit Agarwal",avatar:"HA",rating:5,template:"Midnight Royal",date:"2 Apr 2025",
+   text:"Yaar honestly 10/10 experience raha. Website simple hai, form fill karo, link aata hai, share karo. No drama no delay. Just perfect ✨ Highly recommend!"},
+  {id:41,name:"Isha Kapoor",avatar:"IK",rating:5,template:"Crimson Royale",date:"4 Apr 2025",
+   text:"Hum dono ko literally sabse zyada compliments is card ki wajah se mile 😂 Log soch rahe the koi professional designer ne banaya hai. Thank you so much AKANS!"},
+  {id:42,name:"Bilal Hassan",avatar:"BH",rating:5,template:"Emerald Noir",date:"6 Apr 2025",
+   text:"MashaAllah kya kaam hai. Hum Hyderabad se hain, hamare doston mein sabse pehle digital card liya. Ab sab log pooch rahe hain kahan se mila. Bohot khush hain 🌹"},
+  {id:43,name:"Swati Jain",avatar:"SJ",rating:5,template:"Rose Gold Blush",date:"8 Apr 2025",
+   text:"Bhai animations dekh ke meri aankhen khuli ki khuli reh gayi 😍 Curtain open hoti hai, music bajta hai, countdown dikhta hai... arre kya cheez bana di hai yaar! 🔥🔥"},
+  {id:44,name:"Vinay Kumar",avatar:"VK",rating:5,template:"Garden Romance",date:"10 Apr 2025",
+   text:"Honestly I was skeptical at first but after seeing the final product I am a complete convert. No more paper cards for our family ever again! Great work team 👏"},
+  {id:45,name:"Rubina Akhtar",avatar:"RA",rating:5,template:"Royal Elegance",date:"12 Apr 2025",
+   text:"Itni jaldi se kaam kiya inhone ki believe hi nahi hua. Shaadi ke 2 hafte pehle sab ready tha. Rishtedaar bol rahe the ye card phone mein save karke rakha hai 💕"},
+  {id:46,name:"Pranav Joshi",avatar:"PJ",rating:5,template:"Midnight Royal",date:"14 Apr 2025",
+   text:"Mast service hai. Price vs quality comparison mein ye bilkul top pe hai. Koi pretension nahi, seedha kaam aur achha result. Recommend karta hun sabko 👍"},
+  {id:47,name:"Tasleem Begum",avatar:"TB",rating:5,template:"Crimson Royale",date:"16 Apr 2025",
+   text:"Bete ki shaadi ke liye banvaya tha. Itna sundar tha ki main toh roz dekh rahi thi phone mein 😄 Sabne tarif ki meri samajhdaari ki 🌟"},
+  {id:48,name:"Mihir Pandya",avatar:"MP",rating:5,template:"Emerald Noir",date:"18 Apr 2025",
+   text:"Gujarat se hun, yahan bade bade card shops hain but koi bhi AKANS ka muqabla nahi kar sakta. Digital mein itni quality pehle kabhi nahi dekhi. 5 stars deserved!"},
+  {id:49,name:"Shruti Mishra",avatar:"SM",rating:5,template:"Rose Gold Blush",date:"20 Apr 2025",
+   text:"Bhai mujhe toh ye dekh ke itna achha laga ki maine screenshot leke story pe daal di 😂 Sab puchne lage kahan se banvaya. AKANS ko promote karte rehte hain 🙌"},
+  {id:50,name:"Rizwan Ali",avatar:"RA",rating:5,template:"Garden Romance",date:"22 Apr 2025",
+   text:"Service mast hai. Design bohot achha tha. Hamare sasural walon ne dekha toh bole 'arey digital zamana aa gaya!' 😂 Ekdum sahi investment thi yaar"},
+  {id:51,name:"Deepti Srivastava",avatar:"DS",rating:5,template:"Royal Elegance",date:"24 Apr 2025",
+   text:"Ek suggestion thi jo maine WhatsApp pe bheji - agle din reflect ho gayi card mein. Is level ka customer care bahut rare hai aajkal. Super impressed! ⭐⭐⭐⭐⭐"},
+  {id:52,name:"Yusuf Merchant",avatar:"YM",rating:5,template:"Midnight Royal",date:"26 Apr 2025",
+   text:"Alhamdulillah bahut achha experience raha. Dono families ko card bahut pasand aaya. Jo background music tha woh toh sab ko bahut bhaya. Shukran ❤️"},
+  // ── 4★ REVIEWS (11) ──────────────────────────────────
+  {id:53,name:"Vivek Sharma",avatar:"VS",rating:4,template:"Crimson Royale",date:"28 Apr 2025",
+   text:"Bahut achha service hai. Sirf ek cheez thi ki font options aur hote toh aur achha hota. But overall experience 4 stars ke layak tha. Zaroor suggest karunga 😊"},
+  {id:54,name:"Naina Agarwal",avatar:"NA",rating:4,template:"Emerald Noir",date:"30 Apr 2025",
+   text:"Overall achha tha. Card ki quality aur delivery speed top class. Bas ek baar edit karte time thodi response mein der lagi. Baaki sab theek tha 👍"},
+  {id:55,name:"Atif Siddiqui",avatar:"AS",rating:4,template:"Rose Gold Blush",date:"2 May 2025",
+   text:"Bohot achha tha card. Ek chhoti si baat - custom color option nahi mila template mein. But jo colors the woh bhi kafi achhe the. 4 stars, recommend karunga"},
+  {id:56,name:"Vandana Singh",avatar:"VS",rating:4,template:"Garden Romance",date:"4 May 2025",
+   text:"Mast experience raha. Ek cheez jo miss kiya woh custom music option. Apna favourite gana lagana chahti thi. But jo music tha woh bhi romantic tha 😊"},
+  {id:57,name:"Feroz Khan",avatar:"FK",rating:4,template:"Royal Elegance",date:"6 May 2025",
+   text:"Good service and fast delivery. Design was nice. Wanted one more template with a traditional Indian look but overall no major complaints. Would use again."},
+  {id:58,name:"Rachna Tiwari",avatar:"RT",rating:4,template:"Midnight Royal",date:"8 May 2025",
+   text:"Bahut sundar card tha. 4 star is liye de rahi hun kyunki ek baar site thodi slow ho gayi load karte time. But ultimately card amazing nikla! 😍"},
+  {id:59,name:"Shailesh Patel",avatar:"SP",rating:4,template:"Crimson Royale",date:"10 May 2025",
+   text:"Achha hai bhai. Kuch aur templates aane chahiye aage. Abhi jo hain woh achhe hain but variety aur honi chahiye. Baaki service bahut smooth thi 👌"},
+  {id:60,name:"Rupali Chavan",avatar:"RC",rating:4,template:"Emerald Noir",date:"12 May 2025",
+   text:"Card ekdum mast bana. Bas ek cheez - delivery ke baad ek confirmation message aur achha lagta. Baaki sab top class hai. Will definitely recommend!"},
+  {id:61,name:"Tariq Hussain",avatar:"TH",rating:4,template:"Rose Gold Blush",date:"14 May 2025",
+   text:"Kaam achha hai. Ek chhoti si galti inhone fix ki jab maine report ki - fast response tha. Isliye 4 star, 5th star ke liye thoda aur improve karein 😊"},
+  {id:62,name:"Mamta Dube",avatar:"MD",rating:4,template:"Garden Romance",date:"16 May 2025",
+   text:"Bahut achha digital card tha. Mujhe bas thoda guide karna pada form fill karte time. New users ke liye thoda aur easy hona chahiye. Result toh wonderful tha! 🌸"},
+  {id:63,name:"Harsh Bhatia",avatar:"HB",rating:4,template:"Royal Elegance",date:"18 May 2025",
+   text:"Good overall. Delivery was fast, design was classy. Just felt the photo upload section could be a bit more user-friendly. Minor issue. Will come back for sure!"},
+  // ── 3★ REVIEWS (2) ──────────────────────────────────
+  {id:64,name:"Rajan Verma",avatar:"RV",rating:3,template:"Midnight Royal",date:"20 May 2025",
+   text:"Card theek tha, basic features sab the. Mujhe lagta hai aur customization options hone chahiye. Price ke hisaab se okay hai. Average experience raha mera."},
+  {id:65,name:"Shirin Irani",avatar:"SI",rating:3,template:"Crimson Royale",date:"22 May 2025",
+   text:"Dekh ke achha laga but kuch cheezein expect karta tha jo nahi mili. Custom font nahi tha, kuch sections lock the. Overall chalau hai par premium feel thoda aur dete toh better hota."},
+  // ── 2★ REVIEW (1) ──────────────────────────────────
+  {id:66,name:"Gaurav Tripathi",avatar:"GT",rating:2,template:"Emerald Noir",date:"24 May 2025",
+   text:"Support se response milne mein der lagi. Design achha tha but ek issue tha jo maine report kiya, 2 din baad fix hua. Thoda aur fast support chahiye tha honestly."},
+  // ── 1★ REVIEW (1) ──────────────────────────────────
+  {id:67,name:"Kavya Reddy",avatar:"KR",rating:1,template:"Rose Gold Blush",date:"26 May 2025",
+   text:"Thoda disappointed raha. Link share karne ke baad kuch friends ko open karte time error aa raha tha. Issue eventually fix hua but shaadi ke time pe itna stress nahi chahiye tha. Hope they improve."}
+];
+
+
+// Load edits from localStorage
+const saved = localStorage.getItem('reviewEdits');
+let edits = saved ? JSON.parse(saved) : {};
+
+// Merge edits into reviews
+function getMerged() {
+  return reviews.map(r => edits[r.id] ? {...r, ...edits[r.id]} : r);
+}
+
+// ── STATE ─────────────────────────────────────────────────
+let currentFilter = 'all';
+let currentSort   = 'newest';
+let showCount     = 12;
+let isAdmin       = false;
+let adminTaps     = 0;
+let adminTimer    = null;
+let editingId     = null;
+const ADMIN_PASS  = 'AKANS@Admin2025'; // change this later
+
+// ── HELPERS ───────────────────────────────────────────────
+function stars(n) {
+  return '⭐'.repeat(n) + '☆'.repeat(5-n);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ── FILTER + SORT ─────────────────────────────────────────
+function getFiltered() {
+  let data = getMerged();
+  if(currentFilter === '5') data = data.filter(r => r.rating === 5);
+  else if(currentFilter === '4') data = data.filter(r => r.rating === 4);
+  else if(currentFilter === '3') data = data.filter(r => r.rating === 3);
+  else if(currentFilter === 'low') data = data.filter(r => r.rating <= 2);
+
+  if(currentSort === 'oldest')  data.sort((a,b) => a.id - b.id);
+  else if(currentSort === 'newest')  data.sort((a,b) => b.id - a.id);
+  else if(currentSort === 'highest') data.sort((a,b) => b.rating - a.rating);
+  else if(currentSort === 'lowest')  data.sort((a,b) => a.rating - b.rating);
+
+  return data;
+}
+
+// ── RENDER ────────────────────────────────────────────────
+function renderReviews() {
+  const grid  = document.getElementById('reviewsGrid');
+  const empty = document.getElementById('emptyState');
+  const lwrap = document.getElementById('loadMoreWrap');
+  const rcount= document.getElementById('resultsCount');
+
+  const data = getFiltered();
+
+  if(data.length === 0) {
+    grid.innerHTML = '';
+    empty.classList.add('visible');
+    lwrap.style.display = 'none';
+    rcount.textContent = 'No reviews found';
+    return;
+  }
+
+  empty.classList.remove('visible');
+  const showing = Math.min(showCount, data.length);
+  rcount.textContent = `Showing ${showing} of ${data.length} reviews`;
+  lwrap.style.display = showing < data.length ? 'block' : 'none';
+
+  grid.innerHTML = data.slice(0, showing).map((r, i) => `
+    <div class="review-card" id="card-${r.id}" style="animation-delay:${(i%12)*0.05}s">
+      <div class="card-head">
+        <div class="r-avatar">${r.avatar}</div>
+        <div>
+          <div class="r-name">${r.name}</div>
+          <div class="r-template">${r.template}</div>
+        </div>
+      </div>
+      <div class="r-stars">${stars(r.rating)} <span>${r.date}</span></div>
+      <div class="r-text">${r.text}</div>
+      <div class="r-footer">
+        <span class="r-date">Verified Purchase</span>
+        <button class="helpful-btn" onclick="markHelpful(this)">👍 Helpful</button>
+      </div>
+      ${isAdmin ? `
+      <div class="admin-actions visible">
+        <button class="admin-btn admin-edit" onclick="openEdit(${r.id})">✏️ Edit</button>
+        <button class="admin-btn admin-del"  onclick="deleteReview(${r.id})">🗑️ Delete</button>
+      </div>` : ''}
+    </div>
+  `).join('');
+}
+
+function loadMore() {
+  showCount += 12;
+  renderReviews();
+}
+
+// ── HELPFUL ───────────────────────────────────────────────
+function markHelpful(btn) {
+  btn.classList.toggle('liked');
+  showToast(btn.classList.contains('liked') ? '👍 Marked as helpful!' : 'Removed helpful mark');
+}
+
+// ── WRITE REVIEW ──────────────────────────────────────────
+let selectedRating = 0;
+
+function openWriteReview() {
+  // Check if logged in
+  auth.onAuthStateChanged(user => {
+    if(!user) {
+      showToast('🔑 Please login to write a review');
+      setTimeout(() => window.location.href='login.html', 1200);
+      return;
+    }
+    // Pre-fill name from Firebase
+    const nameInput = document.getElementById('wm-name');
+    if(user.displayName) nameInput.value = user.displayName;
+    document.getElementById('writeModal').classList.add('open');
+  });
+}
+
+function closeWriteModal() {
+  document.getElementById('writeModal').classList.remove('open');
+  selectedRating = 0;
+  document.querySelectorAll('.star-pick').forEach(s => s.classList.remove('selected'));
+  document.getElementById('wm-name').value = '';
+  document.getElementById('wm-text').value = '';
+  document.getElementById('wm-template').value = '';
+}
+
+// Star picker
+document.querySelectorAll('.star-pick').forEach(star => {
+  star.addEventListener('click', () => {
+    selectedRating = parseInt(star.dataset.val);
+    document.querySelectorAll('.star-pick').forEach((s,i) => {
+      s.classList.toggle('selected', i < selectedRating);
+    });
+  });
+});
+
+async function submitReview() {
+  const name     = document.getElementById('wm-name').value.trim();
+  const template = document.getElementById('wm-template').value;
+  const text     = document.getElementById('wm-text').value.trim();
+  const btn      = document.getElementById('wm-submit-btn');
+
+  if(!selectedRating) { showToast('⭐ Please select a rating'); return; }
+  if(!name)           { showToast('👤 Please enter your name'); return; }
+  if(!template)       { showToast('🎨 Please select a template'); return; }
+  if(text.length < 20){ showToast('✍️ Review too short (min 20 characters)'); return; }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Submitting...';
+
+  try {
+    const user = auth.currentUser;
+    const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    await db.collection('reviews').add({
+      name, template, text,
+      rating: selectedRating,
+      avatar: initials,
+      userId: user ? user.uid : 'anonymous',
+      date: new Date().toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'}),
+      approved: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    closeWriteModal();
+    showToast('✅ Review submitted! Pending approval.');
+  } catch(e) {
+    showToast('❌ Error submitting review: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = 'Submit Review ✨';
+  }
+}
+
+// Close modal on overlay click
+document.getElementById('writeModal').addEventListener('click', function(e) {
+  if(e.target === this) closeWriteModal();
+});
+
+// ── ADMIN MODE ────────────────────────────────────────────
+document.getElementById('ratingTapZone').addEventListener('click', () => {
+  adminTaps++;
+  clearTimeout(adminTimer);
+  adminTimer = setTimeout(() => { adminTaps = 0; }, 2000);
+  if(adminTaps >= 5) {
+    adminTaps = 0;
+    const pass = prompt('🔐 Enter Admin Password:');
+    if(pass === ADMIN_PASS) {
+      isAdmin = true;
+      document.getElementById('adminBar').classList.add('visible');
+      renderReviews();
+      showToast('✅ Admin mode activated');
+    } else if(pass !== null) {
+      showToast('❌ Wrong password');
+    }
+  }
+});
+
+function exitAdmin() {
+  isAdmin = false;
+  document.getElementById('adminBar').classList.remove('visible');
+  renderReviews();
+  showToast('Admin mode exited');
+}
+
+// ── EDIT ──────────────────────────────────────────────────
+function openEdit(id) {
+  const r = getMerged().find(x => x.id === id);
+  if(!r) return;
+  editingId = id;
+  document.getElementById('editName').value     = r.name;
+  document.getElementById('editRating').value   = r.rating;
+  document.getElementById('editTemplate').value = r.template;
+  document.getElementById('editText').value     = r.text;
+  document.getElementById('editModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('editModal').classList.remove('open');
+  editingId = null;
+}
+
+function saveEdit() {
+  if(!editingId) return;
+  edits[editingId] = {
+    name:     document.getElementById('editName').value.trim(),
+    rating:   parseInt(document.getElementById('editRating').value),
+    template: document.getElementById('editTemplate').value.trim(),
+    text:     document.getElementById('editText').value.trim(),
+  };
+  localStorage.setItem('reviewEdits', JSON.stringify(edits));
+  closeModal();
+  renderReviews();
+  showToast('✅ Review updated!');
+}
+
+function deleteReview(id) {
+  if(!confirm('Delete this review?')) return;
+  edits[id] = {...getMerged().find(r=>r.id===id), text:'[Deleted by Admin]', name:'[Removed]'};
+  localStorage.setItem('reviewEdits', JSON.stringify(edits));
+  renderReviews();
+  showToast('🗑️ Review deleted');
+}
+
+// Close modal on overlay click
+document.getElementById('editModal').addEventListener('click', function(e) {
+  if(e.target === this) closeModal();
+});
+
+// ── FILTER TABS ───────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentFilter = tab.dataset.filter;
+    showCount = 12;
+    renderReviews();
+  });
+});
+
+// ── SORT ──────────────────────────────────────────────────
+document.getElementById('sortSelect').addEventListener('change', function() {
+  currentSort = this.value;
+  showCount = 12;
+  renderReviews();
+});
+
+// ── ANIMATE BARS ON LOAD ──────────────────────────────────
+setTimeout(() => {
+  document.querySelectorAll('.bar-fill').forEach(bar => {
+    bar.style.width = bar.dataset.w;
+  });
+}, 300);
+
+// ── INIT ─────────────────────────────────────────────────
+renderReviews();
+
+// ── LOAD USER REVIEWS FROM FIRESTORE (approved only) ─────
+(async () => {
+  try {
+    const snap = await db.collection('reviews')
+      .where('approved','==',true)
+      .orderBy('createdAt','desc')
+      .get();
+
+    if(!snap.empty) {
+      const firestoreReviews = snap.docs.map((doc,i) => ({
+        id: 1000 + i,
+        ...doc.data(),
+        date: doc.data().date || 'Recent'
+      }));
+      // Merge: Firestore reviews first, then hardcoded
+      reviews.unshift(...firestoreReviews);
+      // Update stats
+      const total = reviews.length;
+      const avg   = (reviews.reduce((s,r)=>s+r.rating,0)/total).toFixed(1);
+      document.querySelector('.rating-number').textContent = avg;
+      document.querySelector('.rating-count').textContent  = total + ' reviews';
+      renderReviews();
+    }
+  } catch(e) {
+    console.log('Firestore reviews load:', e.message);
+    // Hardcoded reviews still show — no problem
+  }
+})();
+</script>
+
+
+<!-- WRITE REVIEW MODAL -->
+<div class="write-modal-overlay" id="writeModal">
+  <div class="write-modal">
+    <h3>✍️ Write a Review</h3>
+    <label class="wm-label">Your Rating</label>
+    <div class="star-picker" id="starPicker">
+      <span class="star-pick" data-val="1">⭐</span>
+      <span class="star-pick" data-val="2">⭐</span>
+      <span class="star-pick" data-val="3">⭐</span>
+      <span class="star-pick" data-val="4">⭐</span>
+      <span class="star-pick" data-val="5">⭐</span>
+    </div>
+    <label class="wm-label">Your Name</label>
+    <input class="wm-input" type="text" id="wm-name" placeholder="e.g. Rahul Sharma"/>
+    <label class="wm-label">Template Used</label>
+    <select class="wm-input" id="wm-template">
+      <option value="">Select template...</option>
+      <option>Emerald Noir</option>
+      <option>Crimson Royale</option>
+      <option>Royal Elegance</option>
+      <option>Garden Romance</option>
+      <option>Rose Gold Blush</option>
+      <option>Midnight Royal</option>
+    </select>
+    <label class="wm-label">Your Review</label>
+    <textarea class="wm-textarea" id="wm-text" placeholder="Share your experience... (min 20 characters)"></textarea>
+    <div class="wm-btns">
+      <button class="wm-cancel" onclick="closeWriteModal()">Cancel</button>
+      <button class="wm-submit" id="wm-submit-btn" onclick="submitReview()">Submit Review ✨</button>
+    </div>
+    <p style="font-size:0.72rem;color:var(--text-3);text-align:center;margin-top:0.8rem;">
+      ⏳ Reviews are shown after admin approval (usually within 24hrs)
+    </p>
+  </div>
+</div>
+</body>
+</html>
