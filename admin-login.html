@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin Login — AKANS Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+/* ── RESET ── */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;font-family:'DM Sans',sans-serif;}
+
+/* ── BACKGROUND ── */
+body {
+  min-height: 100vh;
+  background: #0a0f1e;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 1.5rem; position: relative; overflow: hidden;
+}
+
+/* Animated bg blobs */
+.bg-blob {
+  position: fixed; border-radius: 50%;
+  pointer-events: none; filter: blur(80px); opacity: 0.12;
+  animation: blobFloat 8s ease-in-out infinite;
+}
+.bg-blob-1 { width:400px; height:400px; background:#2563eb; top:-100px; right:-80px; animation-delay:0s; }
+.bg-blob-2 { width:300px; height:300px; background:#7c3aed; bottom:-80px; left:-60px; animation-delay:3s; }
+.bg-blob-3 { width:200px; height:200px; background:#0891b2; top:40%; left:60%; animation-delay:5s; }
+@keyframes blobFloat {
+  0%,100%{ transform: scale(1) translate(0,0); }
+  50%    { transform: scale(1.08) translate(15px,-15px); }
+}
+
+/* Grid pattern */
+body::before {
+  content:''; position:fixed; inset:0;
+  background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events:none;
+}
+
+/* ── TOP BADGE ── */
+.admin-badge {
+  display: flex; align-items: center; gap: 0.5rem;
+  background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3);
+  color: #f87171; font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 0.3rem 0.9rem; border-radius: 30px;
+  margin-bottom: 1.5rem; animation: fadeDown 0.6s ease both;
+}
+.badge-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: #ef4444;
+  animation: pulse-red 2s infinite;
+}
+@keyframes pulse-red {
+  0%,100%{ box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
+  50%    { box-shadow: 0 0 0 5px rgba(239,68,68,0); }
+}
+
+/* ── BRAND ── */
+.admin-brand {
+  text-align: center; margin-bottom: 1.8rem;
+  animation: fadeDown 0.6s 0.05s ease both;
+}
+.brand-shield {
+  width: 70px; height: 70px; margin: 0 auto 1rem;
+  background: linear-gradient(135deg, #1e3a8a, #3730a3);
+  border-radius: 20px; border: 1.5px solid rgba(99,153,255,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem; box-shadow: 0 8px 32px rgba(37,99,235,0.3);
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.brand-shield:hover { transform: scale(1.08) rotate(-3deg); }
+.brand-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem; font-weight: 800; color: #fff;
+  margin-bottom: 0.25rem; letter-spacing: 0.01em;
+}
+.brand-sub {
+  font-size: 0.72rem; font-weight: 600;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+}
+
+/* ── LOGIN CARD ── */
+.login-card {
+  width: 100%; max-width: 400px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 24px; padding: 2rem 1.8rem;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05);
+  animation: fadeUp 0.6s 0.1s ease both;
+  position: relative; z-index: 1;
+}
+
+/* ── FIELD ── */
+.a-field { margin-bottom: 1.1rem; }
+.a-label {
+  display: block; font-size: 0.75rem; font-weight: 700;
+  color: rgba(255,255,255,0.5); margin-bottom: 0.4rem;
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+.a-input-wrap {
+  display: flex; align-items: center; gap: 0.6rem;
+  background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: 12px; padding: 0 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.a-input-wrap:focus-within {
+  border-color: rgba(99,153,255,0.6);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+}
+.a-input-wrap.field-error-wrap {
+  border-color: rgba(239,68,68,0.6);
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.1);
+  animation: shake 0.35s ease both;
+}
+.a-icon { font-size: 1rem; opacity: 0.4; flex-shrink: 0; }
+.a-input {
+  flex: 1; border: none; background: transparent; outline: none;
+  font-size: 0.92rem; font-weight: 500; color: #fff;
+  padding: 0.82rem 0; font-family: 'DM Sans', sans-serif;
+}
+.a-input::placeholder { color: rgba(255,255,255,0.22); }
+.a-input.field-error { /* handled by wrap */ }
+.toggle-pass-btn {
+  background: none; border: none; cursor: pointer;
+  color: rgba(255,255,255,0.35); font-size: 1rem; padding: 0;
+  transition: color 0.2s; flex-shrink: 0;
+}
+.toggle-pass-btn:hover { color: rgba(255,255,255,0.7); }
+
+/* ── LOGIN BUTTON ── */
+.login-btn {
+  width: 100%; padding: 0.95rem; border-radius: 14px; border: none;
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  color: #fff; font-size: 0.95rem; font-weight: 800;
+  font-family: 'DM Sans', sans-serif; cursor: pointer; letter-spacing: 0.02em;
+  box-shadow: 0 6px 24px rgba(37,99,235,0.4);
+  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  margin-top: 0.4rem;
+}
+.login-btn:hover   { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(37,99,235,0.5); }
+.login-btn:active  { transform: scale(0.97); }
+.login-btn:disabled{ opacity: 0.6; cursor: not-allowed; transform: none; }
+.spin { display: inline-block; animation: spinAnim 1s linear infinite; }
+@keyframes spinAnim { to { transform: rotate(360deg); } }
+
+/* ── DIVIDER ── */
+.a-divider {
+  display: flex; align-items: center; gap: 0.8rem;
+  margin: 1.2rem 0 0.8rem;
+}
+.a-divider::before,.a-divider::after {
+  content:''; flex:1; height:1px; background:rgba(255,255,255,0.08);
+}
+.a-divider span { font-size:0.7rem; color:rgba(255,255,255,0.25); letter-spacing:0.1em; }
+
+/* ── SECURITY INFO ── */
+.security-info {
+  display: flex; align-items: center; justify-content: center;
+  gap: 1.2rem; margin-top: 1rem; padding-top: 1rem;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+.sec-item {
+  display: flex; align-items: center; gap: 0.35rem;
+  font-size: 0.68rem; color: rgba(255,255,255,0.25); white-space: nowrap;
+}
+
+/* ── BOTTOM TEXT ── */
+.bottom-text {
+  text-align: center; margin-top: 1.4rem;
+  font-size: 0.72rem; color: rgba(255,255,255,0.2);
+  animation: fadeUp 0.6s 0.2s ease both;
+}
+
+/* ── LOCK OVERLAY ── */
+.lock-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(10,15,30,0.96); backdrop-filter: blur(10px);
+  z-index: 500; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; padding: 2rem;
+}
+.lock-overlay.show { display: flex; }
+.lock-icon-big { font-size: 4rem; margin-bottom: 1rem; }
+.lock-title { font-family:'Playfair Display',serif; font-size:1.4rem; font-weight:800; color:#f87171; margin-bottom:0.5rem; }
+.lock-sub   { font-size:0.88rem; color:rgba(255,255,255,0.45); margin-bottom:1.5rem; line-height:1.7; }
+.lock-timer-display {
+  font-family:'Playfair Display',serif; font-size:2.8rem; font-weight:900;
+  color:#60a5fa; letter-spacing:0.05em; margin-bottom:1.2rem;
+}
+.lock-note { font-size:0.75rem; color:rgba(255,255,255,0.25); }
+
+/* ── ADMIN TOAST (shared) ── */
+.admin-toast {
+  position: fixed; bottom: 28px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  font-size: 0.83rem; font-weight: 700; padding: 0.7rem 1.5rem;
+  border-radius: 30px; opacity: 0; white-space: nowrap;
+  transition: opacity 0.25s, transform 0.25s; z-index: 9999;
+  pointer-events: none; font-family: 'DM Sans', sans-serif;
+}
+.admin-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.admin-toast.success { background: #166534; color: #bbf7d0; border: 1px solid #15803d; }
+.admin-toast.error   { background: #7f1d1d; color: #fca5a5; border: 1px solid #b91c1c; }
+.admin-toast.warning { background: #78350f; color: #fde68a; border: 1px solid #b45309; }
+.admin-toast.info    { background: #1e3a8a; color: #bfdbfe; border: 1px solid #1d4ed8; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeDown { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeUp   { from{opacity:0;transform:translateY(16px)}  to{opacity:1;transform:translateY(0)} }
+@keyframes shake    { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+@media(max-width:420px){
+  .login-card { padding: 1.6rem 1.3rem; }
+  .brand-title { font-size: 1.3rem; }
+}
+</style>
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#2563eb"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="apple-mobile-web-app-title" content="AKANS"/>
+  <link rel="apple-touch-icon" href="logo.jpg"/>
+</head>
+<body>
+
+<!-- BG BLOBS -->
+<div class="bg-blob bg-blob-1"></div>
+<div class="bg-blob bg-blob-2"></div>
+<div class="bg-blob bg-blob-3"></div>
+
+<!-- LOCK OVERLAY -->
+<div class="lock-overlay" id="lockOverlay">
+  <div class="lock-icon-big">🔒</div>
+  <div class="lock-title">Account Temporarily Locked</div>
+  <div class="lock-sub">
+    Bahut zyada galat attempts ki wajah se account lock ho gaya hai.<br>
+    Neeche dikhaye gaye waqt ke baad try karein.
+  </div>
+  <div class="lock-timer-display" id="lockTimerDisplay">30:00</div>
+  <div class="lock-note">⚠️ Yeh security measure hai — suspicious activity detect hui hai</div>
+</div>
+
+<!-- TOP BADGE -->
+<div class="admin-badge">
+  <span class="badge-dot"></span>
+  Restricted Area — Admin Only
+</div>
+
+<!-- BRAND -->
+<div class="admin-brand">
+  <div class="brand-shield">🛡️</div>
+  <div class="brand-title">AKANS Admin Panel</div>
+  <div class="brand-sub">Web Development Services</div>
+</div>
+
+<!-- LOGIN CARD -->
+<div class="login-card">
+
+  <!-- Email -->
+  <div class="a-field">
+    <label class="a-label">Admin Email</label>
+    <div class="a-input-wrap" id="wrap-email">
+      <span class="a-icon">📧</span>
+      <input class="a-input" type="email" id="adminEmail"
+             placeholder="Admin email address"
+             autocomplete="email"
+             oninput="document.getElementById('wrap-email').classList.remove('field-error-wrap')"/>
+    </div>
+  </div>
+
+  <!-- Password -->
+  <div class="a-field">
+    <label class="a-label">Password</label>
+    <div class="a-input-wrap" id="wrap-pass">
+      <span class="a-icon">🔑</span>
+      <input class="a-input" type="password" id="adminPass"
+             placeholder="Admin password"
+             autocomplete="current-password"
+             oninput="document.getElementById('wrap-pass').classList.remove('field-error-wrap')"/>
+      <button class="toggle-pass-btn" id="togglePassBtn" onclick="toggleAdminPass()" tabindex="-1">👁️</button>
+    </div>
+  </div>
+
+  <!-- Login Button -->
+  <button class="login-btn" id="loginBtn" onclick="adminLogin()">
+    🔐 Admin Login
+  </button>
+
+  <div class="a-divider"><span>SECURITY</span></div>
+
+  <!-- Security Info -->
+  <div class="security-info">
+    <div class="sec-item">🔒 Encrypted</div>
+    <div class="sec-item">⏱️ 24hr Session</div>
+    <div class="sec-item">🛡️ Role Verified</div>
+  </div>
+
+</div><!-- end login-card -->
+
+<!-- BOTTOM TEXT -->
+<div class="bottom-text">
+  ⚠️ Unauthorized access is strictly prohibited<br>
+  All login attempts are logged
+</div>
+
+<!-- ADMIN TOAST -->
+<div class="admin-toast" id="adminToast"></div>
+
+<!-- FIREBASE + ADMIN JS -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="admin-all.js"></script>
+
+
+<!-- PWA Install Banner -->
+<div id="pwaInstallBanner" style="
+  position:fixed; bottom:80px; left:1rem; right:1rem; z-index:400;
+  background:#fff; border:1.5px solid #dde2f5; border-radius:18px;
+  padding:1rem 1.1rem; display:none; align-items:center; gap:0.8rem;
+  box-shadow:0 8px 30px rgba(37,99,235,0.15);
+  animation:slideUp 0.35s ease both;
+  ">
+  <img src="logo.jpg" alt="AKANS" style="width:44px;height:44px;border-radius:10px;object-fit:cover;flex-shrink:0;"
+       onerror="this.style.display='none'"/>
+  <div style="flex:1;min-width:0;">
+    <div style="font-size:0.85rem;font-weight:700;color:#1a1f3c;margin-bottom:0.1rem;">AKANS App Install Karein</div>
+    <div style="font-size:0.73rem;color:#8890b5;">Home screen par add karein — faster access!</div>
+  </div>
+  <button onclick="installPWA()" style="
+    background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;
+    border:none;border-radius:10px;padding:0.5rem 1rem;
+    font-size:0.78rem;font-weight:700;cursor:pointer;
+    font-family:'DM Sans',sans-serif;white-space:nowrap;flex-shrink:0;">
+    ⬇️ Install
+  </button>
+  <button onclick="dismissInstall()" style="
+    background:none;border:none;color:#8890b5;
+    cursor:pointer;font-size:1.1rem;flex-shrink:0;padding:0.2rem;">✕</button>
+</div>
+<style>
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+#pwaInstallBanner.show{display:flex!important;}
+</style>
+
+<!-- PWA Service Worker Registration -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js', { scope: '/AKANS_Web/' })
+      .then(reg => console.log('[PWA] SW registered:', reg.scope))
+      .catch(err => console.warn('[PWA] SW failed:', err));
+  });
+}
+
+// ── INSTALL PROMPT ─────────────────────────────────────────────
+let deferredPrompt = null;
+const installBanner = document.getElementById('pwaInstallBanner');
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (installBanner) installBanner.classList.add('show');
+});
+
+function installPWA() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(choice => {
+    if (choice.outcome === 'accepted') {
+      console.log('[PWA] User installed the app');
+      if (installBanner) installBanner.classList.remove('show');
+    }
+    deferredPrompt = null;
+  });
+}
+
+function dismissInstall() {
+  if (installBanner) installBanner.classList.remove('show');
+  sessionStorage.setItem('pwaPromptDismissed', '1');
+}
+
+// Already installed check
+window.addEventListener('appinstalled', () => {
+  if (installBanner) installBanner.classList.remove('show');
+  console.log('[PWA] App installed successfully!');
+});
+</script>
+</body>
+</html>

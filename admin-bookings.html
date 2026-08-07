@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bookings — AKANS Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#2563eb"/>
+<!-- Admin Bookings CSS (alag file) -->
+<link rel="stylesheet" href="admin-bookings.css"/>
+</head>
+<body>
+
+<div class="admin-layout" id="bookingsPage">
+
+  <!-- SIDEBAR OVERLAY -->
+  <div id="sidebarOverlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <aside id="adminSidebar" class="sidebar"></aside>
+
+  <!-- MAIN -->
+  <main class="admin-main">
+
+    <!-- ── HEADER ── -->
+    <header class="admin-header">
+      <button class="header-hamburger" onclick="toggleSidebar()">☰</button>
+      <div class="header-title">📦 Bookings Management</div>
+      <div class="header-right">
+        <button class="btn-add-booking" onclick="openAddBookingModal()">
+          ＋ Manual Booking
+        </button>
+        <button class="btn-export" onclick="exportBookings()" title="CSV Export">
+          📥 Export
+        </button>
+        <div class="header-admin-name">
+          <div class="header-av" id="headerAv">A</div>
+          <span id="adminHeaderName">Admin</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ── CONTENT ── -->
+    <div class="admin-content">
+
+      <!-- STATS STRIP -->
+      <div class="stats-strip">
+        <div class="strip-item strip-total">
+          <span class="strip-num" id="sTotal">—</span>
+          <span class="strip-lbl">Total</span>
+        </div>
+        <div class="strip-divider"></div>
+        <div class="strip-item strip-pending" onclick="setFilter('pending')">
+          <span class="strip-num" id="sPending">—</span>
+          <span class="strip-lbl">⏳ Pending</span>
+        </div>
+        <div class="strip-divider"></div>
+        <div class="strip-item strip-progress" onclick="setFilter('inprogress')">
+          <span class="strip-num" id="sProgress">—</span>
+          <span class="strip-lbl">🔄 In Progress</span>
+        </div>
+        <div class="strip-divider"></div>
+        <div class="strip-item strip-done" onclick="setFilter('completed')">
+          <span class="strip-num" id="sDone">—</span>
+          <span class="strip-lbl">✅ Completed</span>
+        </div>
+        <div class="strip-divider"></div>
+        <div class="strip-item strip-cancel" onclick="setFilter('cancelled')">
+          <span class="strip-num" id="sCancel">—</span>
+          <span class="strip-lbl">❌ Cancelled</span>
+        </div>
+        <div class="strip-divider"></div>
+        <div class="strip-item strip-revenue">
+          <span class="strip-num" id="sRevenue">—</span>
+          <span class="strip-lbl">💰 Revenue</span>
+        </div>
+      </div>
+
+      <!-- CONTROLS BAR -->
+      <div class="controls-bar">
+
+        <!-- Search -->
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" class="search-input"
+                 placeholder="Naam, WhatsApp, Transaction ID..."
+                 oninput="onSearch(this.value)"/>
+          <button class="search-clear" id="searchClear" onclick="clearSearch()" style="display:none;">✕</button>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+          <button class="ftab active" data-filter="all"        onclick="setFilter('all')">All</button>
+          <button class="ftab" data-filter="pending"           onclick="setFilter('pending')">⏳ Pending</button>
+          <button class="ftab" data-filter="inprogress"        onclick="setFilter('inprogress')">🔄 In Progress</button>
+          <button class="ftab" data-filter="completed"         onclick="setFilter('completed')">✅ Completed</button>
+          <button class="ftab" data-filter="cancelled"         onclick="setFilter('cancelled')">❌ Cancelled</button>
+        </div>
+
+        <!-- Right controls -->
+        <div class="ctrl-right">
+          <!-- Date range -->
+          <div class="date-range">
+            <input type="date" id="dateFrom" class="date-input" onchange="applyDateFilter()" title="From date"/>
+            <span class="date-sep">—</span>
+            <input type="date" id="dateTo"   class="date-input" onchange="applyDateFilter()" title="To date"/>
+            <button class="date-clear" onclick="clearDateFilter()" title="Clear dates">✕</button>
+          </div>
+
+          <!-- Template filter -->
+          <select class="template-filter" id="templateFilter" onchange="applyTemplateFilter()">
+            <option value="">All Templates</option>
+            <option>Emerald Noir</option>
+            <option>Crimson Royale</option>
+            <option>Royal Elegance</option>
+            <option>Garden Romance</option>
+            <option>Rose Gold Blush</option>
+            <option>Midnight Royal</option>
+          </select>
+
+          <!-- Sort -->
+          <select class="sort-select" id="sortSelect" onchange="applySort()">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="amount-high">Amount: High to Low</option>
+            <option value="amount-low">Amount: Low to High</option>
+            <option value="name">Name A-Z</option>
+          </select>
+
+          <!-- View toggle -->
+          <div class="view-toggle">
+            <button class="view-btn active" id="viewCard"  onclick="switchView('card')"  title="Card View">▦</button>
+            <button class="view-btn"        id="viewTable" onclick="switchView('table')" title="Table View">☰</button>
+          </div>
+        </div>
+
+      </div><!-- /controls-bar -->
+
+      <!-- BULK ACTIONS BAR (shown when items selected) -->
+      <div class="bulk-bar" id="bulkBar" style="display:none;">
+        <span class="bulk-count" id="bulkCount">0 selected</span>
+        <button class="bulk-btn bulk-progress" onclick="bulkStatus('inprogress')">🔄 Mark In Progress</button>
+        <button class="bulk-btn bulk-done"     onclick="bulkStatus('completed')">✅ Mark Completed</button>
+        <button class="bulk-btn bulk-cancel"   onclick="bulkStatus('cancelled')">❌ Mark Cancelled</button>
+        <button class="bulk-btn bulk-delete"   onclick="bulkDelete()">🗑️ Delete</button>
+        <button class="bulk-btn bulk-clear"    onclick="clearSelection()">✕ Clear</button>
+      </div>
+
+      <!-- RESULTS COUNT -->
+      <div class="results-count" id="resultsCount">Loading bookings...</div>
+
+      <!-- ── CARD VIEW ── -->
+      <div id="cardView" class="bookings-card-grid"></div>
+
+      <!-- ── TABLE VIEW ── -->
+      <div id="tableView" class="table-wrap" style="display:none;">
+        <table class="bookings-table">
+          <thead>
+            <tr>
+              <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"/></th>
+              <th>Order ID</th>
+              <th>Couple</th>
+              <th>Template</th>
+              <th>Wedding Date</th>
+              <th>Amount</th>
+              <th>Txn ID</th>
+              <th>WhatsApp</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- LOAD MORE / PAGINATION -->
+      <div class="pagination-bar" id="paginationBar">
+        <button class="load-more-btn" id="loadMoreBtn" onclick="loadMoreBookings()">
+          Load More Bookings ↓
+        </button>
+      </div>
+
+      <!-- EMPTY STATE -->
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <div class="empty-icon">📭</div>
+        <div class="empty-title">Koi Booking Nahi Mili</div>
+        <div class="empty-sub">Is filter mein koi booking nahi hai.<br>Filter change karein ya naya booking add karein.</div>
+        <button class="btn-add-booking" onclick="openAddBookingModal()">＋ Manual Booking Add Karein</button>
+      </div>
+
+    </div><!-- /admin-content -->
+  </main>
+</div><!-- /admin-layout -->
+
+<!-- ══════════════════════════════════════════════════════════
+     BOOKING DETAIL MODAL (full screen on mobile)
+══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="detailModal">
+  <div class="detail-modal">
+
+    <!-- Modal Header -->
+    <div class="dm-header">
+      <div class="dm-header-left">
+        <div class="dm-order-id" id="dm-orderId">—</div>
+        <div class="dm-couple"   id="dm-couple">—</div>
+      </div>
+      <div class="dm-header-right">
+        <select class="dm-status-select" id="dm-statusSelect" onchange="updateBookingStatus()">
+          <option value="pending">⏳ Pending</option>
+          <option value="inprogress">🔄 In Progress</option>
+          <option value="completed">✅ Completed</option>
+          <option value="cancelled">❌ Cancelled</option>
+        </select>
+        <button class="dm-close" onclick="closeDetailModal()">✕</button>
+      </div>
+    </div>
+
+    <!-- Modal Tabs -->
+    <div class="dm-tabs">
+      <button class="dm-tab active" data-tab="details"  onclick="switchDMTab('details')">📋 Details</button>
+      <button class="dm-tab"        data-tab="payment"  onclick="switchDMTab('payment')">💰 Payment</button>
+      <button class="dm-tab"        data-tab="timeline" onclick="switchDMTab('timeline')">📅 Timeline</button>
+      <button class="dm-tab"        data-tab="events"   onclick="switchDMTab('events')">🌿 Events</button>
+      <button class="dm-tab"        data-tab="actions"  onclick="switchDMTab('actions')">⚙️ Actions</button>
+    </div>
+
+    <!-- Tab: Details -->
+    <div class="dm-body" id="tab-details">
+      <div class="dm-section-title">💍 Couple Information</div>
+      <div class="dm-grid-2">
+        <div class="dm-field"><span class="dm-label">Dulhe Ka Naam</span><span class="dm-val" id="dm-groomName">—</span></div>
+        <div class="dm-field"><span class="dm-label">Dulhe Ke Walid</span><span class="dm-val" id="dm-groomFather">—</span></div>
+        <div class="dm-field"><span class="dm-label">Dulhan Ka Naam</span><span class="dm-val" id="dm-brideName">—</span></div>
+        <div class="dm-field"><span class="dm-label">Dulhan Ke Walid</span><span class="dm-val" id="dm-brideFather">—</span></div>
+        <div class="dm-field"><span class="dm-label">Mangni Ki Tarikh</span><span class="dm-val" id="dm-engagement">—</span></div>
+        <div class="dm-field"><span class="dm-label">Template</span><span class="dm-val" id="dm-template">—</span></div>
+      </div>
+
+      <div class="dm-section-title">📍 Venue</div>
+      <div class="dm-grid-2">
+        <div class="dm-field"><span class="dm-label">Venue Naam</span><span class="dm-val" id="dm-venueName">—</span></div>
+        <div class="dm-field"><span class="dm-label">Pata</span><span class="dm-val" id="dm-venueAddress">—</span></div>
+        <div class="dm-field dm-full">
+          <span class="dm-label">Google Maps</span>
+          <a class="dm-link" id="dm-venueMap" href="#" target="_blank">—</a>
+        </div>
+      </div>
+
+      <div class="dm-section-title">📱 Contact</div>
+      <div class="dm-grid-2">
+        <div class="dm-field">
+          <span class="dm-label">WhatsApp</span>
+          <a class="dm-link dm-wa" id="dm-whatsapp" href="#" target="_blank">—</a>
+        </div>
+        <div class="dm-field"><span class="dm-label">User Email</span><span class="dm-val" id="dm-email">—</span></div>
+        <div class="dm-field"><span class="dm-label">Booking Date</span><span class="dm-val" id="dm-bookingDate">—</span></div>
+        <div class="dm-field"><span class="dm-label">User ID</span><span class="dm-val dm-small" id="dm-userId">—</span></div>
+      </div>
+    </div>
+
+    <!-- Tab: Payment -->
+    <div class="dm-body" id="tab-payment" style="display:none;">
+      <div class="dm-section-title">💳 Payment Information</div>
+      <div class="dm-grid-2">
+        <div class="dm-field"><span class="dm-label">Amount Paid</span><span class="dm-val dm-green" id="dm-amount">—</span></div>
+        <div class="dm-field"><span class="dm-label">Coupon Code</span><span class="dm-val" id="dm-coupon">—</span></div>
+        <div class="dm-field"><span class="dm-label">Discount</span><span class="dm-val" id="dm-discount">—</span></div>
+        <div class="dm-field"><span class="dm-label">Transaction ID</span><span class="dm-val dm-mono" id="dm-txnId">—</span></div>
+        <div class="dm-field"><span class="dm-label">Terms Accepted</span><span class="dm-val" id="dm-terms">—</span></div>
+        <div class="dm-field">
+          <span class="dm-label">Payment Status</span>
+          <label class="dm-toggle-wrap">
+            <input type="checkbox" id="dm-paymentVerified" onchange="togglePaymentVerified()"/>
+            <span class="dm-toggle-slider"></span>
+            <span class="dm-toggle-label" id="dm-paymentLabel">Unverified</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Screenshot -->
+      <div class="dm-section-title">📸 Payment Screenshot</div>
+      <div class="screenshot-wrap" id="dm-screenshotWrap">
+        <div class="no-screenshot" id="dm-noScreenshot">📷 Screenshot upload nahi kiya gaya</div>
+        <img class="screenshot-img" id="dm-screenshotImg" src="" alt="Payment Screenshot" style="display:none;"/>
+        <a class="screenshot-download" id="dm-screenshotDownload" href="#" download="payment-screenshot.jpg" style="display:none;">⬇️ Download</a>
+      </div>
+    </div>
+
+    <!-- Tab: Timeline -->
+    <div class="dm-body" id="tab-timeline" style="display:none;">
+      <div class="dm-section-title">📅 Wedding Program Schedule</div>
+      <div class="timeline-list">
+        <div class="tl-item" id="tl-guest">
+          <div class="tl-dot tl-blue"></div>
+          <div class="tl-content">
+            <div class="tl-event">👥 Guest Arrival</div>
+            <div class="tl-datetime" id="tl-guestDT">—</div>
+          </div>
+        </div>
+        <div class="tl-item" id="tl-ceremony">
+          <div class="tl-dot tl-purple"></div>
+          <div class="tl-content">
+            <div class="tl-event">💍 Nikaah / Wedding Ceremony</div>
+            <div class="tl-datetime" id="tl-ceremonyDT">—</div>
+          </div>
+        </div>
+        <div class="tl-item" id="tl-cocktail">
+          <div class="tl-dot tl-orange"></div>
+          <div class="tl-content">
+            <div class="tl-event">🥂 Cocktail Hour</div>
+            <div class="tl-datetime" id="tl-cocktailDT">—</div>
+          </div>
+        </div>
+        <div class="tl-item" id="tl-dinner">
+          <div class="tl-dot tl-green"></div>
+          <div class="tl-content">
+            <div class="tl-event">🍽️ Dinner Reception / Walima</div>
+            <div class="tl-datetime" id="tl-dinnerDT">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Pre-Wedding Events -->
+    <div class="dm-body" id="tab-events" style="display:none;">
+      <div class="dm-section-title">🌿 Pre-Wedding Rasme</div>
+      <div class="events-list">
+
+        <div class="event-card" id="evt-mehendi">
+          <div class="evt-header">
+            <span class="evt-emoji">🌿</span>
+            <span class="evt-name">Mehendi</span>
+            <span class="evt-badge" id="evt-mehendiStatus">—</span>
+          </div>
+          <div class="evt-details" id="evt-mehendiDetails">
+            <div class="evt-row"><span>📅 Date:</span><span id="evt-mehendiDate">—</span></div>
+            <div class="evt-row"><span>🕐 Time:</span><span id="evt-mehendiTime">—</span></div>
+            <div class="evt-row"><span>📍 Jagah:</span><span id="evt-mehendiLoc">—</span></div>
+          </div>
+        </div>
+
+        <div class="event-card" id="evt-haldi">
+          <div class="evt-header">
+            <span class="evt-emoji">💛</span>
+            <span class="evt-name">Haldi</span>
+            <span class="evt-badge" id="evt-haldiStatus">—</span>
+          </div>
+          <div class="evt-details" id="evt-haldiDetails">
+            <div class="evt-row"><span>📅 Date:</span><span id="evt-haldiDate">—</span></div>
+            <div class="evt-row"><span>🕐 Time:</span><span id="evt-haldiTime">—</span></div>
+            <div class="evt-row"><span>📍 Jagah:</span><span id="evt-haldiLoc">—</span></div>
+          </div>
+        </div>
+
+        <div class="event-card" id="evt-sangeet">
+          <div class="evt-header">
+            <span class="evt-emoji">🎶</span>
+            <span class="evt-name">Sangeet</span>
+            <span class="evt-badge" id="evt-sangeetStatus">—</span>
+          </div>
+          <div class="evt-details" id="evt-sangeetDetails">
+            <div class="evt-row"><span>📅 Date:</span><span id="evt-sangeetDate">—</span></div>
+            <div class="evt-row"><span>🕐 Time:</span><span id="evt-sangeetTime">—</span></div>
+            <div class="evt-row"><span>📍 Jagah:</span><span id="evt-sangeetLoc">—</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Tab: Actions -->
+    <div class="dm-body" id="tab-actions" style="display:none;">
+
+      <!-- Send Card Link -->
+      <div class="action-section">
+        <div class="dm-section-title">🔗 Wedding Card Link Bhejo</div>
+        <div class="action-row">
+          <input type="url" class="action-input" id="dm-cardLink"
+                 placeholder="https://akans47g.github.io/AKANS_Web/cards/..."/>
+          <button class="action-btn-primary" onclick="saveCardLink()">💾 Save Link</button>
+        </div>
+        <div class="action-hint">Link save karne ke baad customer ko WhatsApp pe bheja ja sakta hai</div>
+        <button class="action-btn-wa" id="dm-sendCardWA" onclick="sendCardViaWhatsApp()">
+          💬 WhatsApp Pe Card Link Bhejo
+        </button>
+      </div>
+
+      <!-- Admin Note -->
+      <div class="action-section">
+        <div class="dm-section-title">📝 Admin Note</div>
+        <textarea class="action-textarea" id="dm-adminNote"
+                  placeholder="Is booking ke baare mein note likhein..."></textarea>
+        <button class="action-btn-primary" onclick="saveAdminNote()">💾 Note Save Karein</button>
+      </div>
+
+      <!-- WhatsApp Messages -->
+      <div class="action-section">
+        <div class="dm-section-title">💬 Quick WhatsApp Messages</div>
+        <div class="wa-templates">
+          <button class="wa-tmpl-btn" onclick="sendWATemplate('confirm')">
+            ✅ Booking Confirmed bhejo
+          </button>
+          <button class="wa-tmpl-btn" onclick="sendWATemplate('inprogress')">
+            🔄 Work Started bhejo
+          </button>
+          <button class="wa-tmpl-btn" onclick="sendWATemplate('ready')">
+            🎉 Card Ready bhejo
+          </button>
+          <button class="wa-tmpl-btn" onclick="sendWATemplate('payment')">
+            💰 Payment Received bhejo
+          </button>
+        </div>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="action-section danger-zone">
+        <div class="dm-section-title danger-title">⚠️ Danger Zone</div>
+        <button class="action-btn-danger" onclick="deleteThisBooking()">
+          🗑️ Yeh Booking Delete Karein
+        </button>
+      </div>
+
+    </div><!-- /tab-actions -->
+
+    <!-- Modal Footer -->
+    <div class="dm-footer">
+      <button class="dm-footer-btn dm-prev" onclick="prevBooking()">← Prev</button>
+      <span class="dm-footer-pos" id="dm-position">1 / 1</span>
+      <button class="dm-footer-btn dm-next" onclick="nextBooking()">Next →</button>
+    </div>
+
+  </div><!-- /detail-modal -->
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     ADD MANUAL BOOKING MODAL
+══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="addBookingModal">
+  <div class="add-modal">
+    <div class="add-modal-header">
+      <span>＋ Manual Booking Add Karein</span>
+      <button onclick="closeAddBookingModal()">✕</button>
+    </div>
+    <div class="add-modal-body">
+      <div class="add-hint">⚠️ Yeh WhatsApp ya phone pe aaye orders ke liye hai</div>
+
+      <div class="add-grid">
+        <div class="add-field">
+          <label>Dulhe Ka Naam *</label>
+          <input type="text" id="add-groomName" placeholder="Dulhe ka naam"/>
+        </div>
+        <div class="add-field">
+          <label>Dulhan Ka Naam *</label>
+          <input type="text" id="add-brideName" placeholder="Dulhan ka naam"/>
+        </div>
+        <div class="add-field">
+          <label>Template *</label>
+          <select id="add-template">
+            <option value="">Select karo</option>
+            <option>Emerald Noir</option>
+            <option>Crimson Royale</option>
+            <option>Royal Elegance</option>
+            <option>Garden Romance</option>
+            <option>Rose Gold Blush</option>
+            <option>Midnight Royal</option>
+          </select>
+        </div>
+        <div class="add-field">
+          <label>WhatsApp Number *</label>
+          <input type="tel" id="add-whatsapp" placeholder="10 digit" maxlength="10"/>
+        </div>
+        <div class="add-field">
+          <label>Amount Paid (₹)</label>
+          <input type="number" id="add-amount" value="1199"/>
+        </div>
+        <div class="add-field">
+          <label>Transaction ID</label>
+          <input type="text" id="add-txnId" placeholder="Optional"/>
+        </div>
+        <div class="add-field">
+          <label>Wedding Date</label>
+          <input type="date" id="add-weddingDate"/>
+        </div>
+        <div class="add-field">
+          <label>Status</label>
+          <select id="add-status">
+            <option value="pending">⏳ Pending</option>
+            <option value="inprogress">🔄 In Progress</option>
+            <option value="completed">✅ Completed</option>
+          </select>
+        </div>
+        <div class="add-field add-full">
+          <label>Venue</label>
+          <input type="text" id="add-venue" placeholder="Optional"/>
+        </div>
+        <div class="add-field add-full">
+          <label>Admin Note</label>
+          <textarea id="add-note" placeholder="Koi note..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="add-modal-footer">
+      <button class="add-cancel" onclick="closeAddBookingModal()">Cancel</button>
+      <button class="add-submit" onclick="submitManualBooking()">＋ Add Booking</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE MODAL -->
+<div class="modal-overlay" id="deleteConfirmModal">
+  <div class="confirm-modal">
+    <div class="confirm-icon">⚠️</div>
+    <div class="confirm-title">Booking Delete Karein?</div>
+    <div class="confirm-sub" id="confirmSubText">Yeh action undo nahi ho sakta.</div>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" onclick="closeConfirmModal()">Cancel</button>
+      <button class="confirm-delete" id="confirmDeleteBtn" onclick="executeDelete()">🗑️ Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN TOAST -->
+<div class="admin-toast" id="adminToast"></div>
+
+<!-- Scripts -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="admin-all.js"></script>
+<script>
+// Page init
+document.addEventListener('DOMContentLoaded', () => {
+  if(document.getElementById('bookingsPage')) initBookingsPage();
+});
+// Header info
+const sess = JSON.parse(localStorage.getItem('adminSession')||'{}');
+const av   = document.getElementById('headerAv');
+if(av && sess.displayName) av.textContent = sess.displayName.charAt(0).toUpperCase();
+</script>
+
+</body>
+</html>
