@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bookings — AKANS Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#0f172a"/>
+<style>
+/* ── RESET ── */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:#f1f5f9;color:#1e293b;overflow-x:hidden;}
+
+/* ══════════ LAYOUT (same as dashboard) ══════════ */
+.admin-layout{display:flex;min-height:100vh;}
+.sidebar{width:240px;flex-shrink:0;background:#0f172a;display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;bottom:0;z-index:200;overflow-y:auto;
+  transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.1) transparent;}
+.sidebar::-webkit-scrollbar{width:4px;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px;}
+.sidebar-logo{display:flex;align-items:center;gap:0.7rem;padding:1.2rem 1.1rem 1rem;border-bottom:1px solid rgba(255,255,255,0.06);}
+.sb-logo-icon{width:38px;height:38px;border-radius:10px;flex-shrink:0;background:linear-gradient(135deg,#1e3a8a,#3730a3);border:1px solid rgba(99,153,255,0.25);display:flex;align-items:center;justify-content:center;font-size:1.2rem;}
+.sb-title{font-size:0.88rem;font-weight:800;color:#fff;letter-spacing:0.01em;}
+.sb-sub{font-size:0.65rem;color:rgba(255,255,255,0.35);letter-spacing:0.08em;text-transform:uppercase;margin-top:0.1rem;}
+.sidebar-nav{flex:1;padding:0.8rem 0.7rem;display:flex;flex-direction:column;gap:0.15rem;}
+.nav-item{display:flex;align-items:center;gap:0.7rem;padding:0.65rem 0.85rem;border-radius:10px;text-decoration:none;color:rgba(255,255,255,0.5);font-size:0.82rem;font-weight:600;transition:all 0.18s;position:relative;}
+.nav-item:hover{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.85);}
+.nav-item.active{background:linear-gradient(135deg,rgba(37,99,235,0.3),rgba(124,58,237,0.2));color:#fff;border:1px solid rgba(99,153,255,0.2);}
+.nav-icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0;}
+.nav-label{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nav-badge{display:none;align-items:center;justify-content:center;background:#ef4444;color:#fff;border-radius:30px;font-size:0.58rem;font-weight:800;min-width:18px;height:18px;padding:0 4px;}
+.sidebar-user{display:flex;align-items:center;gap:0.6rem;padding:0.9rem 1rem;border-top:1px solid rgba(255,255,255,0.06);flex-shrink:0;}
+.sb-avatar{width:34px;height:34px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:0.85rem;}
+.sb-user-info{flex:1;min-width:0;}
+.sb-user-name{font-size:0.78rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-user-email{font-size:0.63rem;color:rgba(255,255,255,0.3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-logout{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.2);color:#f87171;border-radius:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.9rem;flex-shrink:0;transition:all 0.2s;}
+.sb-logout:hover{background:rgba(239,68,68,0.3);color:#fff;}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:199;backdrop-filter:blur(2px);}
+.sidebar-overlay.show{display:block;}
+
+/* MAIN */
+.admin-main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+
+/* HEADER */
+.admin-header{background:#fff;border-bottom:1px solid #e2e8f0;padding:0.85rem 1.5rem;display:flex;align-items:center;gap:0.8rem;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.header-hamburger{display:none;background:none;border:none;cursor:pointer;font-size:1.3rem;color:#64748b;}
+.header-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:800;color:#1e293b;}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:0.6rem;}
+.header-admin-name{display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;font-weight:700;color:#1e293b;}
+.header-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.72rem;font-weight:800;}
+
+/* HEADER ACTIONS */
+.hdr-btn{display:flex;align-items:center;gap:0.4rem;padding:0.45rem 0.9rem;border-radius:9px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;border:1.5px solid;transition:all 0.2s;}
+.hdr-btn-export{background:#f0fdf4;color:#16a34a;border-color:#bbf7d0;}
+.hdr-btn-export:hover{background:#16a34a;color:#fff;border-color:#16a34a;}
+.hdr-btn-refresh{background:var(--blue-lt,#eff6ff);color:#2563eb;border-color:#bfdbfe;}
+.hdr-btn-refresh:hover{background:#2563eb;color:#fff;border-color:#2563eb;}
+
+/* CONTENT */
+.admin-content{padding:1.3rem 1.5rem;flex:1;}
+
+/* STATS STRIP */
+.stats-strip{
+  display:flex;gap:0;border-radius:14px;overflow:hidden;
+  border:1px solid #e2e8f0;background:#fff;
+  box-shadow:0 1px 4px rgba(0,0,0,0.05);margin-bottom:1.2rem;
+}
+.strip-item{flex:1;text-align:center;padding:0.85rem 0.5rem;
+  border-right:1px solid #f1f5f9;transition:background 0.15s;cursor:pointer;}
+.strip-item:last-child{border-right:none;}
+.strip-item:hover{background:#f8fafc;}
+.strip-num{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;display:block;line-height:1;}
+.strip-lbl{font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin-top:0.2rem;display:block;}
+.strip-all    .strip-num{color:#1e293b;}
+.strip-pending .strip-num{color:#f59e0b;}
+.strip-inprogress .strip-num{color:#3b82f6;}
+.strip-completed .strip-num{color:#16a34a;}
+.strip-cancelled .strip-num{color:#ef4444;}
+
+/* REVENUE DISPLAY */
+.revenue-strip{
+  display:flex;align-items:center;gap:0.8rem;
+  background:linear-gradient(135deg,#1e3a8a,#1e1b4b);
+  border-radius:12px;padding:0.8rem 1.2rem;margin-bottom:1.2rem;
+}
+.rev-label{font-size:0.75rem;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.08em;}
+.rev-amount{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;color:#60a5fa;margin-left:0.5rem;}
+.rev-count{margin-left:auto;font-size:0.78rem;color:rgba(255,255,255,0.45);font-weight:600;}
+
+/* TOOLBAR */
+.toolbar{display:flex;align-items:center;gap:0.7rem;margin-bottom:1rem;flex-wrap:wrap;}
+.search-wrap{flex:1;min-width:200px;display:flex;align-items:center;gap:0.5rem;
+  background:#fff;border:1.5px solid #e2e8f0;border-radius:10px;padding:0 0.9rem;
+  transition:border-color 0.2s;}
+.search-wrap:focus-within{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,0.08);}
+.search-icon{color:#94a3b8;font-size:0.95rem;flex-shrink:0;}
+.search-input{flex:1;border:none;background:transparent;outline:none;
+  font-size:0.85rem;font-family:'DM Sans',sans-serif;color:#1e293b;padding:0.6rem 0;}
+.search-input::placeholder{color:#c4cdd6;}
+.showing-count{font-size:0.75rem;color:#94a3b8;font-weight:600;white-space:nowrap;}
+
+/* FILTER TABS */
+.b-tabs{display:flex;gap:0.35rem;margin-bottom:1.1rem;overflow-x:auto;scrollbar-width:none;flex-wrap:wrap;}
+.b-tabs::-webkit-scrollbar{display:none;}
+.b-tab{display:flex;align-items:center;gap:0.35rem;padding:0.38rem 0.9rem;
+  border-radius:30px;border:1.5px solid #e2e8f0;background:#fff;
+  font-size:0.75rem;font-weight:700;color:#64748b;cursor:pointer;
+  transition:all 0.18s;white-space:nowrap;font-family:'DM Sans',sans-serif;}
+.b-tab:hover{border-color:rgba(37,99,235,0.3);color:#2563eb;background:#eff6ff;}
+.b-tab.active{background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;border-color:transparent;box-shadow:0 3px 10px rgba(37,99,235,0.3);}
+.b-tab-count{background:rgba(0,0,0,0.1);border-radius:20px;padding:0.05rem 0.45rem;font-size:0.68rem;}
+.b-tab.active .b-tab-count{background:rgba(255,255,255,0.2);}
+
+/* BOOKINGS GRID */
+.bookings-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1rem;}
+
+/* BOOKING CARD */
+.b-card{
+  background:#fff;border:1px solid #e2e8f0;border-radius:16px;
+  padding:1.1rem 1.1rem 0.9rem;box-shadow:0 1px 4px rgba(0,0,0,0.05);
+  transition:transform 0.2s,box-shadow 0.2s,border-color 0.2s;
+  animation:cardIn 0.3s ease both;
+}
+.b-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.08);border-color:rgba(37,99,235,0.2);}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.b-card-top{display:flex;align-items:center;justify-content:space-between;gap:0.5rem;margin-bottom:0.6rem;}
+.b-order-id{font-size:0.7rem;font-weight:800;color:#94a3b8;letter-spacing:0.1em;font-family:monospace;}
+.b-card-badges{display:flex;align-items:center;gap:0.4rem;}
+.verified-badge{font-size:0.65rem;font-weight:700;color:#16a34a;background:#f0fdf4;border:1px solid #bbf7d0;padding:0.18rem 0.5rem;border-radius:20px;}
+.status-pill{font-size:0.72rem;font-weight:700;padding:0.22rem 0.65rem;border-radius:20px;white-space:nowrap;}
+.b-template{font-size:0.78rem;color:#6366f1;font-weight:700;margin-bottom:0.35rem;}
+.b-couple{font-size:0.92rem;color:#1e293b;margin-bottom:0.45rem;}
+.b-meta-row{display:flex;gap:1rem;font-size:0.75rem;color:#94a3b8;margin-bottom:0.5rem;flex-wrap:wrap;}
+.b-payment-row{display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;margin-bottom:0.6rem;padding:0.5rem 0.7rem;background:#f8fafc;border-radius:8px;}
+.b-amount{font-size:0.88rem;font-weight:800;color:#16a34a;}
+.b-coupon{font-size:0.72rem;font-weight:700;color:#7c3aed;background:#f5f3ff;padding:0.15rem 0.5rem;border-radius:20px;}
+.b-wa{font-size:0.75rem;color:#64748b;margin-left:auto;}
+.b-has-screenshot{font-size:0.72rem;color:#3b82f6;font-weight:600;margin-bottom:0.6rem;background:#eff6ff;padding:0.3rem 0.6rem;border-radius:6px;display:inline-block;}
+.b-actions{display:flex;gap:0.5rem;flex-wrap:wrap;}
+.b-btn{display:flex;align-items:center;justify-content:center;gap:0.3rem;padding:0.5rem 0.8rem;border-radius:9px;font-size:0.76rem;font-weight:700;cursor:pointer;border:1.5px solid;font-family:'DM Sans',sans-serif;text-decoration:none;transition:all 0.2s;white-space:nowrap;}
+.b-btn-primary{background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;border-color:transparent;flex:1;}
+.b-btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,0.3);}
+.b-btn-wa{background:#f0fdf4;color:#16a34a;border-color:#bbf7d0;}
+.b-btn-wa:hover{background:#16a34a;color:#fff;border-color:#16a34a;}
+.b-status-wrap{flex:1;}
+.b-status-select{width:100%;padding:0.5rem 0.6rem;border:1.5px solid #e2e8f0;border-radius:9px;font-size:0.76rem;font-weight:700;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer;background:#fff;transition:border-color 0.2s;}
+.b-status-select:focus{border-color:#2563eb;}
+
+/* LOADING + EMPTY STATES */
+.b-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;padding:4rem;color:#94a3b8;font-size:0.88rem;grid-column:1/-1;}
+.b-loading-spinner{width:36px;height:36px;border:3px solid #e2e8f0;border-top-color:#2563eb;border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.b-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.6rem;padding:4rem;grid-column:1/-1;}
+.b-empty-icon{font-size:3rem;opacity:0.4;}
+.b-empty-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:#475569;}
+.b-empty-sub{font-size:0.83rem;color:#94a3b8;}
+
+/* ══════════ DETAIL MODAL ══════════ */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);z-index:500;display:none;align-items:flex-start;justify-content:center;padding:1.5rem 1rem;overflow-y:auto;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:#fff;border-radius:22px;width:100%;max-width:600px;
+  box-shadow:0 24px 60px rgba(0,0,0,0.25);animation:modalIn 0.3s ease both;
+  margin:auto;overflow:hidden;display:flex;flex-direction:column;}
+@keyframes modalIn{from{opacity:0;transform:translateY(20px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+.modal-header{display:flex;align-items:center;justify-content:space-between;
+  padding:1rem 1.3rem;border-bottom:1px solid #f1f5f9;position:sticky;top:0;background:#fff;z-index:2;}
+.modal-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:800;color:#1e293b;}
+.modal-close{background:none;border:none;cursor:pointer;width:32px;height:32px;
+  border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:1rem;color:#64748b;transition:all 0.2s;}
+.modal-close:hover{background:#fef2f2;color:#ef4444;}
+.modal-body-scroll{padding:1.2rem 1.3rem;overflow-y:auto;max-height:75vh;}
+
+/* Detail sections */
+.detail-header{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1.2rem;}
+.detail-order-id{font-size:0.72rem;font-weight:800;color:#94a3b8;letter-spacing:0.12em;font-family:monospace;margin-bottom:0.25rem;}
+.detail-template{font-size:0.88rem;color:#6366f1;font-weight:700;}
+.detail-section{margin-bottom:1.2rem;padding-bottom:1.2rem;border-bottom:1px solid #f1f5f9;}
+.detail-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.detail-sec-title{font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;margin-bottom:0.75rem;}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;}
+.detail-item{background:#f8fafc;border-radius:10px;padding:0.6rem 0.8rem;}
+.detail-item.full{grid-column:1/-1;}
+.di-label{display:block;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin-bottom:0.2rem;}
+.di-val{font-size:0.84rem;font-weight:600;color:#1e293b;word-break:break-word;}
+.di-val.strong-green{color:#16a34a;font-size:1rem;font-weight:800;}
+.di-val.mono{font-family:monospace;font-size:0.82rem;}
+.di-link{font-size:0.84rem;font-weight:700;color:#2563eb;text-decoration:none;}
+.di-link:hover{text-decoration:underline;}
+
+/* Timeline */
+.detail-timeline{display:flex;flex-direction:column;gap:0.7rem;}
+.tl-row{display:flex;align-items:flex-start;gap:0.7rem;padding:0.6rem 0.8rem;background:#f8fafc;border-radius:10px;}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.tl-dot.blue{background:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,0.15);}
+.tl-dot.purple{background:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,0.15);}
+.tl-dot.green{background:#16a34a;box-shadow:0 0 0 3px rgba(22,163,74,0.15);}
+.tl-dot.gold{background:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,0.15);}
+.tl-row small{font-size:0.76rem;color:#64748b;}
+
+/* Pre-wedding events */
+.detail-event{display:flex;flex-wrap:wrap;gap:0.8rem;align-items:center;
+  background:#f8fafc;border-radius:10px;padding:0.6rem 0.8rem;margin-bottom:0.5rem;
+  font-size:0.82rem;color:#374151;}
+.detail-event strong{font-weight:700;color:#1e293b;}
+
+/* Admin actions */
+.admin-action-row{display:flex;flex-direction:column;gap:0.35rem;margin-bottom:0.9rem;}
+.action-label{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;}
+.action-select,.action-input{width:100%;padding:0.65rem 0.85rem;border:1.5px solid #e2e8f0;border-radius:10px;font-size:0.86rem;font-family:'DM Sans',sans-serif;color:#1e293b;outline:none;background:#fff;transition:border-color 0.2s;}
+.action-select:focus,.action-input:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,0.08);}
+.action-textarea{width:100%;padding:0.65rem 0.85rem;border:1.5px solid #e2e8f0;border-radius:10px;font-size:0.86rem;font-family:'DM Sans',sans-serif;color:#1e293b;outline:none;resize:vertical;min-height:70px;transition:border-color 0.2s;}
+.action-textarea:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,0.08);}
+
+/* Modal action buttons */
+.modal-action-btns{display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:1rem;}
+.mab-save{flex:1;padding:0.72rem;border-radius:11px;border:none;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;font-size:0.86rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;box-shadow:0 4px 14px rgba(37,99,235,0.3);}
+.mab-save:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(37,99,235,0.4);}
+.mab-wa{display:flex;align-items:center;justify-content:center;padding:0.72rem 1rem;border-radius:11px;border:1.5px solid #bbf7d0;background:#f0fdf4;color:#16a34a;font-size:0.86rem;font-weight:700;text-decoration:none;font-family:'DM Sans',sans-serif;transition:all 0.2s;white-space:nowrap;}
+.mab-wa:hover{background:#16a34a;color:#fff;border-color:#16a34a;}
+.mab-link{display:flex;align-items:center;justify-content:center;padding:0.72rem 1rem;border-radius:11px;border:1.5px solid #bfdbfe;background:#eff6ff;color:#2563eb;font-size:0.86rem;font-weight:700;text-decoration:none;font-family:'DM Sans',sans-serif;transition:all 0.2s;white-space:nowrap;}
+.mab-link:hover{background:#2563eb;color:#fff;border-color:#2563eb;}
+.mab-delete{padding:0.72rem 1rem;border-radius:11px;border:1.5px solid #fecaca;background:#fef2f2;color:#ef4444;font-size:0.86rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;white-space:nowrap;}
+.mab-delete:hover{background:#ef4444;color:#fff;border-color:#ef4444;}
+
+/* TOAST */
+.admin-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);font-size:0.83rem;font-weight:700;padding:0.7rem 1.5rem;border-radius:30px;opacity:0;white-space:nowrap;transition:opacity 0.25s,transform 0.25s;z-index:9999;pointer-events:none;font-family:'DM Sans',sans-serif;}
+.admin-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.admin-toast.success{background:#166534;color:#bbf7d0;border:1px solid #15803d;}
+.admin-toast.error  {background:#7f1d1d;color:#fca5a5;border:1px solid #b91c1c;}
+.admin-toast.warning{background:#78350f;color:#fde68a;border:1px solid #b45309;}
+.admin-toast.info   {background:#1e3a8a;color:#bfdbfe;border:1px solid #1d4ed8;}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .admin-main{margin-left:0;}
+  .header-hamburger{display:flex!important;align-items:center;}
+  .admin-content{padding:1rem;}
+  .bookings-grid{grid-template-columns:1fr;}
+  .stats-strip{flex-wrap:wrap;}
+  .strip-item{min-width:calc(50% - 0.5px);}
+  .detail-grid{grid-template-columns:1fr;}
+  .modal-overlay{padding:0.5rem;}
+  .modal-body-scroll{max-height:80vh;}
+}
+@media(max-width:480px){
+  .b-actions{flex-direction:column;}
+  .b-btn-primary,.b-status-wrap{width:100%;}
+  .hdr-btn span{display:none;}
+}
+</style>
+</head>
+<body>
+<div class="admin-layout" id="bookingsPage">
+
+  <!-- SIDEBAR OVERLAY -->
+  <div id="sidebarOverlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <!-- SIDEBAR (JS se render hoga) -->
+  <aside id="adminSidebar" class="sidebar"></aside>
+
+  <!-- MAIN -->
+  <main class="admin-main">
+
+    <!-- HEADER -->
+    <header class="admin-header">
+      <button class="header-hamburger" onclick="toggleSidebar()">☰</button>
+      <div class="header-title">📦 Bookings</div>
+      <div class="header-right">
+        <button class="hdr-btn hdr-btn-export" onclick="exportBookingsCSV()">
+          📥 <span>Export CSV</span>
+        </button>
+        <button class="hdr-btn hdr-btn-refresh" onclick="startBookingsListener()">
+          🔄 <span>Refresh</span>
+        </button>
+        <div class="header-admin-name">
+          <div class="header-av">A</div>
+          <span id="adminHeaderName">Admin</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <div class="admin-content">
+
+      <!-- REVENUE STRIP -->
+      <div class="revenue-strip">
+        <div>
+          <div class="rev-label">Total Revenue Collected</div>
+          <span class="rev-amount" id="total-revenue">₹—</span>
+        </div>
+        <div class="rev-count" id="showing-count">Loading...</div>
+      </div>
+
+      <!-- STATS STRIP -->
+      <div class="stats-strip">
+        <div class="strip-item strip-all" onclick="switchFilter('all')">
+          <span class="strip-num" id="count-all">—</span>
+          <span class="strip-lbl">All</span>
+        </div>
+        <div class="strip-item strip-pending" onclick="switchFilter('pending')">
+          <span class="strip-num" id="count-pending">—</span>
+          <span class="strip-lbl">⏳ Pending</span>
+        </div>
+        <div class="strip-item strip-inprogress" onclick="switchFilter('inprogress')">
+          <span class="strip-num" id="count-inprogress">—</span>
+          <span class="strip-lbl">🔵 In Progress</span>
+        </div>
+        <div class="strip-item strip-completed" onclick="switchFilter('completed')">
+          <span class="strip-num" id="count-completed">—</span>
+          <span class="strip-lbl">✅ Completed</span>
+        </div>
+        <div class="strip-item strip-cancelled" onclick="switchFilter('cancelled')">
+          <span class="strip-num" id="count-cancelled">—</span>
+          <span class="strip-lbl">❌ Cancelled</span>
+        </div>
+      </div>
+
+      <!-- TOOLBAR -->
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input class="search-input" type="text"
+                 placeholder="Naam, template, WhatsApp, Transaction ID se dhundho..."
+                 oninput="onSearch(this.value)"/>
+        </div>
+      </div>
+
+      <!-- FILTER TABS -->
+      <div class="b-tabs">
+        <button class="b-tab active" data-filter="all" onclick="switchFilter('all')">
+          All <span class="b-tab-count" id="tab-count-all">—</span>
+        </button>
+        <button class="b-tab" data-filter="pending" onclick="switchFilter('pending')">
+          ⏳ Pending <span class="b-tab-count" id="tab-count-pending">—</span>
+        </button>
+        <button class="b-tab" data-filter="inprogress" onclick="switchFilter('inprogress')">
+          🔵 In Progress <span class="b-tab-count" id="tab-count-inprogress">—</span>
+        </button>
+        <button class="b-tab" data-filter="completed" onclick="switchFilter('completed')">
+          ✅ Completed <span class="b-tab-count" id="tab-count-completed">—</span>
+        </button>
+        <button class="b-tab" data-filter="cancelled" onclick="switchFilter('cancelled')">
+          ❌ Cancelled <span class="b-tab-count" id="tab-count-cancelled">—</span>
+        </button>
+      </div>
+
+      <!-- BOOKINGS GRID -->
+      <div class="bookings-grid" id="bookingsGrid">
+        <div class="b-loading">
+          <div class="b-loading-spinner"></div>
+          <div>Bookings load ho rahi hain...</div>
+        </div>
+      </div>
+
+    </div><!-- /admin-content -->
+  </main>
+
+</div><!-- /admin-layout -->
+
+<!-- BOOKING DETAIL MODAL -->
+<div class="modal-overlay" id="bookingModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">📦 Booking Details</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modalContent">
+      <div style="text-align:center;padding:3rem;color:#94a3b8;">Loading...</div>
+    </div>
+  </div>
+</div>
+
+<div class="admin-toast" id="adminToast"></div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="../firebase-config.js"></script>
+<script src="admin-all.js"></script>
+
+<script>
+// Sync tab counts with stats strip
+const origUpdateStats = typeof updateBookingStats === 'function' ? updateBookingStats : null;
+function updateBookingStats() {
+  if(origUpdateStats) origUpdateStats.call(this);
+  // Sync tab counts
+  ['all','pending','inprogress','completed','cancelled'].forEach(k => {
+    const count = allBookings.filter(b => k==='all' || (b.status||'pending')===k).length;
+    const el = document.getElementById('tab-count-' + k);
+    if(el) el.textContent = count;
+  });
+}
+// Set header avatar
+const sess = JSON.parse(localStorage.getItem('adminSession')||'{}');
+const av = document.querySelector('.header-av');
+if(av && sess.displayName) av.textContent = sess.displayName.charAt(0).toUpperCase();
+</script>
+
+</body>
+</html>
