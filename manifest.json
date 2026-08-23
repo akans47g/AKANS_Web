@@ -1,0 +1,70 @@
+{
+  "name": "AKANS Web Development Services",
+  "short_name": "AKANS",
+  "description": "Premium Digital Wedding Cards & Web Development Services",
+  "start_url": "/AKANS_Web/index.html",
+  "scope": "/AKANS_Web/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f7ff",
+  "theme_color": "#2563eb",
+  "lang": "en",
+  "categories": [
+    "business",
+    "lifestyle",
+    "wedding"
+  ],
+  "icons": [
+    {
+      "src": "logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Wedding Cards",
+      "short_name": "Wedding",
+      "description": "Digital Wedding Card banwayein",
+      "url": "/AKANS_Web/index.html#templates",
+      "icons": [
+        {
+          "src": "logo.jpg",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "My Account",
+      "short_name": "Account",
+      "description": "Apna account dekho",
+      "url": "/AKANS_Web/account.html",
+      "icons": [
+        {
+          "src": "logo.jpg",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Admin Panel",
+      "short_name": "Admin",
+      "description": "Admin panel access",
+      "url": "/AKANS_Web/admin/admin-login.html",
+      "icons": [
+        {
+          "src": "logo.jpg",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}
