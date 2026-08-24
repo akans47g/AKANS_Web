@@ -550,28 +550,42 @@ function resetLock() {
     }
   }
 
-  // ── GOOGLE LOGIN ──────────────────────────────────────
+  // ── GOOGLE LOGIN (Redirect — mobile ke liye) ──────────────
   async function googleLogin() {
     try {
-      const result = await auth.signInWithPopup(googleProvider);
-      const user = result.user;
-      // Save to Firestore if new user
-      const doc = await db.collection('users').doc(user.uid).get();
-      if(!doc.exists) {
-        await db.collection('users').doc(user.uid).set({
-          email: user.email,
-          displayName: user.displayName || '',
-          photoURL: user.photoURL || '',
-          uid: user.uid,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-      }
-      showToast('✅ Google login successful!');
-      setTimeout(() => window.location.href = 'index.html', 800);
+      showToast('🔄 Google pe redirect ho raha hai...');
+      await auth.signInWithRedirect(googleProvider);
     } catch(e) {
       showToast('❌ Google login failed: ' + e.message);
     }
   }
+
+  // ── REDIRECT RESULT HANDLE (page load pe) ─────────────────
+  auth.getRedirectResult().then(async result => {
+    if (!result || !result.user) return;
+    const user = result.user;
+    showToast('✅ Google login successful!');
+    // Save to Firestore if new user
+    try {
+      const doc = await db.collection('users').doc(user.uid).get();
+      if(!doc.exists) {
+        await db.collection('users').doc(user.uid).set({
+          email:       user.email,
+          displayName: user.displayName || '',
+          photoURL:    user.photoURL || '',
+          uid:         user.uid,
+          whatsapp:    '',
+          referredBy:  '',
+          createdAt:   firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+    } catch(e) { console.log('Firestore save error:', e); }
+    setTimeout(() => window.location.href = 'index.html', 800);
+  }).catch(e => {
+    if(e.code && e.code !== 'auth/no-current-user') {
+      console.error('[Google Redirect]', e.code, e.message);
+    }
+  });
 
   // ── FORGOT PASSWORD ───────────────────────────────────
   async function forgotPass(e) {
