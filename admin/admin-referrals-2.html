@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Referrals — AKANS Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="manifest" href="../manifest.json"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:#f1f5f9;color:#1e293b;overflow-x:hidden;}
+
+/* ══ LAYOUT ══ */
+.admin-layout{display:flex;min-height:100vh;}
+.sidebar{width:240px;flex-shrink:0;background:#0f172a;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:200;overflow-y:auto;transition:transform 0.3s;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.1) transparent;}
+.sidebar::-webkit-scrollbar{width:4px;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px;}
+.sidebar-logo{display:flex;align-items:center;gap:0.7rem;padding:1.2rem 1.1rem 1rem;border-bottom:1px solid rgba(255,255,255,0.06);}
+.sb-logo-icon{width:38px;height:38px;border-radius:10px;flex-shrink:0;background:linear-gradient(135deg,#1e3a8a,#3730a3);border:1px solid rgba(99,153,255,0.25);display:flex;align-items:center;justify-content:center;font-size:1.2rem;}
+.sb-title{font-size:0.88rem;font-weight:800;color:#fff;}
+.sb-sub{font-size:0.65rem;color:rgba(255,255,255,0.35);letter-spacing:0.08em;text-transform:uppercase;margin-top:0.1rem;}
+.sidebar-nav{flex:1;padding:0.8rem 0.7rem;display:flex;flex-direction:column;gap:0.15rem;}
+.nav-item{display:flex;align-items:center;gap:0.7rem;padding:0.65rem 0.85rem;border-radius:10px;text-decoration:none;color:rgba(255,255,255,0.5);font-size:0.82rem;font-weight:600;transition:all 0.18s;position:relative;}
+.nav-item:hover{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.85);}
+.nav-item.active{background:linear-gradient(135deg,rgba(37,99,235,0.3),rgba(124,58,237,0.2));color:#fff;border:1px solid rgba(99,153,255,0.2);}
+.nav-icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0;}
+.nav-label{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nav-badge{display:none;align-items:center;justify-content:center;background:#ef4444;color:#fff;border-radius:30px;font-size:0.58rem;font-weight:800;min-width:18px;height:18px;padding:0 4px;}
+.sidebar-user{display:flex;align-items:center;gap:0.6rem;padding:0.9rem 1rem;border-top:1px solid rgba(255,255,255,0.06);flex-shrink:0;}
+.sb-avatar{width:34px;height:34px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:0.85rem;}
+.sb-user-info{flex:1;min-width:0;}
+.sb-user-name{font-size:0.78rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-user-email{font-size:0.63rem;color:rgba(255,255,255,0.3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-logout{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.2);color:#f87171;border-radius:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.9rem;flex-shrink:0;transition:all 0.2s;}
+.sb-logout:hover{background:rgba(239,68,68,0.3);color:#fff;}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:199;}
+.sidebar-overlay.show{display:block;}
+
+/* MAIN */
+.admin-main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.admin-header{background:#fff;border-bottom:1px solid #e2e8f0;padding:0.85rem 1.5rem;display:flex;align-items:center;gap:0.8rem;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.header-hamburger{display:none;background:none;border:none;cursor:pointer;font-size:1.3rem;color:#64748b;}
+.header-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:800;color:#1e293b;}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:0.6rem;}
+.header-admin-name{display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;font-weight:700;}
+.header-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.72rem;font-weight:800;}
+.hdr-btn{display:flex;align-items:center;gap:0.4rem;padding:0.45rem 0.9rem;border-radius:9px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;border:1.5px solid;transition:all 0.2s;}
+.hdr-btn-export{background:#f0fdf4;color:#16a34a;border-color:#bbf7d0;}
+.hdr-btn-export:hover{background:#16a34a;color:#fff;border-color:#16a34a;}
+.admin-content{padding:1.3rem 1.5rem;flex:1;}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:0.9rem;margin-bottom:1.3rem;}
+.stat-card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:1rem 1.1rem;box-shadow:0 1px 4px rgba(0,0,0,0.05);text-align:center;transition:transform 0.2s;}
+.stat-card:hover{transform:translateY(-2px);}
+.stat-emoji{font-size:1.5rem;display:block;margin-bottom:0.3rem;}
+.stat-num{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;display:block;line-height:1;}
+.stat-lbl{font-size:0.67rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin-top:0.2rem;display:block;}
+.sc-blue  .stat-num{color:#2563eb;}
+.sc-green .stat-num{color:#16a34a;}
+.sc-orange.stat-num,.sc-orange .stat-num{color:#f59e0b;}
+.sc-purple .stat-num{color:#7c3aed;}
+
+/* TABS */
+.ref-tabs{display:flex;gap:0.5rem;margin-bottom:1.2rem;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:0.4rem;}
+.ref-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:0.4rem;padding:0.55rem;border-radius:10px;border:none;background:transparent;font-size:0.82rem;font-weight:700;color:#64748b;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;white-space:nowrap;}
+.ref-tab:hover{background:#f8fafc;color:#1e293b;}
+.ref-tab.active{background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;box-shadow:0 3px 10px rgba(37,99,235,0.3);}
+.ref-tab-count{font-size:0.68rem;background:rgba(0,0,0,0.1);border-radius:20px;padding:0.05rem 0.45rem;}
+.ref-tab.active .ref-tab-count{background:rgba(255,255,255,0.2);}
+
+/* REFERRAL CARDS */
+.referrals-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem;}
+.ref-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:1.1rem;box-shadow:0 1px 4px rgba(0,0,0,0.05);transition:transform 0.2s,box-shadow 0.2s;animation:cardIn 0.3s ease both;}
+.ref-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.08);}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.ref-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:0.6rem;margin-bottom:0.9rem;}
+.ref-code{font-family:monospace;font-size:1.1rem;font-weight:900;color:#2563eb;background:#eff6ff;border:1.5px dashed #bfdbfe;padding:0.25rem 0.7rem;border-radius:8px;letter-spacing:0.05em;}
+.ref-email{font-size:0.74rem;color:#94a3b8;margin-top:0.3rem;}
+.ref-date{font-size:0.7rem;color:#94a3b8;flex-shrink:0;}
+
+.ref-stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:0.4rem;margin-bottom:0.8rem;}
+.ref-stat-box{background:#f8fafc;border-radius:9px;padding:0.5rem 0.3rem;text-align:center;}
+.rsb-num{display:block;font-family:'Playfair Display',serif;font-size:1rem;font-weight:900;color:#1e293b;line-height:1.1;}
+.rsb-lbl{display:block;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#94a3b8;margin-top:0.1rem;}
+
+.ref-prog-bar{height:6px;background:#e2e8f0;border-radius:10px;overflow:hidden;}
+.ref-prog-fill{height:100%;background:linear-gradient(90deg,#2563eb,#7c3aed);border-radius:10px;transition:width 0.6s ease;}
+
+.ref-card-actions{display:flex;gap:0.4rem;margin-top:0.8rem;padding-top:0.8rem;border-top:1px solid #f1f5f9;}
+.ref-btn{flex:1;padding:0.42rem 0.5rem;border-radius:8px;font-size:0.72rem;font-weight:700;cursor:pointer;border:1.5px solid;font-family:'DM Sans',sans-serif;transition:all 0.18s;text-align:center;}
+.ref-btn-adjust{background:#f5f3ff;color:#7c3aed;border-color:#e9d5ff;}
+.ref-btn-adjust:hover{background:#7c3aed;color:#fff;border-color:#7c3aed;}
+.ref-btn-reset {background:#fffbeb;color:#b45309;border-color:#fde68a;}
+.ref-btn-reset:hover{background:#f59e0b;color:#fff;}
+.ref-btn-delete{background:#fef2f2;color:#ef4444;border-color:#fecaca;}
+.ref-btn-delete:hover{background:#ef4444;color:#fff;}
+
+/* WITHDRAWAL CARDS */
+.with-section-title{font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;margin-bottom:0.7rem;display:flex;align-items:center;gap:0.5rem;}
+.with-section-title::after{content:'';flex:1;height:1px;background:#e2e8f0;}
+.with-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:1.1rem;box-shadow:0 1px 4px rgba(0,0,0,0.05);margin-bottom:0.8rem;animation:cardIn 0.3s ease both;border-left:3px solid #f59e0b;}
+.with-card.with-processed{opacity:0.7;border-left-color:#e2e8f0;}
+.with-top{display:flex;align-items:flex-start;justify-content:space-between;gap:0.8rem;margin-bottom:0.8rem;}
+.with-name{font-size:0.92rem;font-weight:700;color:#1e293b;}
+.with-email{font-size:0.74rem;color:#94a3b8;margin-top:0.1rem;}
+.with-right{text-align:right;flex-shrink:0;}
+.with-amount{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;color:#7c3aed;}
+.with-pending {font-size:0.7rem;font-weight:700;color:#b45309;background:#fffbeb;border:1px solid #fde68a;padding:0.18rem 0.55rem;border-radius:20px;display:inline-block;margin-top:0.2rem;}
+.with-approved{font-size:0.7rem;font-weight:700;color:#15803d;background:#f0fdf4;border:1px solid #bbf7d0;padding:0.18rem 0.55rem;border-radius:20px;display:inline-block;margin-top:0.2rem;}
+.with-rejected{font-size:0.7rem;font-weight:700;color:#ef4444;background:#fef2f2;border:1px solid #fecaca;padding:0.18rem 0.55rem;border-radius:20px;display:inline-block;margin-top:0.2rem;}
+.with-upi-row{display:flex;align-items:center;gap:0.6rem;background:#f8fafc;border-radius:9px;padding:0.55rem 0.8rem;margin-bottom:0.6rem;}
+.with-upi-label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;}
+.with-upi-val{font-family:monospace;font-size:0.84rem;font-weight:700;color:#1e293b;flex:1;}
+.with-copy-btn{background:none;border:none;cursor:pointer;font-size:0.95rem;padding:0.15rem;border-radius:5px;transition:all 0.2s;color:#64748b;}
+.with-copy-btn:hover{background:#eff6ff;color:#2563eb;transform:scale(1.1);}
+.with-date{font-size:0.7rem;color:#94a3b8;margin-bottom:0.7rem;}
+.with-note{font-size:0.75rem;color:#64748b;background:#f8fafc;border-radius:8px;padding:0.45rem 0.7rem;margin-top:0.5rem;font-style:italic;}
+.with-actions{display:flex;gap:0.5rem;flex-wrap:wrap;}
+.with-btn{display:flex;align-items:center;justify-content:center;gap:0.3rem;padding:0.5rem 0.9rem;border-radius:9px;font-size:0.78rem;font-weight:700;cursor:pointer;border:1.5px solid;font-family:'DM Sans',sans-serif;text-decoration:none;transition:all 0.2s;white-space:nowrap;}
+.with-btn-approve{background:#f0fdf4;color:#16a34a;border-color:#bbf7d0;flex:1;}
+.with-btn-approve:hover{background:#16a34a;color:#fff;border-color:#16a34a;}
+.with-btn-reject {background:#fef2f2;color:#ef4444;border-color:#fecaca;}
+.with-btn-reject:hover{background:#ef4444;color:#fff;}
+.with-btn-wa{background:#f0fdf4;color:#16a34a;border-color:#bbf7d0;}
+.with-btn-wa:hover{background:#16a34a;color:#fff;}
+
+/* EMPTY */
+.ref-empty{display:flex;flex-direction:column;align-items:center;gap:0.6rem;padding:4rem;text-align:center;grid-column:1/-1;}
+.ref-empty-icon{font-size:3rem;opacity:0.4;}
+.ref-empty-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:#475569;}
+.ref-empty-sub{font-size:0.83rem;color:#94a3b8;max-width:280px;}
+
+/* EARN ADJUST MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);z-index:500;display:none;align-items:flex-start;justify-content:center;padding:1.5rem 1rem;overflow-y:auto;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:#fff;border-radius:22px;width:100%;max-width:440px;box-shadow:0 24px 60px rgba(0,0,0,0.25);animation:modalIn 0.3s ease both;margin:auto;overflow:hidden;}
+@keyframes modalIn{from{opacity:0;transform:translateY(20px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.3rem;border-bottom:1px solid #f1f5f9;}
+.modal-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:800;color:#1e293b;}
+.modal-close{background:none;border:none;cursor:pointer;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;color:#64748b;transition:all 0.2s;}
+.modal-close:hover{background:#fef2f2;color:#ef4444;}
+.modal-body{padding:1.3rem;}
+.mf-row{margin-bottom:0.9rem;}
+.mf-label{display:block;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;margin-bottom:0.38rem;}
+.mf-input,.mf-select{width:100%;padding:0.68rem 0.9rem;border:1.5px solid #e2e8f0;border-radius:11px;font-size:0.86rem;font-family:'DM Sans',sans-serif;color:#1e293b;outline:none;background:#fff;transition:border-color 0.2s;}
+.mf-input:focus,.mf-select:focus{border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,0.08);}
+.adj-current-box{background:#f5f3ff;border:1.5px solid #e9d5ff;border-radius:11px;padding:0.7rem 0.9rem;text-align:center;margin-bottom:0.9rem;}
+.adj-current-label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#7c3aed;margin-bottom:0.2rem;}
+.adj-current-val{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:#7c3aed;}
+.modal-save-btn{width:100%;padding:0.85rem;border-radius:13px;border:none;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;font-size:0.95rem;font-weight:800;font-family:'DM Sans',sans-serif;cursor:pointer;box-shadow:0 6px 20px rgba(124,58,237,0.3);transition:all 0.2s;margin-top:0.3rem;}
+.modal-save-btn:hover{transform:translateY(-2px);}
+.modal-save-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+
+/* TOAST */
+.admin-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);font-size:0.83rem;font-weight:700;padding:0.7rem 1.5rem;border-radius:30px;opacity:0;white-space:nowrap;transition:opacity 0.25s,transform 0.25s;z-index:9999;pointer-events:none;font-family:'DM Sans',sans-serif;}
+.admin-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.admin-toast.success{background:#166534;color:#bbf7d0;border:1px solid #15803d;}
+.admin-toast.error  {background:#7f1d1d;color:#fca5a5;border:1px solid #b91c1c;}
+.admin-toast.warning{background:#78350f;color:#fde68a;border:1px solid #b45309;}
+.admin-toast.info   {background:#1e3a8a;color:#bfdbfe;border:1px solid #1d4ed8;}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .admin-main{margin-left:0;}
+  .header-hamburger{display:flex!important;align-items:center;}
+  .admin-content{padding:1rem;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .referrals-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="admin-layout" id="referralsPage">
+
+  <div id="sidebarOverlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
+  <aside id="adminSidebar" class="sidebar"></aside>
+
+  <main class="admin-main">
+
+    <!-- HEADER -->
+    <header class="admin-header">
+      <button class="header-hamburger" onclick="toggleSidebar()">☰</button>
+      <div class="header-title">🎁 Referrals & Withdrawals</div>
+      <div class="header-right">
+        <button class="hdr-btn hdr-btn-export" onclick="exportReferralsCSV()">📥 Export CSV</button>
+        <div class="header-admin-name">
+          <div class="header-av">A</div>
+          <span id="adminHeaderName">Admin</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+
+      <!-- STATS -->
+      <div class="stats-row">
+        <div class="stat-card sc-blue">
+          <span class="stat-emoji">🎁</span>
+          <span class="stat-num" id="ref-stat-codes">—</span>
+          <span class="stat-lbl">Total Codes</span>
+        </div>
+        <div class="stat-card sc-purple">
+          <span class="stat-emoji">💰</span>
+          <span class="stat-num" id="ref-stat-earned">—</span>
+          <span class="stat-lbl">Total Earned</span>
+        </div>
+        <div class="stat-card sc-orange">
+          <span class="stat-emoji">⏳</span>
+          <span class="stat-num" id="ref-stat-pending">—</span>
+          <span class="stat-lbl">Pending Withdrawals</span>
+        </div>
+        <div class="stat-card sc-green">
+          <span class="stat-emoji">✅</span>
+          <span class="stat-num" id="ref-stat-paidout">—</span>
+          <span class="stat-lbl">Total Paid Out</span>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <div class="ref-tabs">
+        <button class="ref-tab active" data-tab="referrals" onclick="switchRefTab('referrals')">
+          🎁 Referral Codes <span class="ref-tab-count" id="ref-count-ref">—</span>
+        </button>
+        <button class="ref-tab" data-tab="withdrawals" onclick="switchRefTab('withdrawals')">
+          💸 Withdrawal Requests <span class="ref-tab-count" id="ref-count-with">—</span>
+        </button>
+      </div>
+
+      <!-- REFERRALS CONTENT -->
+      <div id="referralsContent">
+        <div class="referrals-grid" id="referralsGrid">
+          <div class="ref-empty">
+            <div class="ref-empty-icon">⏳</div>
+            <div class="ref-empty-title">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WITHDRAWALS CONTENT -->
+      <div id="withdrawalsContent" style="display:none;">
+        <div id="withdrawalsGrid">
+          <div class="ref-empty">
+            <div class="ref-empty-icon">⏳</div>
+            <div class="ref-empty-title">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- EARN ADJUST MODAL -->
+<div class="modal-overlay" id="earnAdjustModal" onclick="if(event.target===this)closeEarnModal()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">💰 Earning Adjust Karo</div>
+      <button class="modal-close" onclick="closeEarnModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="adj-ref-id"/>
+
+      <div class="adj-current-box">
+        <div class="adj-current-label">Code: <span id="adj-code-display">—</span></div>
+        <div class="adj-current-val" id="adj-current">₹0</div>
+        <div style="font-size:0.7rem;color:#94a3b8;margin-top:0.2rem;">Current Balance</div>
+      </div>
+
+      <div class="mf-row">
+        <label class="mf-label">Action</label>
+        <select class="mf-select" id="adj-type">
+          <option value="add">➕ Add Earning</option>
+          <option value="deduct">➖ Deduct Earning</option>
+        </select>
+      </div>
+
+      <div class="mf-row">
+        <label class="mf-label">Amount (₹)</label>
+        <input class="mf-input" type="number" id="adj-amount" min="1" placeholder="Jaise: 299"/>
+      </div>
+
+      <div class="mf-row">
+        <label class="mf-label">Reason (Optional)</label>
+        <input class="mf-input" type="text" id="adj-reason" placeholder="Jaise: Manual adjustment..."/>
+      </div>
+
+      <button class="modal-save-btn" id="adjSaveBtn" onclick="saveEarnAdjust()">
+        💾 Save
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="admin-toast" id="adminToast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="../firebase-config.js"></script>
+<script src="admin-all.js"></script>
+<script src="admin-all2.js"></script>
+<script>
+const sess = JSON.parse(localStorage.getItem('adminSession')||'{}');
+const av = document.querySelector('.header-av');
+if(av && sess.displayName) av.textContent = sess.displayName.charAt(0).toUpperCase();
+</script>
+</body>
+</html>
