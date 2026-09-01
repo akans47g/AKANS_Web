@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Coupons — AKANS Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="manifest" href="../manifest.json"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:#f1f5f9;color:#1e293b;overflow-x:hidden;}
+
+/* ══ LAYOUT ══ */
+.admin-layout{display:flex;min-height:100vh;}
+.sidebar{width:240px;flex-shrink:0;background:#0f172a;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:200;overflow-y:auto;transition:transform 0.3s;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.1) transparent;}
+.sidebar::-webkit-scrollbar{width:4px;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px;}
+.sidebar-logo{display:flex;align-items:center;gap:0.7rem;padding:1.2rem 1.1rem 1rem;border-bottom:1px solid rgba(255,255,255,0.06);}
+.sb-logo-icon{width:38px;height:38px;border-radius:10px;flex-shrink:0;background:linear-gradient(135deg,#1e3a8a,#3730a3);border:1px solid rgba(99,153,255,0.25);display:flex;align-items:center;justify-content:center;font-size:1.2rem;}
+.sb-title{font-size:0.88rem;font-weight:800;color:#fff;}
+.sb-sub{font-size:0.65rem;color:rgba(255,255,255,0.35);letter-spacing:0.08em;text-transform:uppercase;margin-top:0.1rem;}
+.sidebar-nav{flex:1;padding:0.8rem 0.7rem;display:flex;flex-direction:column;gap:0.15rem;}
+.nav-item{display:flex;align-items:center;gap:0.7rem;padding:0.65rem 0.85rem;border-radius:10px;text-decoration:none;color:rgba(255,255,255,0.5);font-size:0.82rem;font-weight:600;transition:all 0.18s;position:relative;}
+.nav-item:hover{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.85);}
+.nav-item.active{background:linear-gradient(135deg,rgba(37,99,235,0.3),rgba(124,58,237,0.2));color:#fff;border:1px solid rgba(99,153,255,0.2);}
+.nav-icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0;}
+.nav-label{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nav-badge{display:none;align-items:center;justify-content:center;background:#ef4444;color:#fff;border-radius:30px;font-size:0.58rem;font-weight:800;min-width:18px;height:18px;padding:0 4px;}
+.sidebar-user{display:flex;align-items:center;gap:0.6rem;padding:0.9rem 1rem;border-top:1px solid rgba(255,255,255,0.06);flex-shrink:0;}
+.sb-avatar{width:34px;height:34px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:0.85rem;}
+.sb-user-info{flex:1;min-width:0;}
+.sb-user-name{font-size:0.78rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-user-email{font-size:0.63rem;color:rgba(255,255,255,0.3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-logout{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.2);color:#f87171;border-radius:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.9rem;flex-shrink:0;transition:all 0.2s;}
+.sb-logout:hover{background:rgba(239,68,68,0.3);color:#fff;}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:199;}
+.sidebar-overlay.show{display:block;}
+
+/* MAIN */
+.admin-main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+
+/* HEADER */
+.admin-header{background:#fff;border-bottom:1px solid #e2e8f0;padding:0.85rem 1.5rem;display:flex;align-items:center;gap:0.8rem;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.header-hamburger{display:none;background:none;border:none;cursor:pointer;font-size:1.3rem;color:#64748b;}
+.header-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:800;color:#1e293b;}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:0.6rem;}
+.header-admin-name{display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;font-weight:700;}
+.header-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.72rem;font-weight:800;}
+.hdr-btn{display:flex;align-items:center;gap:0.4rem;padding:0.45rem 0.9rem;border-radius:9px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;border:none;transition:all 0.2s;}
+.hdr-btn-add{background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;box-shadow:0 3px 10px rgba(22,163,74,0.3);}
+.hdr-btn-add:hover{transform:translateY(-1px);}
+.hdr-btn-export{background:#f0fdf4;color:#16a34a;border:1.5px solid #bbf7d0!important;}
+.hdr-btn-export:hover{background:#16a34a;color:#fff;}
+
+/* CONTENT */
+.admin-content{padding:1.3rem 1.5rem;flex:1;}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:0.9rem;margin-bottom:1.4rem;}
+.stat-card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:1rem 1.1rem;box-shadow:0 1px 4px rgba(0,0,0,0.05);text-align:center;transition:transform 0.2s;}
+.stat-card:hover{transform:translateY(-2px);}
+.stat-emoji{font-size:1.5rem;display:block;margin-bottom:0.3rem;}
+.stat-num{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;display:block;line-height:1;}
+.stat-lbl{font-size:0.67rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin-top:0.2rem;display:block;}
+.sc-blue   .stat-num{color:#2563eb;}
+.sc-green  .stat-num{color:#16a34a;}
+.sc-purple .stat-num{color:#7c3aed;}
+.sc-orange .stat-num{color:#f59e0b;}
+
+/* COUPONS GRID */
+.coupons-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.1rem;}
+
+/* COUPON CARD */
+.cpn-card{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:1.2rem;box-shadow:0 1px 4px rgba(0,0,0,0.05);transition:transform 0.2s,box-shadow 0.2s;animation:cardIn 0.35s ease both;position:relative;overflow:hidden;}
+.cpn-card::before{content:'🎟️';position:absolute;right:-10px;top:-10px;font-size:5rem;opacity:0.04;transform:rotate(15deg);pointer-events:none;}
+.cpn-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,0.09);}
+.cpn-card.cpn-inactive{opacity:0.6;}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* Card top */
+.cpn-card-top{display:flex;align-items:center;justify-content:space-between;gap:0.6rem;margin-bottom:0.6rem;}
+.cpn-code-wrap{display:flex;align-items:center;gap:0.5rem;}
+.cpn-code{font-family:monospace;font-size:1.05rem;font-weight:900;color:#1e293b;letter-spacing:0.05em;background:#f1f5f9;padding:0.3rem 0.7rem;border-radius:8px;border:1.5px dashed #cbd5e1;}
+.cpn-copy-btn{background:none;border:none;cursor:pointer;font-size:1rem;padding:0.2rem;border-radius:6px;transition:all 0.2s;color:#64748b;}
+.cpn-copy-btn:hover{background:#eff6ff;color:#2563eb;transform:scale(1.15);}
+.cpn-status-active  {font-size:0.7rem;font-weight:700;color:#15803d;background:#f0fdf4;border:1px solid #bbf7d0;padding:0.22rem 0.65rem;border-radius:20px;white-space:nowrap;}
+.cpn-status-inactive{font-size:0.7rem;font-weight:700;color:#94a3b8;background:#f8fafc;border:1px solid #e2e8f0;padding:0.22rem 0.65rem;border-radius:20px;white-space:nowrap;}
+
+/* Discount */
+.cpn-discount{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:#7c3aed;margin-bottom:0.2rem;}
+.cpn-desc{font-size:0.77rem;color:#94a3b8;margin-bottom:0.7rem;}
+
+/* Details grid */
+.cpn-details{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.8rem;}
+.cpn-detail-item{background:#f8fafc;border-radius:9px;padding:0.5rem 0.65rem;}
+.cpn-detail-label{display:block;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin-bottom:0.15rem;}
+.cpn-detail-val{font-size:0.83rem;font-weight:700;color:#1e293b;}
+
+/* Usage bar */
+.cpn-usage-wrap{margin-bottom:0.8rem;}
+.cpn-usage-label{font-size:0.72rem;color:#64748b;font-weight:600;margin-bottom:0.35rem;}
+.cpn-usage-bar{height:7px;background:#e2e8f0;border-radius:10px;overflow:hidden;}
+.cpn-usage-fill{height:100%;border-radius:10px;transition:width 0.6s ease;}
+.fill-green {background:linear-gradient(90deg,#22c55e,#16a34a);}
+.fill-orange{background:linear-gradient(90deg,#f59e0b,#d97706);}
+.fill-red   {background:linear-gradient(90deg,#ef4444,#dc2626);}
+
+/* Footer */
+.cpn-footer{display:flex;align-items:center;justify-content:space-between;gap:0.6rem;padding-top:0.8rem;border-top:1px solid #f1f5f9;}
+.cpn-toggle-row{display:flex;align-items:center;gap:0.5rem;cursor:pointer;}
+.mini-toggle{width:36px;height:20px;border-radius:30px;background:#e2e8f0;position:relative;transition:background 0.25s;flex-shrink:0;}
+.mini-toggle::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.2);transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+.mini-toggle.on{background:linear-gradient(135deg,#16a34a,#15803d);}
+.mini-toggle.on::after{transform:translateX(16px);}
+.cpn-toggle-lbl{font-size:0.73rem;font-weight:700;color:#64748b;}
+.cpn-btns{display:flex;gap:0.4rem;}
+.cpn-btn{padding:0.38rem 0.75rem;border-radius:8px;font-size:0.74rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;border:1.5px solid;transition:all 0.18s;}
+.cpn-btn-edit  {background:#eff6ff;color:#2563eb;border-color:#bfdbfe;}
+.cpn-btn-edit:hover  {background:#2563eb;color:#fff;border-color:#2563eb;}
+.cpn-btn-delete{background:#fef2f2;color:#ef4444;border-color:#fecaca;}
+.cpn-btn-delete:hover{background:#ef4444;color:#fff;border-color:#ef4444;}
+
+/* ADD CARD */
+.cpn-add-card{border:2px dashed #cbd5e1;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.7rem;cursor:pointer;min-height:260px;transition:all 0.2s;background:#f8fafc;}
+.cpn-add-card:hover{border-color:#7c3aed;background:#f5f3ff;}
+.cpn-add-icon{width:54px;height:54px;border-radius:50%;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:300;color:#94a3b8;transition:all 0.2s;}
+.cpn-add-card:hover .cpn-add-icon{background:#7c3aed;color:#fff;}
+.cpn-add-label{font-size:0.85rem;font-weight:700;color:#94a3b8;}
+.cpn-add-card:hover .cpn-add-label{color:#7c3aed;}
+
+/* LOADING + EMPTY */
+.cpn-loading{display:flex;flex-direction:column;align-items:center;gap:0.8rem;padding:4rem;color:#94a3b8;font-size:0.88rem;grid-column:1/-1;}
+.cpn-spinner{width:36px;height:36px;border:3px solid #e2e8f0;border-top-color:#7c3aed;border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.cpn-empty{display:flex;flex-direction:column;align-items:center;gap:0.6rem;padding:4rem;grid-column:1/-1;}
+.cpn-empty-icon{font-size:3rem;opacity:0.4;}
+.cpn-empty-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:#475569;}
+.cpn-empty-sub{font-size:0.83rem;color:#94a3b8;}
+
+/* ══ MODAL ══ */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);z-index:500;display:none;align-items:flex-start;justify-content:center;padding:1.5rem 1rem;overflow-y:auto;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:#fff;border-radius:22px;width:100%;max-width:520px;box-shadow:0 24px 60px rgba(0,0,0,0.25);animation:modalIn 0.3s ease both;margin:auto;overflow:hidden;}
+@keyframes modalIn{from{opacity:0;transform:translateY(20px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.3rem;border-bottom:1px solid #f1f5f9;}
+.modal-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:800;color:#1e293b;}
+.modal-close{background:none;border:none;cursor:pointer;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;color:#64748b;transition:all 0.2s;}
+.modal-close:hover{background:#fef2f2;color:#ef4444;}
+.modal-body{padding:1.3rem;}
+.mf-row{margin-bottom:0.9rem;}
+.mf-label{display:block;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;margin-bottom:0.38rem;}
+.mf-hint{font-size:0.7rem;color:#94a3b8;margin-top:0.25rem;}
+.mf-input,.mf-select{width:100%;padding:0.68rem 0.9rem;border:1.5px solid #e2e8f0;border-radius:11px;font-size:0.86rem;font-family:'DM Sans',sans-serif;color:#1e293b;outline:none;background:#fff;transition:border-color 0.2s;}
+.mf-input:focus,.mf-select:focus{border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,0.08);}
+.mf-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;}
+.mf-code-wrap{display:flex;align-items:center;gap:0.5rem;}
+.mf-code-wrap .mf-input{text-transform:uppercase;font-family:monospace;font-weight:700;letter-spacing:0.05em;}
+.preview-badge{display:inline-flex;align-items:center;gap:0.3rem;background:#f5f3ff;border:1.5px solid #e9d5ff;color:#7c3aed;padding:0.3rem 0.75rem;border-radius:20px;font-size:0.78rem;font-weight:700;margin-top:0.4rem;}
+.mf-toggle-row{display:flex;align-items:center;gap:0.7rem;padding:0.8rem 0.9rem;background:#f8fafc;border-radius:11px;border:1.5px solid #e2e8f0;cursor:pointer;margin-bottom:0.9rem;}
+.modal-save-btn{width:100%;padding:0.85rem;border-radius:13px;border:none;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;font-size:0.95rem;font-weight:800;font-family:'DM Sans',sans-serif;cursor:pointer;box-shadow:0 6px 20px rgba(124,58,237,0.3);transition:all 0.2s;}
+.modal-save-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(124,58,237,0.4);}
+.modal-save-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+
+/* TOAST */
+.admin-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);font-size:0.83rem;font-weight:700;padding:0.7rem 1.5rem;border-radius:30px;opacity:0;white-space:nowrap;transition:opacity 0.25s,transform 0.25s;z-index:9999;pointer-events:none;font-family:'DM Sans',sans-serif;}
+.admin-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.admin-toast.success{background:#166534;color:#bbf7d0;border:1px solid #15803d;}
+.admin-toast.error  {background:#7f1d1d;color:#fca5a5;border:1px solid #b91c1c;}
+.admin-toast.warning{background:#78350f;color:#fde68a;border:1px solid #b45309;}
+.admin-toast.info   {background:#1e3a8a;color:#bfdbfe;border:1px solid #1d4ed8;}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .admin-main{margin-left:0;}
+  .header-hamburger{display:flex!important;align-items:center;}
+  .admin-content{padding:1rem;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .coupons-grid{grid-template-columns:1fr;}
+  .mf-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="admin-layout" id="couponsPage">
+
+  <div id="sidebarOverlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
+  <aside id="adminSidebar" class="sidebar"></aside>
+
+  <main class="admin-main">
+
+    <!-- HEADER -->
+    <header class="admin-header">
+      <button class="header-hamburger" onclick="toggleSidebar()">☰</button>
+      <div class="header-title">🎟️ Coupons</div>
+      <div class="header-right">
+        <button class="hdr-btn hdr-btn-export" style="border:1.5px solid #bbf7d0;" onclick="exportCouponsCSV()">📥 Export</button>
+        <button class="hdr-btn hdr-btn-add" onclick="openAddCoupon()">➕ Naya Coupon</button>
+        <div class="header-admin-name">
+          <div class="header-av">A</div>
+          <span id="adminHeaderName">Admin</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+
+      <!-- STATS -->
+      <div class="stats-row">
+        <div class="stat-card sc-blue">
+          <span class="stat-emoji">🎟️</span>
+          <span class="stat-num" id="cpn-stat-total">—</span>
+          <span class="stat-lbl">Total Coupons</span>
+        </div>
+        <div class="stat-card sc-green">
+          <span class="stat-emoji">✅</span>
+          <span class="stat-num" id="cpn-stat-active">—</span>
+          <span class="stat-lbl">Active</span>
+        </div>
+        <div class="stat-card sc-purple">
+          <span class="stat-emoji">📊</span>
+          <span class="stat-num" id="cpn-stat-uses">—</span>
+          <span class="stat-lbl">Total Uses</span>
+        </div>
+        <div class="stat-card sc-orange">
+          <span class="stat-emoji">💸</span>
+          <span class="stat-num" id="cpn-stat-saved">—</span>
+          <span class="stat-lbl">Total Saved</span>
+        </div>
+      </div>
+
+      <!-- COUPONS GRID -->
+      <div class="coupons-grid" id="couponsGrid">
+        <div class="cpn-loading">
+          <div class="cpn-spinner"></div>
+          <span>Coupons load ho rahe hain...</span>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ADD / EDIT MODAL -->
+<div class="modal-overlay" id="cpnModal" onclick="if(event.target===this)closeCpnModal()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="cpnModalTitle">➕ Naya Coupon Banao</div>
+      <button class="modal-close" onclick="closeCpnModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Code -->
+      <div class="mf-row">
+        <label class="mf-label">Coupon Code *</label>
+        <div class="mf-code-wrap">
+          <input class="mf-input" type="text" id="cpn-edit-code"
+                 placeholder="Jaise: AKANS_100, WEDDING200"
+                 oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9_]/g,'')"/>
+        </div>
+        <div class="mf-hint">⚠️ Sirf A-Z, 0-9 aur _ allowed hain. Space nahi.</div>
+      </div>
+
+      <!-- Discount Type + Value -->
+      <div class="mf-grid">
+        <div class="mf-row">
+          <label class="mf-label">Discount Type *</label>
+          <select class="mf-select" id="cpn-edit-type" onchange="onDiscountTypeChange()">
+            <option value="fixed">💰 Fixed Amount (₹)</option>
+            <option value="percent">📊 Percentage (%)</option>
+          </select>
+        </div>
+        <div class="mf-row">
+          <label class="mf-label" id="cpn-value-label">Discount Amount (₹) *</label>
+          <input class="mf-input" type="number" id="cpn-edit-value"
+                 min="1" placeholder="Jaise: 100"/>
+          <div class="mf-hint" id="cpn-value-hint">Jaise: 100 = ₹100 off</div>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div style="margin-bottom:0.9rem;">
+        <div class="mf-label">Preview</div>
+        <div id="cpn-preview-badge" class="preview-badge">🎟️ Enter details above</div>
+      </div>
+
+      <!-- Description -->
+      <div class="mf-row">
+        <label class="mf-label">Description (Optional)</label>
+        <input class="mf-input" type="text" id="cpn-edit-desc"
+               placeholder="Jaise: Welcome offer, Diwali special..."/>
+      </div>
+
+      <!-- Min Order + Max Uses -->
+      <div class="mf-grid">
+        <div class="mf-row">
+          <label class="mf-label">Min Order Amount (₹)</label>
+          <input class="mf-input" type="number" id="cpn-edit-minorder"
+                 min="0" value="0" placeholder="0 = No minimum"/>
+          <div class="mf-hint">0 = koi minimum nahi</div>
+        </div>
+        <div class="mf-row">
+          <label class="mf-label">Max Uses</label>
+          <input class="mf-input" type="number" id="cpn-edit-maxuses"
+                 min="0" placeholder="0 = Unlimited"/>
+          <div class="mf-hint">0 = unlimited uses</div>
+        </div>
+      </div>
+
+      <!-- Expiry Date -->
+      <div class="mf-row">
+        <label class="mf-label">Expiry Date (Optional)</label>
+        <input class="mf-input" type="date" id="cpn-edit-expiry"/>
+        <div class="mf-hint">Khali chodo = kabhi expire nahi hoga</div>
+      </div>
+
+      <!-- Active Toggle -->
+      <div class="mf-toggle-row" onclick="document.getElementById('cpn-edit-active').click()">
+        <input type="checkbox" id="cpn-edit-active" checked
+               style="width:18px;height:18px;accent-color:#16a34a;cursor:pointer;"/>
+        <label style="font-size:0.85rem;font-weight:600;cursor:pointer;color:#1e293b;"
+               for="cpn-edit-active">✅ Coupon Active Rakho</label>
+      </div>
+
+      <button class="modal-save-btn" id="cpnSaveBtn" onclick="saveCoupon()">
+        💾 Save Karo
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="admin-toast" id="adminToast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="../firebase-config.js"></script>
+<script src="admin-all.js"></script>
+<script src="admin-all2.js"></script>
+<script>
+// Live preview update
+['cpn-edit-code','cpn-edit-type','cpn-edit-value'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', updateCpnPreview);
+});
+function updateCpnPreview() {
+  const code  = document.getElementById('cpn-edit-code')?.value || '—';
+  const type  = document.getElementById('cpn-edit-type')?.value;
+  const val   = document.getElementById('cpn-edit-value')?.value;
+  const label = val
+    ? (type === 'percent' ? val + '% OFF' : '₹' + val + ' OFF')
+    : '—';
+  const el = document.getElementById('cpn-preview-badge');
+  if (el) el.textContent = `🎟️ ${code} → ${label}`;
+}
+// Header avatar
+const sess = JSON.parse(localStorage.getItem('adminSession')||'{}');
+const av = document.querySelector('.header-av');
+if(av && sess.displayName) av.textContent = sess.displayName.charAt(0).toUpperCase();
+</script>
+</body>
+</html>
