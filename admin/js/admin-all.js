@@ -14,6 +14,68 @@ const SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 ghante milliseconds mein
 const MAX_ATTEMPTS     = 5;                    // 5 galat try ke baad lock
 const LOCKOUT_MINUTES  = 30;                   // 30 minute lock
 
+
+// ── GOOGLE PROVIDER ───────────────────────────────────────────────
+const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+// ── ADMIN GOOGLE LOGIN (Redirect — mobile compatible) ─────────────
+async function adminGoogleLogin() {
+  const btn = document.getElementById('googleAdminBtn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span style="animation:spinAnim 1s linear infinite;display:inline-block">⟳</span> Redirecting...'; }
+  try {
+    await auth.signInWithRedirect(googleProvider);
+  } catch(e) {
+    showAdminToast('❌ Google login failed: ' + e.message, 'error');
+    if (btn) { btn.disabled = false; btn.textContent = 'Continue with Google'; }
+  }
+}
+
+// ── HANDLE GOOGLE REDIRECT RESULT (page load pe) ──────────────────
+auth.getRedirectResult().then(async result => {
+  if (!result || !result.user) return;
+  const user = result.user;
+
+  // Admin role check karo
+  try {
+    const userDoc = await db.collection('users').doc(user.uid).get();
+    const isAdmin = userDoc.exists && userDoc.data().role === 'admin';
+
+    if (!isAdmin) {
+      await auth.signOut();
+      showAdminToast('❌ Access denied — Admin permission nahi hai', 'error');
+      return;
+    }
+
+    // ✅ Admin confirmed
+    localStorage.setItem('adminSession', JSON.stringify({
+      uid:         user.uid,
+      email:       user.email,
+      displayName: user.displayName || user.email.split('@')[0],
+      photoURL:    user.photoURL || '',
+      isAdmin:     true,
+      timestamp:   Date.now()
+    }));
+
+    // Log
+    db.collection('adminLogs').add({
+      action:     'google_login',
+      adminEmail:  user.email,
+      timestamp:   firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(() => {});
+
+    showAdminToast('✅ Google login successful!', 'success');
+    setTimeout(() => window.location.replace('admin-dashboard.html'), 800);
+
+  } catch(e) {
+    await auth.signOut();
+    showAdminToast('❌ Error: ' + e.message, 'error');
+  }
+}).catch(e => {
+  if (e.code && e.code !== 'auth/no-current-user') {
+    console.error('[Admin Google]', e.code, e.message);
+  }
+});
+
 // ── SESSION CHECK (page load pe) ──────────────────────────────────
 function checkAdminSession() {
   try {
