@@ -182,6 +182,75 @@ async function adminLogin() {
   }
 }
 
+
+// ── GOOGLE ADMIN LOGIN (Redirect — mobile compatible) ─────────────
+async function adminGoogleLogin() {
+  const btn = document.getElementById('googleAdminBtn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span style="animation:spinAnim 1s linear infinite;display:inline-block">⟳</span> Redirecting...'; }
+  try {
+    const googleProvider = new firebase.auth.GoogleAuthProvider();
+    googleProvider.setCustomParameters({ login_hint: ADMIN_EMAIL });
+    await auth.signInWithRedirect(googleProvider);
+  } catch(e) {
+    showAdminToast('❌ Google login failed: ' + e.message, 'error');
+    if (btn) { btn.disabled = false; btn.innerHTML = '<div class="google-logo"></div> Continue with Google'; }
+  }
+}
+
+// ── HANDLE GOOGLE REDIRECT RESULT ─────────────────────────────────
+auth.getRedirectResult().then(async result => {
+  if (!result || !result.user) return;
+  const user = result.user;
+
+  // Check admin email
+  if (user.email !== ADMIN_EMAIL) {
+    await auth.signOut();
+    showAdminToast('❌ Ye Gmail admin nahi hai!', 'error');
+    return;
+  }
+
+  // Check Firestore role
+  try {
+    const userDoc = await db.collection('users').doc(user.uid).get();
+    const isAdmin = userDoc.exists && userDoc.data().role === 'admin';
+
+    if (!isAdmin) {
+      await auth.signOut();
+      showAdminToast('❌ Access denied — role:admin set nahi hai', 'error');
+      return;
+    }
+
+    // ✅ Google Admin Login successful
+    localStorage.setItem('adminSession', JSON.stringify({
+      uid:         user.uid,
+      email:       user.email,
+      displayName: user.displayName || 'Admin',
+      photoURL:    user.photoURL || '',
+      isAdmin:     true,
+      timestamp:   Date.now()
+    }));
+
+    // Log
+    db.collection('adminLogs').add({
+      action:     'google_login',
+      adminEmail: user.email,
+      timestamp:  firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(() => {});
+
+    showAdminToast('✅ Google login successful!', 'success');
+    setTimeout(() => window.location.replace('admin-dashboard.html'), 800);
+
+  } catch(e) {
+    await auth.signOut();
+    showAdminToast('❌ Firestore error: ' + e.message, 'error');
+  }
+}).catch(e => {
+  if (e.code && e.code !== 'auth/no-current-user') {
+    console.error('[Google Admin Redirect]', e.message);
+    showAdminToast('❌ ' + e.message, 'error');
+  }
+});
+
 // ── FAILED ATTEMPT TRACKER ─────────────────────────────────────────
 function recordFailedAttempt() {
   const attempts = parseInt(localStorage.getItem('adminLoginAttempts') || '0') + 1;
