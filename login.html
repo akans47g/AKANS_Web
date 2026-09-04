@@ -473,7 +473,13 @@ function resetLock() {
 
   // If already logged in → go to index
   auth.onAuthStateChanged(user => {
-    if(user) window.location.href = 'index.html';
+    if(user) {
+      // Already logged in → redirect to index
+      const dest = 'https://akans47g.github.io/AKANS_Web/index.html';
+      if (!window.location.href.includes('index.html')) {
+        window.location.replace(dest);
+      }
+    }
   });
 
   // ── SET BUTTON LOADING ────────────────────────────────
@@ -497,7 +503,7 @@ function resetLock() {
     try {
       await auth.signInWithEmailAndPassword(email, pass);
       showToast('✅ Login successful!');
-      setTimeout(() => window.location.href = 'index.html', 800);
+      setTimeout(() => window.location.replace('https://akans47g.github.io/AKANS_Web/index.html'), 800);
     } catch(e) {
       failCount++;
       if(failCount >= 3) { triggerLock(); setLoading('loginBtn',false,'Login'); return; }
@@ -539,7 +545,7 @@ function resetLock() {
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
       showToast('✅ Account created! Logging you in...');
-      setTimeout(() => window.location.href = 'index.html', 1000);
+      setTimeout(() => window.location.replace('https://akans47g.github.io/AKANS_Web/index.html'), 1000);
     } catch(e) {
       const msg = e.code === 'auth/email-already-in-use'
         ? '❌ Email already registered. Please login.'
@@ -561,31 +567,42 @@ function resetLock() {
   }
 
   // ── REDIRECT RESULT HANDLE (page load pe) ─────────────────
-  auth.getRedirectResult().then(async result => {
-    if (!result || !result.user) return;
-    const user = result.user;
-    showToast('✅ Google login successful!');
-    // Save to Firestore if new user
+  // ── GOOGLE REDIRECT RESULT ─────────────────────────────────────────
+  (async () => {
     try {
-      const doc = await db.collection('users').doc(user.uid).get();
-      if(!doc.exists) {
-        await db.collection('users').doc(user.uid).set({
-          email:       user.email,
-          displayName: user.displayName || '',
-          photoURL:    user.photoURL || '',
-          uid:         user.uid,
-          whatsapp:    '',
-          referredBy:  '',
-          createdAt:   firebase.firestore.FieldValue.serverTimestamp()
-        });
+      const result = await auth.getRedirectResult();
+      if (!result || !result.user) return;
+
+      const user = result.user;
+      showToast('✅ Google login successful!');
+
+      // Save to Firestore if new user
+      try {
+        const doc = await db.collection('users').doc(user.uid).get();
+        if (!doc.exists) {
+          await db.collection('users').doc(user.uid).set({
+            email:       user.email,
+            displayName: user.displayName || '',
+            photoURL:    user.photoURL || '',
+            uid:         user.uid,
+            whatsapp:    '',
+            referredBy:  '',
+            createdAt:   firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }
+      } catch(e) {
+        console.warn('Firestore save error:', e.message);
       }
-    } catch(e) { console.log('Firestore save error:', e); }
-    setTimeout(() => window.location.href = 'index.html', 800);
-  }).catch(e => {
-    if(e.code && e.code !== 'auth/no-current-user') {
-      console.error('[Google Redirect]', e.code, e.message);
+
+      // Absolute URL redirect — most reliable
+      window.location.replace('https://akans47g.github.io/AKANS_Web/index.html');
+
+    } catch(e) {
+      if (e.code === 'auth/no-current-user') return;
+      if (e.code === 'auth/null-user') return;
+      console.error('[Google Redirect Error]', e.code, e.message);
     }
-  });
+  })();
 
   // ── FORGOT PASSWORD ───────────────────────────────────
   async function forgotPass(e) {
