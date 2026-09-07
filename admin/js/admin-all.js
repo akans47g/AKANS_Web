@@ -1,985 +1,138 @@
 // ══════════════════════════════════════════════════════════════════
 // admin-all.js — AKANS Admin Panel (Shared)
-// Shared utils + Sections 3,4 + Sidebar
-// Ye file sabhi admin pages load karti hain
+// Ye file SABHI admin pages load karti hain
+// Shared: session, sidebar, toast, utilities + Sections 3 & 4
 // ══════════════════════════════════════════════════════════════════
 
-// ══════════════════════════════════════════════════════════════════
-// admin-all.js — AKANS Admin Panel
-// Sab admin pages ka JS code ek file mein
-// Firebase firebase-config.js se load hota hai (already initialized)
-// ══════════════════════════════════════════════════════════════════
+// ── SHARED CONSTANTS ───────────────────────────────────────────────
+const SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
-// ╔══════════════════════════════════════════════════════════════╗
-// ║         SECTION 3 — admin-bookings.html                     ║
-// ╚══════════════════════════════════════════════════════════════╝
-
-// ── STATE ─────────────────────────────────────────────────────────
-let allBookings      = [];
-let filteredBookings = [];
-let currentFilter    = 'all';
-let currentSearch    = '';
-let currentDateRange = 'all';
-let currentPage      = 1;
-const PAGE_SIZE      = 15;
-let selectedBookingId = null;
-let lastDoc          = null;
-
-const STATUS_MAP = {
-  pending:    { label:'Pending',     color:'#f59e0b', bg:'#fffbeb', border:'#fde68a' },
-  inprogress: { label:'In Progress', color:'#3b82f6', bg:'#eff6ff', border:'#bfdbfe' },
-  completed:  { label:'Completed',   color:'#16a34a', bg:'#f0fdf4', border:'#bbf7d0' },
-  cancelled:  { label:'Cancelled',   color:'#ef4444', bg:'#fef2f2', border:'#fecaca' },
-};
-
-// ── INIT BOOKINGS PAGE ────────────────────────────────────────────
-function initBookings() {
-  const session = requireAdminSession();
-  if (!session) return;
-  renderSidebar('bookings');
-
-  const adminEl = document.getElementById('adminHeaderName');
-  if (adminEl) adminEl.textContent = session.displayName || session.email?.split('@')[0] || 'Admin';
-
-  // URL params check (from dashboard quick actions)
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('filter')) {
-    currentFilter = params.get('filter');
-    document.querySelectorAll('.filter-tab').forEach(t => {
-      t.classList.toggle('active', t.dataset.filter === currentFilter);
-    });
-  }
-  if (params.get('id')) {
-    // Direct open a booking
-    loadBookings().then(() => openBookingDetail(params.get('id')));
-    return;
-  }
-
-  loadBookings();
-}
-
-// ── LOAD ALL BOOKINGS FROM FIRESTORE ─────────────────────────────
-async function loadBookings() {
-  showTableLoading(true);
+// ── SESSION CHECK ──────────────────────────────────────────────────
+function checkAdminSession() {
   try {
-    const snap = await db.collection('bookings')
-      .orderBy('createdAt', 'desc')
-      .get();
-
-    allBookings = snap.docs.map(doc => ({ _id: doc.id, ...doc.data() }));
-
-    // Update filter tab counts
-    updateFilterCounts();
-    applyFilters();
-
-  } catch (e) {
-    console.error('[Bookings] Load error:', e);
-    showAdminToast('❌ Bookings load nahi hue: ' + e.message, 'error');
-    showTableLoading(false);
-  }
-}
-
-// ── FILTER COUNTS ─────────────────────────────────────────────────
-function updateFilterCounts() {
-  const counts = {
-    all:        allBookings.length,
-    pending:    allBookings.filter(b => b.status === 'pending').length,
-    inprogress: allBookings.filter(b => b.status === 'inprogress').length,
-    completed:  allBookings.filter(b => b.status === 'completed').length,
-    cancelled:  allBookings.filter(b => b.status === 'cancelled').length,
-  };
-  Object.entries(counts).forEach(([key, val]) => {
-    const el = document.getElementById('count-' + key);
-    if (el) el.textContent = val;
-  });
-}
-
-// ── APPLY FILTERS + SEARCH + DATE ─────────────────────────────────
-function applyFilters() {
-  let data = [...allBookings];
-
-  // Status filter
-  if (currentFilter !== 'all') {
-    data = data.filter(b => b.status === currentFilter);
-  }
-
-  // Date range filter
-  const now = new Date();
-  if (currentDateRange === 'today') {
-    const today = new Date(); today.setHours(0,0,0,0);
-    data = data.filter(b => b.createdAt?.toDate?.() >= today);
-  } else if (currentDateRange === 'week') {
-    const week = new Date(now - 7*24*60*60*1000);
-    data = data.filter(b => b.createdAt?.toDate?.() >= week);
-  } else if (currentDateRange === 'month') {
-    const month = new Date(now - 30*24*60*60*1000);
-    data = data.filter(b => b.createdAt?.toDate?.() >= month);
-  }
-
-  // Search
-  if (currentSearch.trim()) {
-    const q = currentSearch.toLowerCase();
-    data = data.filter(b =>
-      (b.groomName||'').toLowerCase().includes(q) ||
-      (b.brideName||'').toLowerCase().includes(q) ||
-      (b.whatsapp||'').includes(q) ||
-      (b.transactionId||'').toLowerCase().includes(q) ||
-      (b.template||'').toLowerCase().includes(q) ||
-      (b._id||'').toLowerCase().includes(q)
-    );
-  }
-
-  filteredBookings = data;
-  currentPage = 1;
-  renderBookingsTable();
-  updateResultsInfo();
-}
-
-// ── RENDER TABLE ──────────────────────────────────────────────────
-function renderBookingsTable() {
-  const tbody = document.getElementById('bookingsTbody');
-  if (!tbody) return;
-
-  const start = (currentPage - 1) * PAGE_SIZE;
-  const end   = start + PAGE_SIZE;
-  const page  = filteredBookings.slice(start, end);
-
-  showTableLoading(false);
-
-  if (page.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" class="empty-row">
-      <div style="padding:3rem;text-align:center;">
-        <div style="font-size:2.5rem;margin-bottom:0.7rem;">📭</div>
-        <div style="font-weight:700;color:#475569;margin-bottom:0.3rem;">Koi booking nahi mili</div>
-        <div style="font-size:0.82rem;color:#94a3b8;">Filter ya search change karke dekhein</div>
-      </div>
-    </td></tr>`;
-    renderPagination();
-    return;
-  }
-
-  tbody.innerHTML = page.map((b, i) => {
-    const s    = STATUS_MAP[b.status] || STATUS_MAP.pending;
-    const date = b.createdAt?.toDate?.()
-      ? b.createdAt.toDate().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'})
-      : '—';
-    const orderId = 'AK' + (b._id||'').slice(-6).toUpperCase();
-    const verified = b.paymentVerified ? '✅' : '⏳';
-
-    return `<tr class="booking-row ${b.paymentVerified ? 'verified-row' : ''}"
-                onclick="openBookingDetail('${b._id}')"
-                style="animation-delay:${i*0.04}s">
-      <td><span class="order-id-pill">${orderId}</span></td>
-      <td>
-        <div class="couple-name">${b.groomName||'?'} &amp; ${b.brideName||'?'}</div>
-        <div class="couple-sub">📱 ${b.whatsapp||'—'}</div>
-      </td>
-      <td><span class="template-pill">${b.template||'—'}</span></td>
-      <td class="amount-cell">₹${(b.amountPaid||0).toLocaleString('en-IN')}</td>
-      <td>${verified}</td>
-      <td>
-        <span class="status-pill-adm" style="color:${s.color};background:${s.bg};border-color:${s.border};">
-          ${s.label}
-        </span>
-      </td>
-      <td class="txn-cell">${b.transactionId||'—'}</td>
-      <td>${date}</td>
-      <td onclick="event.stopPropagation()">
-        <div class="row-actions">
-          <button class="ra-btn ra-wa" onclick="quickWhatsApp('${b.whatsapp||''}')" title="WhatsApp">💬</button>
-          <button class="ra-btn ra-edit" onclick="openBookingDetail('${b._id}')" title="Details">👁️</button>
-          <button class="ra-btn ra-del" onclick="confirmDeleteBooking('${b._id}')" title="Delete">🗑️</button>
-        </div>
-      </td>
-    </tr>`;
-  }).join('');
-
-  renderPagination();
-}
-
-// ── PAGINATION ────────────────────────────────────────────────────
-function renderPagination() {
-  const total    = filteredBookings.length;
-  const pages    = Math.ceil(total / PAGE_SIZE);
-  const paginEl  = document.getElementById('pagination');
-  if (!paginEl) return;
-
-  if (pages <= 1) { paginEl.innerHTML = ''; return; }
-
-  let html = `<button class="pg-btn" onclick="changePage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹ Prev</button>`;
-  for (let i = 1; i <= pages; i++) {
-    if (i === 1 || i === pages || Math.abs(i - currentPage) <= 1) {
-      html += `<button class="pg-btn ${i===currentPage?'active':''}" onclick="changePage(${i})">${i}</button>`;
-    } else if (Math.abs(i - currentPage) === 2) {
-      html += `<span class="pg-dots">…</span>`;
-    }
-  }
-  html += `<button class="pg-btn" onclick="changePage(${currentPage+1})" ${currentPage===pages?'disabled':''}>Next ›</button>`;
-  paginEl.innerHTML = html;
-}
-
-function changePage(page) {
-  const pages = Math.ceil(filteredBookings.length / PAGE_SIZE);
-  if (page < 1 || page > pages) return;
-  currentPage = page;
-  renderBookingsTable();
-  document.getElementById('bookingsTable')?.scrollIntoView({behavior:'smooth'});
-}
-
-// ── RESULTS INFO ──────────────────────────────────────────────────
-function updateResultsInfo() {
-  const el = document.getElementById('resultsInfo');
-  if (!el) return;
-  const start = Math.min((currentPage-1)*PAGE_SIZE+1, filteredBookings.length);
-  const end   = Math.min(currentPage*PAGE_SIZE, filteredBookings.length);
-  el.textContent = filteredBookings.length === 0
-    ? 'No results'
-    : `Showing ${start}–${end} of ${filteredBookings.length} bookings`;
-}
-
-// ── LOADING STATE ─────────────────────────────────────────────────
-function showTableLoading(show) {
-  const tbody = document.getElementById('bookingsTbody');
-  if (!tbody) return;
-  if (show) {
-    tbody.innerHTML = Array(5).fill(0).map(() => `
-      <tr class="skeleton-row">
-        ${Array(9).fill('<td><div class="skeleton-cell"></div></td>').join('')}
-      </tr>`).join('');
-  }
-}
-
-// ── BOOKING DETAIL MODAL ──────────────────────────────────────────
-function openBookingDetail(id) {
-  const b = allBookings.find(x => x._id === id);
-  if (!b) { showAdminToast('❌ Booking nahi mili', 'error'); return; }
-
-  selectedBookingId = id;
-  const modal  = document.getElementById('bookingDetailModal');
-  const s      = STATUS_MAP[b.status] || STATUS_MAP.pending;
-  const orderId = 'AK' + id.slice(-6).toUpperCase();
-  const date   = b.createdAt?.toDate?.()
-    ? b.createdAt.toDate().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'})
-    : '—';
-
-  // Pre-wedding events
-  const preEvents = [
-    b.mehendi?.active ? `🌿 Mehendi: ${b.mehendi.date} ${b.mehendi.time} — ${b.mehendi.location||'—'}` : null,
-    b.haldi?.active   ? `💛 Haldi: ${b.haldi.date} ${b.haldi.time} — ${b.haldi.location||'—'}` : null,
-    b.sangeet?.active ? `🎶 Sangeet: ${b.sangeet.date} ${b.sangeet.time} — ${b.sangeet.location||'—'}` : null,
-  ].filter(Boolean).join('<br>') || '—';
-
-  document.getElementById('modalContent').innerHTML = `
-    <!-- HEADER -->
-    <div class="md-header">
-      <div>
-        <div class="md-order-id">${orderId}</div>
-        <div class="md-couple">${b.groomName||'?'} &amp; ${b.brideName||'?'}</div>
-        <div class="md-date">📅 ${date}</div>
-      </div>
-      <span class="status-pill-adm lg" style="color:${s.color};background:${s.bg};border-color:${s.border};">${s.label}</span>
-    </div>
-
-    <!-- STATUS CHANGE -->
-    <div class="md-section">
-      <div class="md-sec-title">🔄 Status Update</div>
-      <div class="status-btn-row">
-        ${Object.entries(STATUS_MAP).map(([key, val]) => `
-          <button class="status-change-btn ${b.status===key?'active':''}"
-            style="${b.status===key?`background:${val.bg};color:${val.color};border-color:${val.border};`:''}"
-            onclick="updateBookingStatus('${id}','${key}')">
-            ${val.label}
-          </button>`).join('')}
-      </div>
-    </div>
-
-    <!-- COUPLE DETAILS -->
-    <div class="md-section">
-      <div class="md-sec-title">💑 Couple Details</div>
-      <div class="md-grid">
-        <div class="md-field"><span class="md-label">Dulhe Ka Naam</span><span class="md-val">${b.groomName||'—'}</span></div>
-        <div class="md-field"><span class="md-label">Dulhe Ke Walid</span><span class="md-val">${b.groomFather||'—'}</span></div>
-        <div class="md-field"><span class="md-label">Dulhan Ka Naam</span><span class="md-val">${b.brideName||'—'}</span></div>
-        <div class="md-field"><span class="md-label">Dulhan Ke Walid</span><span class="md-val">${b.brideFather||'—'}</span></div>
-        <div class="md-field"><span class="md-label">Mangni Ki Tarikh</span><span class="md-val">${b.engagementDate||'—'}</span></div>
-        <div class="md-field"><span class="md-label">Template</span><span class="md-val">${b.template||'—'}</span></div>
-      </div>
-    </div>
-
-    <!-- TIMELINE -->
-    <div class="md-section">
-      <div class="md-sec-title">⏰ Program Timeline</div>
-      <div class="timeline-list">
-        <div class="tl-item">👥 <strong>Guest Arrival:</strong> ${b.guestArrival?.date||'—'} ${b.guestArrival?.time||''}</div>
-        <div class="tl-item">💍 <strong>Wedding Ceremony:</strong> ${b.weddingCeremony?.date||'—'} ${b.weddingCeremony?.time||''}</div>
-        ${b.cocktailHour?.date ? `<div class="tl-item">🥂 <strong>Cocktail Hour:</strong> ${b.cocktailHour.date} ${b.cocktailHour.time||''}</div>` : ''}
-        ${b.dinnerReception?.date ? `<div class="tl-item">🍽️ <strong>Dinner Reception:</strong> ${b.dinnerReception.date} ${b.dinnerReception.time||''}</div>` : ''}
-      </div>
-    </div>
-
-    <!-- VENUE -->
-    <div class="md-section">
-      <div class="md-sec-title">📍 Venue</div>
-      <div class="md-grid">
-        <div class="md-field"><span class="md-label">Venue Naam</span><span class="md-val">${b.venueName||'—'}</span></div>
-        <div class="md-field full"><span class="md-label">Address</span><span class="md-val">${b.venueAddress||'—'}</span></div>
-        ${b.venueMap ? `<div class="md-field full"><span class="md-label">Maps Link</span><a href="${b.venueMap}" target="_blank" class="md-link">🗺️ Google Maps Dekho</a></div>` : ''}
-      </div>
-    </div>
-
-    <!-- PRE-WEDDING -->
-    <div class="md-section">
-      <div class="md-sec-title">🌿 Pre-Wedding Events</div>
-      <div class="md-text">${preEvents}</div>
-    </div>
-
-    <!-- PAYMENT -->
-    <div class="md-section">
-      <div class="md-sec-title">💰 Payment Details</div>
-      <div class="md-grid">
-        <div class="md-field"><span class="md-label">Amount Paid</span><span class="md-val green">₹${(b.amountPaid||0).toLocaleString('en-IN')}</span></div>
-        <div class="md-field"><span class="md-label">Coupon Used</span><span class="md-val">${b.couponCode||'None'}</span></div>
-        <div class="md-field"><span class="md-label">Discount</span><span class="md-val">${b.discount ? '₹'+b.discount : '—'}</span></div>
-        <div class="md-field"><span class="md-label">Transaction ID</span><span class="md-val mono">${b.transactionId||'—'}</span></div>
-        <div class="md-field"><span class="md-label">WhatsApp</span>
-          <a class="md-link" href="https://wa.me/91${b.whatsapp}" target="_blank">📱 ${b.whatsapp||'—'}</a>
-        </div>
-        <div class="md-field"><span class="md-label">Payment Verified</span>
-          <span class="md-val" id="verifyStatus">${b.paymentVerified ? '✅ Verified' : '⏳ Pending'}</span>
-        </div>
-      </div>
-      <!-- Verify Button -->
-      <button class="verify-btn ${b.paymentVerified ? 'verified' : ''}" id="verifyBtn"
-        onclick="togglePaymentVerify('${id}')">
-        ${b.paymentVerified ? '✅ Payment Verified — Unmark karein' : '🔍 Payment Verify Karein'}
-      </button>
-    </div>
-
-    <!-- SCREENSHOT -->
-    ${b.screenshotB64 ? `
-    <div class="md-section">
-      <div class="md-sec-title">📸 Payment Screenshot</div>
-      <img src="${b.screenshotB64}" alt="Payment Screenshot" class="screenshot-img"
-           onclick="this.classList.toggle('expanded')"/>
-      <div class="md-hint">Click karo bada karne ke liye</div>
-    </div>` : ''}
-
-    <!-- SEND CARD LINK -->
-    <div class="md-section">
-      <div class="md-sec-title">🔗 Card Link Bhejo Customer Ko</div>
-      <div class="send-link-row">
-        <input type="url" id="cardLinkInput" class="md-input"
-               placeholder="https://akans47g.github.io/AKANS_Web/card/..." value="${b.cardLink||''}"/>
-        <button class="md-btn blue" onclick="saveCardLink('${id}')">💾 Save</button>
-      </div>
-      ${b.cardLink ? `<a href="https://wa.me/91${b.whatsapp}?text=${encodeURIComponent('🎉 Aapka Digital Wedding Card Ready Hai!%0A%0A💍 '+b.groomName+' & '+b.brideName+'%0A%0A🔗 Card Link: '+b.cardLink+'%0A%0AAKANS Web Development Services')}" target="_blank" class="wa-send-btn">💬 WhatsApp Pe Card Link Bhejo</a>` : ''}
-    </div>
-
-    <!-- ADMIN NOTE -->
-    <div class="md-section">
-      <div class="md-sec-title">📝 Admin Note</div>
-      <textarea id="adminNoteInput" class="md-textarea" placeholder="Is booking ke baare mein note daalo...">${b.adminNote||''}</textarea>
-      <button class="md-btn blue" style="margin-top:0.5rem;" onclick="saveAdminNote('${id}')">💾 Note Save Karein</button>
-    </div>
-
-    <!-- DANGER ZONE -->
-    <div class="md-section danger-zone">
-      <div class="md-sec-title">⚠️ Danger Zone</div>
-      <button class="md-btn red" onclick="confirmDeleteBooking('${id}')">🗑️ Is Booking Ko Delete Karein</button>
-    </div>
-  `;
-
-  modal.classList.add('open');
-}
-
-function closeBookingDetail() {
-  document.getElementById('bookingDetailModal').classList.remove('open');
-  selectedBookingId = null;
-}
-
-// ── UPDATE STATUS ─────────────────────────────────────────────────
-async function updateBookingStatus(id, newStatus) {
-  try {
-    await db.collection('bookings').doc(id).update({ status: newStatus });
-    // Update local data
-    const b = allBookings.find(x => x._id === id);
-    if (b) b.status = newStatus;
-    applyFilters();
-    updateFilterCounts();
-    // Update modal UI
-    document.querySelectorAll('.status-change-btn').forEach(btn => {
-      const isActive = btn.textContent.trim() === STATUS_MAP[newStatus]?.label;
-      btn.classList.toggle('active', isActive);
-      const s = Object.entries(STATUS_MAP).find(([k]) => btn.textContent.includes(STATUS_MAP[k]?.label));
-      if(s && isActive) { btn.style.background = s[1].bg; btn.style.color = s[1].color; btn.style.borderColor = s[1].border; }
-      else { btn.style.background = ''; btn.style.color = ''; btn.style.borderColor = ''; }
-    });
-    showAdminToast('✅ Status updated: ' + STATUS_MAP[newStatus]?.label, 'success');
-  } catch(e) { showAdminToast('❌ Update failed: ' + e.message, 'error'); }
-}
-
-// ── VERIFY PAYMENT ─────────────────────────────────────────────────
-async function togglePaymentVerify(id) {
-  const b = allBookings.find(x => x._id === id);
-  if (!b) return;
-  const newVal = !b.paymentVerified;
-  try {
-    await db.collection('bookings').doc(id).update({ paymentVerified: newVal });
-    b.paymentVerified = newVal;
-    const btn = document.getElementById('verifyBtn');
-    const st  = document.getElementById('verifyStatus');
-    if (btn) { btn.textContent = newVal ? '✅ Payment Verified — Unmark karein' : '🔍 Payment Verify Karein'; btn.classList.toggle('verified', newVal); }
-    if (st)  st.textContent = newVal ? '✅ Verified' : '⏳ Pending';
-    renderBookingsTable();
-    showAdminToast(newVal ? '✅ Payment verified!' : '⏳ Payment unverified', newVal ? 'success' : 'warning');
-  } catch(e) { showAdminToast('❌ Error: ' + e.message, 'error'); }
-}
-
-// ── SAVE CARD LINK ─────────────────────────────────────────────────
-async function saveCardLink(id) {
-  const link = document.getElementById('cardLinkInput')?.value.trim();
-  try {
-    await db.collection('bookings').doc(id).update({ cardLink: link });
-    const b = allBookings.find(x => x._id === id);
-    if (b) b.cardLink = link;
-    showAdminToast('✅ Card link save ho gaya!', 'success');
-    // Refresh modal
-    closeBookingDetail();
-    openBookingDetail(id);
-  } catch(e) { showAdminToast('❌ Error: ' + e.message, 'error'); }
-}
-
-// ── SAVE ADMIN NOTE ────────────────────────────────────────────────
-async function saveAdminNote(id) {
-  const note = document.getElementById('adminNoteInput')?.value.trim();
-  try {
-    await db.collection('bookings').doc(id).update({ adminNote: note });
-    const b = allBookings.find(x => x._id === id);
-    if (b) b.adminNote = note;
-    showAdminToast('✅ Note save ho gaya!', 'success');
-  } catch(e) { showAdminToast('❌ Error: ' + e.message, 'error'); }
-}
-
-// ── DELETE BOOKING ─────────────────────────────────────────────────
-function confirmDeleteBooking(id) {
-  const b = allBookings.find(x => x._id === id);
-  const name = b ? `${b.groomName||'?'} & ${b.brideName||'?'}` : id;
-  if (!confirm(`⚠️ Kya aap sach mein "${name}" ki booking delete karna chahte hain?\n\nYeh action undo nahi hogi!`)) return;
-  deleteBooking(id);
-}
-
-async function deleteBooking(id) {
-  try {
-    await db.collection('bookings').doc(id).delete();
-    allBookings = allBookings.filter(x => x._id !== id);
-    closeBookingDetail();
-    applyFilters();
-    updateFilterCounts();
-    showAdminToast('🗑️ Booking delete ho gayi', 'warning');
-  } catch(e) { showAdminToast('❌ Delete failed: ' + e.message, 'error'); }
-}
-
-// ── QUICK WHATSAPP ─────────────────────────────────────────────────
-function quickWhatsApp(number) {
-  if (!number) { showAdminToast('⚠️ WhatsApp number nahi hai', 'warning'); return; }
-  window.open('https://wa.me/91' + number, '_blank');
-}
-
-// ── EXPORT CSV ────────────────────────────────────────────────────
-function exportBookingsCSV() {
-  const headers = ['Order ID','Groom','Bride','Template','Amount','Status','Payment Verified','Transaction ID','WhatsApp','Wedding Date','Booking Date'];
-  const rows = filteredBookings.map(b => [
-    'AK'+b._id.slice(-6).toUpperCase(),
-    b.groomName||'', b.brideName||'',
-    b.template||'', b.amountPaid||0,
-    b.status||'', b.paymentVerified?'Yes':'No',
-    b.transactionId||'', b.whatsapp||'',
-    b.weddingCeremony?.date||'',
-    b.createdAt?.toDate?.()?.toLocaleDateString('en-IN')||''
-  ]);
-
-  const csv = [headers, ...rows].map(r => r.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url; a.download = `AKANS_Bookings_${new Date().toLocaleDateString('en-IN').replace(/\//g,'-')}.csv`;
-  a.click(); URL.revokeObjectURL(url);
-  showAdminToast('📥 CSV download ho raha hai!', 'success');
-}
-
-// ── SEARCH DEBOUNCE ────────────────────────────────────────────────
-let searchTimer;
-function onSearchInput(val) {
-  clearTimeout(searchTimer);
-  searchTimer = setTimeout(() => { currentSearch = val; applyFilters(); }, 300);
-}
-
-// ── FILTER TAB CLICK ───────────────────────────────────────────────
-function setFilter(filter) {
-  currentFilter = filter;
-  document.querySelectorAll('.filter-tab').forEach(t => t.classList.toggle('active', t.dataset.filter === filter));
-  applyFilters();
-}
-
-// ── DATE RANGE ────────────────────────────────────────────────────
-function setDateRange(range) {
-  currentDateRange = range;
-  document.querySelectorAll('.date-btn').forEach(b => b.classList.toggle('active', b.dataset.range === range));
-  applyFilters();
-}
-
-// ── MANUAL BOOKING MODAL ───────────────────────────────────────────
-function openManualBooking() {
-  document.getElementById('manualBookingModal').classList.add('open');
-}
-function closeManualBooking() {
-  document.getElementById('manualBookingModal').classList.remove('open');
-}
-
-async function submitManualBooking() {
-  const groomName  = document.getElementById('mb-groom').value.trim();
-  const brideName  = document.getElementById('mb-bride').value.trim();
-  const template   = document.getElementById('mb-template').value;
-  const amount     = parseInt(document.getElementById('mb-amount').value) || 1199;
-  const whatsapp   = document.getElementById('mb-whatsapp').value.trim();
-  const weddingDate= document.getElementById('mb-wdate').value;
-
-  if (!groomName || !brideName || !whatsapp) {
-    showAdminToast('⚠️ Naam aur WhatsApp zaroori hai', 'warning'); return;
-  }
-
-  const btn = document.getElementById('mb-submit');
-  btn.disabled = true; btn.textContent = '⏳ Saving...';
-
-  try {
-    const docRef = await db.collection('bookings').add({
-      groomName, brideName, template: template||'—',
-      amountPaid: amount, whatsapp, status: 'pending',
-      weddingCeremony: { date: weddingDate||'', time:'' },
-      paymentVerified: true, // Manual = already paid
-      createdBy: 'admin',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    });
-    closeManualBooking();
-    showAdminToast('✅ Manual booking add ho gayi!', 'success');
-    await loadBookings();
-  } catch(e) {
-    showAdminToast('❌ Error: ' + e.message, 'error');
-    btn.disabled = false; btn.textContent = '✅ Booking Add Karein';
-  }
-}
-
-// ── INIT ──────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  if (document.getElementById('bookingsPage')) initBookings();
-});
-
-// ╔══════════════════════════════════════════════════════════════╗
-// ║         SECTION 4 — admin-templates.html                    ║
-// ╚══════════════════════════════════════════════════════════════╝
-
-// ── DEFAULT TEMPLATES DATA ─────────────────────────────────────────
-const DEFAULT_TEMPLATES = [
-  { slot:'w1', name:'Emerald Noir',    desc:'Deep green and gold with ornate corner accents',  badge:'Limited Edition', badgeType:'limited', order:1, active:true },
-  { slot:'w2', name:'Crimson Royale',  desc:'Dark charcoal base with gold and deep red',       badge:'Most Liked',      badgeType:'liked',   order:2, active:true },
-  { slot:'w3', name:'Royal Elegance',  desc:'Classic ivory and gold with palace motifs',        badge:'New',             badgeType:'new',     order:3, active:true },
-  { slot:'w4', name:'Garden Romance',  desc:'Soft rose and blush with floral accents',          badge:'New',             badgeType:'new',     order:4, active:true },
-  { slot:'w5', name:'Rose Gold Blush', desc:'Blush pink and rose gold with ornate floral door', badge:'Popular',         badgeType:'hot',     order:5, active:true },
-  { slot:'w6', name:'Midnight Royal',  desc:'Deep purple and silver with celestial star motifs',badge:'Fan Fav',         badgeType:'liked',   order:6, active:true },
-];
-
-const BADGE_OPTIONS = [
-  { value:'',         label:'— No Badge —' },
-  { value:'New',      label:'🟠 New',            type:'new'     },
-  { value:'Popular',  label:'🔴 Popular',         type:'hot'     },
-  { value:'Most Liked',label:'🟣 Most Liked',     type:'liked'   },
-  { value:'Fan Fav',  label:'🟣 Fan Fav',         type:'liked'   },
-  { value:'Limited Edition',label:'🟢 Limited Edition',type:'limited'},
-  { value:'Coming Soon',label:'⚪ Coming Soon',   type:'soon'    },
-];
-
-let allTemplates = [];
-
-// ── INIT ───────────────────────────────────────────────────────────
-async function initTemplates() {
-  const session = requireAdminSession();
-  if (!session) return;
-  renderSidebar('templates');
-
-  const hName = document.getElementById('adminHeaderName');
-  if (hName) hName.textContent = session.displayName || 'Admin';
-
-  await loadTemplates();
-}
-
-// ── LOAD TEMPLATES FROM FIRESTORE ─────────────────────────────────
-async function loadTemplates() {
-  setTplLoading(true);
-  try {
-    const snap = await db.collection('templates').orderBy('order','asc').get();
-
-    if (snap.empty) {
-      // First time — initialize default templates
-      await initDefaultTemplates();
-      return;
-    }
-
-    allTemplates = snap.docs.map(doc => ({ _id: doc.id, ...doc.data() }));
-    renderTemplatesGrid();
-  } catch(e) {
-    // orderBy index nahi hai toh simple get
-    try {
-      const snap2 = await db.collection('templates').get();
-      allTemplates = snap2.docs.map(doc => ({ _id: doc.id, ...doc.data() }))
-        .sort((a,b) => (a.order||0) - (b.order||0));
-      if (allTemplates.length === 0) await initDefaultTemplates();
-      else renderTemplatesGrid();
-    } catch(e2) {
-      showAdminToast('❌ Templates load error: ' + e2.message, 'error');
-    }
-  } finally {
-    setTplLoading(false);
-  }
-}
-
-// ── INIT DEFAULT TEMPLATES (first time setup) ─────────────────────
-async function initDefaultTemplates() {
-  showAdminToast('⚙️ Default templates set ho rahe hain...', 'info');
-  try {
-    const batch = db.batch();
-    DEFAULT_TEMPLATES.forEach(tpl => {
-      const ref = db.collection('templates').doc(tpl.slot);
-      batch.set(ref, {
-        ...tpl,
-        imgUrl:      `https://raw.githubusercontent.com/akans47g/AKANS_Web/main/${tpl.slot}.jpg`,
-        previewLink: '',
-        bookingLink: '',
-        createdAt:   firebase.firestore.FieldValue.serverTimestamp(),
-        updatedAt:   firebase.firestore.FieldValue.serverTimestamp(),
-      });
-    });
-    await batch.commit();
-    showAdminToast('✅ Default templates initialized!', 'success');
-    await loadTemplates();
-  } catch(e) {
-    showAdminToast('❌ Init error: ' + e.message, 'error');
-  }
-}
-
-// ── RENDER GRID ────────────────────────────────────────────────────
-function renderTemplatesGrid() {
-  const grid = document.getElementById('templatesAdminGrid');
-  if (!grid) return;
-
-  const activeCount   = allTemplates.filter(t => t.active).length;
-  const inactiveCount = allTemplates.filter(t => !t.active).length;
-  const countEl = document.getElementById('tplCountInfo');
-  if (countEl) countEl.textContent = `${activeCount} active · ${inactiveCount} hidden`;
-
-  grid.innerHTML = allTemplates.map((t,i) => buildTplCard(t, i)).join('') + buildAddCard();
-}
-
-function buildTplCard(t, i) {
-  const BADGE_COLORS = {
-    limited:'#16a34a', liked:'#7c3aed', new:'#f59e0b',
-    hot:'#ef4444', soon:'#94a3b8'
-  };
-  const badgeColor = BADGE_COLORS[t.badgeType] || '#64748b';
-
-  return `<div class="tpl-card ${t.active ? '' : 'tpl-inactive'}" id="tplcard-${t._id}" 
-               style="animation-delay:${i*0.05}s">
-    <!-- Image -->
-    <div class="tpl-img-wrap">
-      <img src="${t.imgUrl||''}" alt="${t.name}" class="tpl-img"
-           onerror="this.src='';this.parentNode.classList.add('no-img');this.style.display='none'"/>
-      ${!t.imgUrl ? '<div class="tpl-no-img">📷<br>No Image</div>' : ''}
-      ${t.badge ? `<span class="tpl-badge" style="background:${badgeColor};">${t.badge}</span>` : ''}
-      ${!t.active ? '<div class="tpl-hidden-overlay">🔒 Hidden</div>' : ''}
-      <div class="tpl-slot-tag">${t.slot||'—'}.jpg</div>
-    </div>
-    <!-- Info -->
-    <div class="tpl-info">
-      <div class="tpl-name">${t.name||'Unnamed'}</div>
-      <div class="tpl-desc">${t.desc||'—'}</div>
-      <div class="tpl-links">
-        ${t.previewLink
-          ? `<a href="${t.previewLink}" target="_blank" class="tpl-link-btn preview">👁️ Preview</a>`
-          : '<span class="tpl-link-missing">⚠️ No preview link</span>'}
-        ${t.bookingLink
-          ? `<a href="${t.bookingLink}" target="_blank" class="tpl-link-btn booking">📦 Booking</a>`
-          : ''}
-      </div>
-      <!-- Actions -->
-      <div class="tpl-actions">
-        <button class="tpl-btn tpl-edit" onclick="openTplEdit('${t._id}')">✏️ Edit</button>
-        <button class="tpl-btn tpl-toggle ${t.active ? 'on' : 'off'}"
-                onclick="toggleTplActive('${t._id}', ${!t.active})">
-          ${t.active ? '✅ Active' : '🔴 Hidden'}
-        </button>
-      </div>
-    </div>
-  </div>`;
-}
-
-function buildAddCard() {
-  return `<div class="tpl-card tpl-add-card" onclick="openAddTemplate()">
-    <div class="tpl-add-icon">➕</div>
-    <div class="tpl-add-text">Add New Template</div>
-    <div class="tpl-add-sub">w7.jpg, w8.jpg...</div>
-  </div>`;
-}
-
-function setTplLoading(loading) {
-  const grid = document.getElementById('templatesAdminGrid');
-  if (!grid) return;
-  if (loading) {
-    grid.innerHTML = `<div class="tpl-loading">
-      <div class="tpl-spinner"></div>
-      <div>Templates load ho rahe hain...</div>
-    </div>`;
-  }
-}
-
-// ── OPEN EDIT MODAL ────────────────────────────────────────────────
-function openTplEdit(id) {
-  const tpl = allTemplates.find(t => t._id === id);
-  if (!tpl) return;
-
-  const modal = document.getElementById('tplModal');
-  const title = document.getElementById('tplModalTitle');
-  if (!modal) return;
-
-  if (title) title.textContent = `✏️ Edit — ${tpl.name}`;
-
-  // Fill form fields
-  document.getElementById('tplEditId').value          = id;
-  document.getElementById('tplEditSlot').value        = tpl.slot || '';
-  document.getElementById('tplEditName').value        = tpl.name || '';
-  document.getElementById('tplEditDesc').value        = tpl.desc || '';
-  document.getElementById('tplEditBadge').value       = tpl.badge || '';
-  document.getElementById('tplEditImgUrl').value      = tpl.imgUrl || '';
-  document.getElementById('tplEditPreview').value     = tpl.previewLink || '';
-  document.getElementById('tplEditBooking').value     = tpl.bookingLink || '';
-  document.getElementById('tplEditOrder').value       = tpl.order || 1;
-  document.getElementById('tplEditActive').checked    = tpl.active !== false;
-
-  // Image preview
-  const prevImg = document.getElementById('tplCurrentImg');
-  if (prevImg) {
-    prevImg.src = tpl.imgUrl || '';
-    prevImg.style.display = tpl.imgUrl ? 'block' : 'none';
-  }
-
-  // Reset file input
-  const fileInput = document.getElementById('tplImgUpload');
-  if (fileInput) fileInput.value = '';
-  const uploadPreview = document.getElementById('tplUploadPreview');
-  if (uploadPreview) uploadPreview.style.display = 'none';
-
-  modal.classList.add('open');
-}
-
-// ── OPEN ADD TEMPLATE MODAL ────────────────────────────────────────
-function openAddTemplate() {
-  const nextSlot = 'w' + (allTemplates.length + 1);
-  const modal = document.getElementById('tplModal');
-  const title = document.getElementById('tplModalTitle');
-  if (!modal) return;
-
-  if (title) title.textContent = '➕ Naya Template Add Karo';
-
-  // Clear all fields
-  document.getElementById('tplEditId').value       = '';
-  document.getElementById('tplEditSlot').value     = nextSlot;
-  document.getElementById('tplEditName').value     = '';
-  document.getElementById('tplEditDesc').value     = '';
-  document.getElementById('tplEditBadge').value    = 'New';
-  document.getElementById('tplEditImgUrl').value   = `https://raw.githubusercontent.com/akans47g/AKANS_Web/main/${nextSlot}.jpg`;
-  document.getElementById('tplEditPreview').value  = '';
-  document.getElementById('tplEditBooking').value  = '';
-  document.getElementById('tplEditOrder').value    = allTemplates.length + 1;
-  document.getElementById('tplEditActive').checked = true;
-
-  const prevImg = document.getElementById('tplCurrentImg');
-  if (prevImg) prevImg.style.display = 'none';
-
-  modal.classList.add('open');
-}
-
-// ── HANDLE IMAGE FILE SELECT ───────────────────────────────────────
-function onTplImgSelect(input) {
-  const file = input.files[0];
-  if (!file) return;
-  if (file.size > 5 * 1024 * 1024) {
-    showAdminToast('❌ Image 5MB se zyada nahi honi chahiye', 'error'); return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = e => {
-    const preview = document.getElementById('tplUploadPreview');
-    if (preview) {
-      preview.src = e.target.result;
-      preview.style.display = 'block';
-    }
-    showAdminToast('✅ Image select ho gayi — Save karo', 'success');
-  };
-  reader.readAsDataURL(file);
-}
-
-// ── SAVE TEMPLATE CHANGES ──────────────────────────────────────────
-async function saveTplChanges() {
-  const id       = document.getElementById('tplEditId').value.trim();
-  const slot     = document.getElementById('tplEditSlot').value.trim();
-  const name     = document.getElementById('tplEditName').value.trim();
-  const desc     = document.getElementById('tplEditDesc').value.trim();
-  const badge    = document.getElementById('tplEditBadge').value;
-  const imgUrl   = document.getElementById('tplEditImgUrl').value.trim();
-  const preview  = document.getElementById('tplEditPreview').value.trim();
-  const booking  = document.getElementById('tplEditBooking').value.trim();
-  const order    = parseInt(document.getElementById('tplEditOrder').value) || 1;
-  const active   = document.getElementById('tplEditActive').checked;
-  const fileInput = document.getElementById('tplImgUpload');
-
-  if (!name) { showAdminToast('⚠️ Template naam zaroori hai', 'warning'); return; }
-  if (!slot) { showAdminToast('⚠️ Slot naam zaroori hai (w1, w2...)', 'warning'); return; }
-
-  const saveBtn = document.getElementById('tplSaveBtn');
-  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '⏳ Saving...'; }
-
-  try {
-    let finalImgUrl = imgUrl;
-
-    // Firebase Storage upload if file selected
-    if (fileInput?.files[0] && typeof firebase.storage === 'function') {
-      try {
-        const file     = fileInput.files[0];
-        const storRef  = firebase.storage().ref(`templates/${slot}.jpg`);
-        await storRef.put(file);
-        finalImgUrl    = await storRef.getDownloadURL();
-        showAdminToast('☁️ Image uploaded to Storage!', 'success');
-      } catch(storErr) {
-        console.warn('Storage upload failed, using URL:', storErr);
-        showAdminToast('⚠️ Storage unavailable — URL use ho raha hai', 'warning');
+    const session = JSON.parse(localStorage.getItem('adminSession') || 'null');
+    if (session) {
+      const elapsed = Date.now() - session.timestamp;
+      if (elapsed < SESSION_DURATION && session.isAdmin) {
+        if (!window.location.href.includes('admin-dashboard')) {
+          window.location.replace('admin-dashboard.html');
+        }
+        return true;
+      } else {
+        localStorage.removeItem('adminSession');
+        auth.signOut().catch(() => {});
       }
     }
+  } catch (e) {
+    localStorage.removeItem('adminSession');
+  }
+  return false;
+}
 
-    const badgeType = BADGE_OPTIONS.find(b => b.value === badge)?.type || '';
-    const data = {
-      slot, name, desc, badge, badgeType,
-      imgUrl: finalImgUrl,
-      previewLink: preview,
-      bookingLink: booking,
-      order, active,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
+// ── SESSION GUARD (all admin pages use this) ───────────────────────
+function requireAdminSession() {
+  const session = JSON.parse(localStorage.getItem('adminSession') || 'null');
+  if (!session || !session.isAdmin) {
+    window.location.replace('admin-login.html');
+    return null;
+  }
+  const elapsed = Date.now() - session.timestamp;
+  if (elapsed >= SESSION_DURATION) {
+    localStorage.removeItem('adminSession');
+    auth.signOut().catch(() => {});
+    window.location.replace('admin-login.html');
+    return null;
+  }
+  return session;
+}
 
-    if (id) {
-      // Update existing
-      await db.collection('templates').doc(id).update(data);
-      showAdminToast('✅ Template updated!', 'success');
-    } else {
-      // Add new
-      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-      await db.collection('templates').doc(slot).set(data);
-      showAdminToast('✅ Naya template add ho gaya!', 'success');
-    }
+// ── LOGOUT ────────────────────────────────────────────────────────
+async function adminLogout() {
+  if (!confirm('Logout karna chahte hain?')) return;
+  localStorage.removeItem('adminSession');
+  await auth.signOut().catch(() => {});
+  window.location.replace('admin-login.html');
+}
 
-    closeTplModal();
-    await loadTemplates();
+// ── SHARED TOAST ──────────────────────────────────────────────────
+function showAdminToast(msg, type = 'info') {
+  let t = document.getElementById('adminToast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'adminToast';
+    document.body.appendChild(t);
+  }
+  t.textContent   = msg;
+  t.className     = `admin-toast ${type} show`;
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 3200);
+}
 
-    // Regenerate index.html templates JS (guidance)
-    showAdminToast('💡 index.html pe templates auto-update ho jaayenge', 'info');
+// ── SIDEBAR TOGGLE ────────────────────────────────────────────────
+function toggleSidebar() {
+  document.getElementById('adminSidebar')?.classList.toggle('open');
+  document.getElementById('sidebarOverlay')?.classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('adminSidebar')?.classList.remove('open');
+  document.getElementById('sidebarOverlay')?.classList.remove('show');
+}
 
-  } catch(e) {
-    showAdminToast('❌ Save error: ' + e.message, 'error');
-    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '💾 Save Template'; }
+// ── BADGE ─────────────────────────────────────────────────────────
+function setBadge(id, count) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (count > 0) {
+    el.textContent  = count > 99 ? '99+' : count;
+    el.style.display = 'flex';
+  } else {
+    el.style.display = 'none';
   }
 }
 
-// ── TOGGLE ACTIVE ──────────────────────────────────────────────────
-async function toggleTplActive(id, newState) {
-  try {
-    await db.collection('templates').doc(id).update({
-      active: newState,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    showAdminToast(newState ? '✅ Template active kar diya!' : '🔒 Template hide kar diya!', 'success');
-    await loadTemplates();
-  } catch(e) {
-    showAdminToast('❌ Error: ' + e.message, 'error');
+// ── ANIMATE COUNT ─────────────────────────────────────────────────
+function animateCount(id, target, prefix = '') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const steps = 40, duration = 900;
+  const step  = target / steps;
+  let current = 0;
+  const interval = setInterval(() => {
+    current = Math.min(current + step, target);
+    el.textContent = prefix + Math.floor(current).toLocaleString('en-IN');
+    if (current >= target) clearInterval(interval);
+  }, duration / steps);
+}
+
+function setStatCard(id, value) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.textContent = value;
+    el.closest?.('.stat-card')?.classList.remove('loading');
   }
 }
 
-// ── DELETE TEMPLATE ────────────────────────────────────────────────
-async function deleteTpl(id) {
-  const tpl = allTemplates.find(t => t._id === id);
-  if (!confirm(`⚠️ "${tpl?.name||id}" template delete karna chahte ho? Yeh action undo nahi hoga.`)) return;
-  try {
-    await db.collection('templates').doc(id).delete();
-    showAdminToast('🗑️ Template deleted!', 'success');
-    closeTplModal();
-    await loadTemplates();
-  } catch(e) {
-    showAdminToast('❌ Error: ' + e.message, 'error');
-  }
-}
+function goTo(url) { window.location.href = url; }
 
-// ── CLOSE MODAL ────────────────────────────────────────────────────
-function closeTplModal() {
-  const modal = document.getElementById('tplModal');
-  if (modal) modal.classList.remove('open');
-}
-
-// ── ORDER UP/DOWN ──────────────────────────────────────────────────
-async function moveTpl(id, direction) {
-  const idx = allTemplates.findIndex(t => t._id === id);
-  if (idx === -1) return;
-  const swapIdx = idx + direction;
-  if (swapIdx < 0 || swapIdx >= allTemplates.length - 1) return; // -1 for add card
-
-  const batch = db.batch();
-  batch.update(db.collection('templates').doc(allTemplates[idx]._id),    { order: swapIdx + 1 });
-  batch.update(db.collection('templates').doc(allTemplates[swapIdx]._id),{ order: idx + 1 });
-  await batch.commit();
-  await loadTemplates();
-  showAdminToast('✅ Order updated!', 'success');
-}
-
-// ── PAGE INIT ──────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  if (document.getElementById('templatesPage')) initTemplates();
-});
-
-// ╔══════════════════════════════════════════════════════════════╗
-// ║   SECTION 5, 6... aage ke pages yahan add honge             ║
-// ╚══════════════════════════════════════════════════════════════╝
-
-// ╔══════════════════════════════════════════════════════════════╗
-// ║   SECTION 5, 6... admin-all2.js mein hain                   ║
-// ╚══════════════════════════════════════════════════════════════╝
-
-// ╔══════════════════════════════════════════════════════════════╗
-// ║   SIDEBAR RENDER — Used by ALL admin pages                   ║
-// ╚══════════════════════════════════════════════════════════════╝
-
+// ── ADMIN NAV ─────────────────────────────────────────────────────
 const ADMIN_NAV = [
-  { id:'dashboard',  icon:'📊', label:'Dashboard',             url:'admin-dashboard.html'  },
-  { id:'bookings',   icon:'📦', label:'Bookings',              url:'admin-bookings.html'   },
-  { id:'orders',     icon:'📋', label:'Orders',                url:'admin-orders.html'     },
-  { id:'users',      icon:'👥', label:'Users',                 url:'admin-users.html'      },
-  { id:'reviews',    icon:'⭐', label:'Reviews',               url:'admin-reviews.html'    },
-  { id:'templates',  icon:'🎨', label:'Templates',             url:'admin-templates.html'  },
-  { id:'coupons',    icon:'🎟️', label:'Coupons',               url:'admin-coupons.html'    },
-  { id:'referrals',  icon:'🎁', label:'Referrals & Withdraw',  url:'admin-referrals.html'  },
-  { id:'whatsapp',   icon:'💬', label:'WhatsApp',              url:'admin-whatsapp.html'   },
-  { id:'settings',   icon:'⚙️', label:'Settings',              url:'admin-settings.html'   },
+  { id:'dashboard',  icon:'📊', label:'Dashboard',            url:'admin-dashboard.html'  },
+  { id:'bookings',   icon:'📦', label:'Bookings',             url:'admin-bookings.html'   },
+  { id:'orders',     icon:'📋', label:'Orders',               url:'admin-orders.html'     },
+  { id:'users',      icon:'👥', label:'Users',                url:'admin-users.html'      },
+  { id:'reviews',    icon:'⭐', label:'Reviews',              url:'admin-reviews.html'    },
+  { id:'templates',  icon:'🎨', label:'Templates',            url:'admin-templates.html'  },
+  { id:'coupons',    icon:'🎟️', label:'Coupons',              url:'admin-coupons.html'    },
+  { id:'referrals',  icon:'🎁', label:'Referrals & Withdraw', url:'admin-referrals.html'  },
+  { id:'whatsapp',   icon:'💬', label:'WhatsApp',             url:'admin-whatsapp.html'   },
+  { id:'settings',   icon:'⚙️', label:'Settings',             url:'admin-settings.html'   },
 ];
 
+// ── RENDER SIDEBAR ────────────────────────────────────────────────
 function renderSidebar(activePage) {
   const sidebar = document.getElementById('adminSidebar');
   if (!sidebar) return;
-
-  const session = JSON.parse(localStorage.getItem('adminSession') || '{}');
+  const session    = JSON.parse(localStorage.getItem('adminSession') || '{}');
   const adminName  = session.displayName || session.email?.split('@')[0] || 'Admin';
   const adminEmail = session.email || '';
 
@@ -1012,3 +165,288 @@ function renderSidebar(activePage) {
     </div>
   `;
 }
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║         SECTION 3 — admin-bookings.html                     ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+let allBookings = [], filteredBookings = [], currentFilter = 'all',
+    currentSearch = '', unsubBookings = null, editingBookingId = null;
+
+async function initBookings() {
+  const session = requireAdminSession(); if (!session) return;
+  renderSidebar('bookings');
+  const hName = document.getElementById('adminHeaderName');
+  if (hName) hName.textContent = session.displayName || 'Admin';
+  startBookingsListener();
+}
+
+function startBookingsListener() {
+  if (unsubBookings) unsubBookings();
+  const grid = document.getElementById('bookingsGrid');
+  if (grid) grid.innerHTML = `<div class="b-loading"><div class="b-loading-spinner"></div><div>Loading...</div></div>`;
+  unsubBookings = db.collection('bookings').orderBy('createdAt','desc')
+    .onSnapshot(snap => {
+      allBookings = snap.docs.map(d => ({ _id:d.id, ...d.data() }));
+      updateBookingStats(); applyFilterAndSearch();
+    }, err => showAdminToast('⚠️ ' + err.message, 'error'));
+}
+
+function updateBookingStats() {
+  const counts = {all:0,pending:0,inprogress:0,completed:0,cancelled:0};
+  let rev = 0;
+  allBookings.forEach(b => {
+    counts.all++; counts[b.status||'pending'] = (counts[b.status||'pending']||0)+1;
+    rev += (b.amountPaid||0);
+  });
+  Object.keys(counts).forEach(k => { const e=document.getElementById('count-'+k); if(e) e.textContent=counts[k]; });
+  const re=document.getElementById('total-revenue'); if(re) re.textContent='₹'+rev.toLocaleString('en-IN');
+  setBadge('badge-bookings', counts.pending);
+}
+
+function switchFilter(filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.b-tab').forEach(t => t.classList.toggle('active', t.dataset.filter===filter));
+  applyFilterAndSearch();
+}
+
+function onSearch(val) { currentSearch = val.toLowerCase().trim(); applyFilterAndSearch(); }
+
+function applyFilterAndSearch() {
+  filteredBookings = allBookings.filter(b => {
+    const ok = currentFilter==='all' || (b.status||'pending')===currentFilter;
+    if (!ok) return false;
+    if (!currentSearch) return true;
+    return [b.groomName,b.brideName,b.template,b.whatsapp,b.transactionId,b._id].join(' ').toLowerCase().includes(currentSearch);
+  });
+  renderBookingsGrid();
+  const c=document.getElementById('showing-count'); if(c) c.textContent=filteredBookings.length+' bookings';
+}
+
+function renderBookingsGrid() {
+  const grid = document.getElementById('bookingsGrid'); if (!grid) return;
+  if (!filteredBookings.length) { grid.innerHTML=`<div class="b-empty"><div class="b-empty-icon">📭</div><div class="b-empty-title">Koi booking nahi</div></div>`; return; }
+  grid.innerHTML = filteredBookings.map(b => buildBookingCard(b)).join('');
+}
+
+function buildBookingCard(b) {
+  const S={pending:{label:'Pending',color:'#f59e0b',bg:'#fffbeb',border:'#fde68a'},inprogress:{label:'In Progress',color:'#3b82f6',bg:'#eff6ff',border:'#bfdbfe'},completed:{label:'Completed',color:'#16a34a',bg:'#f0fdf4',border:'#bbf7d0'},cancelled:{label:'Cancelled',color:'#ef4444',bg:'#fef2f2',border:'#fecaca'}};
+  const s=S[b.status||'pending']||S.pending;
+  const shortId='#AK'+b._id.slice(-6).toUpperCase();
+  const date=b.createdAt?.toDate?.() ? b.createdAt.toDate().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'}) : '—';
+  const weddingDate=b.weddingCeremony?.date ? new Date(b.weddingCeremony.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
+  return `<div class="b-card" id="card-${b._id}">
+    <div class="b-card-top"><div class="b-order-id">${shortId}</div><div class="b-card-badges">${b.paymentVerified?'<span class="verified-badge">✅ Verified</span>':''}<span class="status-pill" style="color:${s.color};background:${s.bg};border:1px solid ${s.border};">${s.label}</span></div></div>
+    <div class="b-template">🎨 ${b.template||'—'}</div>
+    <div class="b-couple">💑 <strong>${b.groomName||'?'}</strong> &amp; <strong>${b.brideName||'?'}</strong></div>
+    <div class="b-meta-row"><span>💒 ${weddingDate}</span><span>📅 ${date}</span></div>
+    <div class="b-payment-row"><span class="b-amount">💰 ₹${(b.amountPaid||0).toLocaleString('en-IN')}</span>${b.couponCode?`<span class="b-coupon">🎟️ ${b.couponCode}</span>`:''}<span class="b-wa">📱 ${b.whatsapp||'—'}</span></div>
+    ${b.screenshotB64?`<div class="b-has-screenshot">📸 Screenshot available</div>`:''}
+    <div class="b-actions">
+      <button class="b-btn b-btn-primary" onclick="openBookingDetail('${b._id}')">👁️ View</button>
+      <a class="b-btn b-btn-wa" href="https://wa.me/91${b.whatsapp||''}" target="_blank">💬 WhatsApp</a>
+      <select class="b-status-select" onchange="quickStatusChange('${b._id}',this.value)" style="color:${s.color};">
+        <option value="pending" ${(b.status||'pending')==='pending'?'selected':''}>⏳ Pending</option>
+        <option value="inprogress" ${b.status==='inprogress'?'selected':''}>🔵 In Progress</option>
+        <option value="completed" ${b.status==='completed'?'selected':''}>✅ Completed</option>
+        <option value="cancelled" ${b.status==='cancelled'?'selected':''}>❌ Cancelled</option>
+      </select>
+    </div></div>`;
+}
+
+async function quickStatusChange(id, newStatus) {
+  try { await db.collection('bookings').doc(id).update({status:newStatus,statusUpdatedAt:firebase.firestore.FieldValue.serverTimestamp()}); showAdminToast('✅ Status updated!','success'); }
+  catch(e) { showAdminToast('❌ '+e.message,'error'); }
+}
+
+async function openBookingDetail(id) {
+  editingBookingId = id;
+  const modal = document.getElementById('bookingModal'); if (!modal) return;
+  modal.classList.add('open');
+  document.getElementById('modalContent').innerHTML = `<div style="text-align:center;padding:3rem;color:#94a3b8;">⏳ Loading...</div>`;
+  try {
+    const doc = await db.collection('bookings').doc(id).get();
+    if (!doc.exists) { showAdminToast('❌ Not found','error'); closeModal(); return; }
+    renderModalContent({_id:doc.id,...doc.data()});
+  } catch(e) { showAdminToast('❌ '+e.message,'error'); closeModal(); }
+}
+
+function renderModalContent(b) {
+  const S={pending:'Pending',inprogress:'In Progress',completed:'Completed',cancelled:'Cancelled'};
+  document.getElementById('modalContent').innerHTML = `<div class="modal-body-scroll">
+    <div class="detail-header"><div><div class="detail-order-id">#AK${b._id.slice(-6).toUpperCase()}</div><div class="detail-template">🎨 ${b.template||'—'}</div></div><span class="status-pill">${S[b.status||'pending']||'Pending'}</span></div>
+    <div class="detail-section"><div class="detail-sec-title">💑 Couple Details</div>
+      <div class="detail-grid">
+        <div class="detail-item"><span class="di-label">Dulhe Ka Naam</span><span class="di-val">${b.groomName||'—'}</span></div>
+        <div class="detail-item"><span class="di-label">Dulhe Ke Walid</span><span class="di-val">${b.groomFather||'—'}</span></div>
+        <div class="detail-item"><span class="di-label">Dulhan Ka Naam</span><span class="di-val">${b.brideName||'—'}</span></div>
+        <div class="detail-item"><span class="di-label">Dulhan Ke Walid</span><span class="di-val">${b.brideFather||'—'}</span></div>
+      </div></div>
+    <div class="detail-section"><div class="detail-sec-title">💰 Payment</div>
+      <div class="detail-grid">
+        <div class="detail-item"><span class="di-label">Amount</span><span class="di-val strong-green">₹${(b.amountPaid||0).toLocaleString('en-IN')}</span></div>
+        <div class="detail-item"><span class="di-label">Transaction ID</span><span class="di-val mono">${b.transactionId||'—'}</span></div>
+        <div class="detail-item"><span class="di-label">WhatsApp</span><span class="di-val">📱 ${b.whatsapp||'—'}</span></div>
+        <div class="detail-item"><span class="di-label">Payment</span><span class="di-val">${b.paymentVerified?'✅ Verified':'⏳ Pending'}</span></div>
+      </div>
+      ${b.screenshotB64?`<div style="margin-top:0.8rem;"><img src="${b.screenshotB64}" style="max-width:100%;max-height:250px;border-radius:10px;object-fit:contain;" onclick="window.open(this.src,'_blank')"/></div>`:''}
+    </div>
+    <div class="detail-section"><div class="detail-sec-title">⚙️ Admin Actions</div>
+      <div class="admin-action-row"><label class="action-label">Status</label>
+        <select id="modalStatusSelect" class="action-select">
+          <option value="pending" ${(b.status||'pending')==='pending'?'selected':''}>⏳ Pending</option>
+          <option value="inprogress" ${b.status==='inprogress'?'selected':''}>🔵 In Progress</option>
+          <option value="completed" ${b.status==='completed'?'selected':''}>✅ Completed</option>
+          <option value="cancelled" ${b.status==='cancelled'?'selected':''}>❌ Cancelled</option>
+        </select></div>
+      <div class="admin-action-row"><label class="action-label">Card Link</label>
+        <input type="url" id="modalCardLink" class="action-input" value="${b.cardLink||''}" placeholder="https://..."/></div>
+      <div class="admin-action-row"><label class="action-label">Admin Note</label>
+        <textarea id="modalAdminNote" class="action-textarea">${b.adminNote||''}</textarea></div>
+      <div class="admin-action-row" style="flex-direction:row;align-items:center;gap:0.8rem;">
+        <input type="checkbox" id="modalPayVerify" ${b.paymentVerified?'checked':''} style="width:18px;height:18px;accent-color:#16a34a;"/>
+        <label for="modalPayVerify" style="font-size:0.85rem;font-weight:600;">✅ Payment Verified</label></div>
+      <div class="modal-action-btns">
+        <button class="mab-save" onclick="saveBookingChanges('${b._id}')">💾 Save</button>
+        <a class="mab-wa" href="https://wa.me/91${b.whatsapp||''}" target="_blank">💬 WhatsApp</a>
+        <button class="mab-delete" onclick="deleteBooking('${b._id}')">🗑️ Delete</button>
+      </div></div></div>`;
+}
+
+async function saveBookingChanges(id) {
+  const status=document.getElementById('modalStatusSelect')?.value;
+  const note=document.getElementById('modalAdminNote')?.value.trim();
+  const verified=document.getElementById('modalPayVerify')?.checked;
+  const cardLink=document.getElementById('modalCardLink')?.value.trim();
+  const btn=document.querySelector('.mab-save');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Saving...';}
+  try {
+    await db.collection('bookings').doc(id).update({status,adminNote:note,paymentVerified:verified,cardLink:cardLink||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    showAdminToast('✅ Updated!','success'); closeModal();
+    if(status==='completed'&&cardLink){
+      const b=allBookings.find(x=>x._id===id);
+      if(b?.whatsapp){const msg=encodeURIComponent(`🎉 *AKANS Web*\n\nAapka wedding card ready hai! 💍\n💑 ${b.groomName} & ${b.brideName}\n🔗 ${cardLink}\n\nMubarakbaad! 🎊`);window.open(`https://wa.me/91${b.whatsapp}?text=${msg}`,'_blank');}
+    }
+  } catch(e){showAdminToast('❌ '+e.message,'error');if(btn){btn.disabled=false;btn.textContent='💾 Save';}}
+}
+
+async function deleteBooking(id) {
+  if(!confirm('Delete karna chahte ho?')) return;
+  try{await db.collection('bookings').doc(id).delete();showAdminToast('🗑️ Deleted','success');closeModal();}
+  catch(e){showAdminToast('❌ '+e.message,'error');}
+}
+
+function closeModal() { document.getElementById('bookingModal')?.classList.remove('open'); editingBookingId=null; }
+
+function exportBookingsCSV() {
+  if(!filteredBookings.length){showAdminToast('⚠️ No data','warning');return;}
+  const headers=['Order ID','Template','Groom','Bride','Amount','Status','WhatsApp','Date'];
+  const rows=filteredBookings.map(b=>['#AK'+b._id.slice(-6).toUpperCase(),b.template||'',b.groomName||'',b.brideName||'',b.amountPaid||0,b.status||'pending',b.whatsapp||'',b.createdAt?.toDate?.()?.toLocaleDateString('en-IN')||''].map(v=>`"${v}"`));
+  const csv=[headers.join(','),...rows.map(r=>r.join(','))].join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`bookings-${new Date().toISOString().split('T')[0]}.csv`;a.click();
+  showAdminToast('✅ CSV downloaded!','success');
+}
+
+window.addEventListener('beforeunload',()=>{if(unsubBookings)unsubBookings();});
+document.addEventListener('DOMContentLoaded',()=>{if(document.getElementById('bookingsPage'))initBookings();});
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║         SECTION 4 — admin-templates.html                    ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+let allTemplates=[],editingTplId=null,uploadedImgUrl='',storage=null;
+const GITHUB_BASE='https://raw.githubusercontent.com/akans47g/AKANS_Web/main/';
+const DEFAULT_TEMPLATES=[
+  {name:'Emerald Noir',desc:'Deep green and gold with ornate corner accents',badge:'Limited Edition',badgeClass:'badge-limited',imgFile:'w1.jpg',previewLink:'',active:true,order:1},
+  {name:'Crimson Royale',desc:'Dark charcoal base with gold and deep red accents',badge:'Most Liked',badgeClass:'badge-liked',imgFile:'w2.jpg',previewLink:'',active:true,order:2},
+  {name:'Royal Elegance',desc:'Classic ivory and gold with palace motifs',badge:'New',badgeClass:'badge-new',imgFile:'w3.jpg',previewLink:'',active:true,order:3},
+  {name:'Garden Romance',desc:'Soft rose and blush with floral accents',badge:'New',badgeClass:'badge-new',imgFile:'w4.jpg',previewLink:'',active:true,order:4},
+  {name:'Rose Gold Blush',desc:'Blush pink and rose gold with ornate floral door',badge:'Popular',badgeClass:'badge-hot',imgFile:'w5.jpg',previewLink:'',active:true,order:5},
+  {name:'Midnight Royal',desc:'Deep purple and silver with celestial star motifs',badge:'Fan Fav',badgeClass:'badge-liked',imgFile:'w6.jpg',previewLink:'',active:true,order:6},
+];
+const BADGE_OPTIONS=[{value:'badge-new',label:'🟠 New'},{value:'badge-hot',label:'🔴 Popular'},{value:'badge-liked',label:'🟣 Most Liked'},{value:'badge-limited',label:'🟢 Limited'},{value:'badge-fav',label:'⭐ Fan Fav'}];
+
+async function initTemplates() {
+  const session=requireAdminSession();if(!session)return;
+  renderSidebar('templates');
+  const hName=document.getElementById('adminHeaderName');if(hName)hName.textContent=session.displayName||'Admin';
+  try{storage=firebase.storage();}catch(e){}
+  await loadTemplates();
+}
+
+async function loadTemplates() {
+  const grid=document.getElementById('templatesGrid');if(grid)grid.innerHTML=`<div class="tpl-loading"><div class="tpl-spinner"></div><span>Loading...</span></div>`;
+  try {
+    const snap=await db.collection('templates').orderBy('order','asc').get();
+    if(snap.empty){await seedDefaultTemplates();}
+    else{allTemplates=snap.docs.map(d=>({_id:d.id,...d.data()}));}
+    renderTemplatesGrid();
+  } catch(e){allTemplates=DEFAULT_TEMPLATES.map((t,i)=>({_id:'default-'+i,...t}));renderTemplatesGrid();}
+}
+
+async function seedDefaultTemplates() {
+  const batch=db.batch();
+  DEFAULT_TEMPLATES.forEach(t=>{const ref=db.collection('templates').doc();batch.set(ref,{...t,imageUrl:GITHUB_BASE+t.imgFile,createdAt:firebase.firestore.FieldValue.serverTimestamp()});});
+  await batch.commit();
+  const snap=await db.collection('templates').orderBy('order','asc').get();
+  allTemplates=snap.docs.map(d=>({_id:d.id,...d.data()}));
+}
+
+function renderTemplatesGrid() {
+  const grid=document.getElementById('templatesGrid');if(!grid)return;
+  const cEl=document.getElementById('tpl-count');if(cEl)cEl.textContent=allTemplates.length+' templates';
+  grid.innerHTML=allTemplates.map((t,i)=>buildTplCard(t,i)).join('')+`<div class="tpl-add-card" onclick="openAddTemplate()"><div class="tpl-add-icon">+</div><div class="tpl-add-label">Naya Template</div></div>`;
+}
+
+function buildTplCard(t,i) {
+  const imgSrc=t.imageUrl||(GITHUB_BASE+(t.imgFile||'w'+(i+1)+'.jpg'));
+  return `<div class="tpl-card ${t.active?'':'tpl-inactive'}" id="tpl-card-${t._id}">
+    <div class="tpl-img-wrap"><img src="${imgSrc}" alt="${t.name}" class="tpl-img" onerror="this.parentElement.style.background='#e2e8f0'"/>
+      <div class="tpl-img-overlay"><button class="tpl-img-btn" onclick="triggerImgUpload('${t._id}')">📷 Change</button></div>
+      <input type="file" id="img-input-${t._id}" accept="image/*" style="display:none;" onchange="handleImageUpload(this,'${t._id}')"/>
+      ${t.badge?`<span class="tpl-badge-pill ${t.badgeClass||''}">${t.badge}</span>`:''}
+      ${!t.active?`<div class="tpl-inactive-overlay">INACTIVE</div>`:''}
+    </div>
+    <div class="tpl-info"><div class="tpl-name">${t.name||'Untitled'}</div><div class="tpl-desc">${t.desc||'—'}</div>
+      ${t.previewLink?`<a href="${t.previewLink}" target="_blank" class="tpl-preview-link">🔗 Preview</a>`:`<span class="tpl-no-link">⚠️ No link</span>`}
+    </div>
+    <div class="tpl-footer">
+      <div class="tpl-toggle-row" onclick="toggleTemplateActive('${t._id}',${!t.active})"><div class="mini-toggle ${t.active?'on':''}"></div><span class="tpl-toggle-label">${t.active?'Active':'Inactive'}</span></div>
+      <div class="tpl-btns"><button class="tpl-btn tpl-btn-edit" onclick="openEditTemplate('${t._id}')">✏️ Edit</button><button class="tpl-btn tpl-btn-del" onclick="deleteTemplate('${t._id}','${t.name}')">🗑️</button></div>
+    </div></div>`;
+}
+
+function openEditTemplate(id){const t=allTemplates.find(x=>x._id===id);if(!t)return;editingTplId=id;uploadedImgUrl='';document.getElementById('tplModalTitle').textContent='✏️ Edit Template';document.getElementById('tpl-edit-name').value=t.name||'';document.getElementById('tpl-edit-desc').value=t.desc||'';document.getElementById('tpl-edit-link').value=t.previewLink||'';document.getElementById('tpl-edit-badge-text').value=t.badge||'';document.getElementById('tpl-edit-badge-class').value=t.badgeClass||'badge-new';document.getElementById('tpl-edit-order').value=t.order||1;document.getElementById('tpl-edit-active').checked=t.active!==false;const prev=document.getElementById('tpl-modal-preview');if(prev){prev.src=t.imageUrl||(GITHUB_BASE+(t.imgFile||'w1.jpg'));prev.style.display='block';}document.getElementById('tplModal').classList.add('open');}
+function openAddTemplate(){editingTplId=null;uploadedImgUrl='';document.getElementById('tplModalTitle').textContent='➕ Add Template';['tpl-edit-name','tpl-edit-desc','tpl-edit-link','tpl-edit-badge-text'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});document.getElementById('tpl-edit-badge-text').value='New';document.getElementById('tpl-edit-badge-class').value='badge-new';document.getElementById('tpl-edit-order').value=allTemplates.length+1;document.getElementById('tpl-edit-active').checked=true;const p=document.getElementById('tpl-modal-preview');if(p)p.style.display='none';document.getElementById('tplModal').classList.add('open');}
+function closeTplModal(){document.getElementById('tplModal')?.classList.remove('open');editingTplId=null;uploadedImgUrl='';}
+function triggerImgUpload(id){document.getElementById('img-input-'+id)?.click();}
+function triggerModalImgUpload(){document.getElementById('tpl-modal-img-input')?.click();}
+
+async function handleImageUpload(input,tplId) {
+  const file=input.files?.[0];if(!file)return;
+  if(file.size>5*1024*1024){showAdminToast('❌ Max 5MB','error');return;}
+  showAdminToast('⏳ Uploading...','info');
+  try{
+    if(storage){const ref=storage.ref(`templates/${tplId||'new'}_${Date.now()}.${file.name.split('.').pop()}`);const snap=await ref.put(file);uploadedImgUrl=await snap.ref.getDownloadURL();}
+    else{uploadedImgUrl=await new Promise((r,j)=>{const rd=new FileReader();rd.onload=()=>r(rd.result);rd.onerror=()=>j(new Error('fail'));rd.readAsDataURL(file);});}
+    if(tplId&&document.getElementById('tpl-card-'+tplId)){const img=document.querySelector(`#tpl-card-${tplId} .tpl-img`);if(img)img.src=uploadedImgUrl;await db.collection('templates').doc(tplId).update({imageUrl:uploadedImgUrl});showAdminToast('✅ Image updated!','success');await loadTemplates();}
+    else{const p=document.getElementById('tpl-modal-preview');if(p){p.src=uploadedImgUrl;p.style.display='block';}showAdminToast('✅ Ready — Save karo','success');}
+  }catch(e){showAdminToast('❌ '+e.message,'error');}
+}
+
+async function saveTplChanges() {
+  const name=document.getElementById('tpl-edit-name').value.trim();if(!name){showAdminToast('⚠️ Naam daalo','warning');return;}
+  const data={name,desc:document.getElementById('tpl-edit-desc').value.trim(),previewLink:document.getElementById('tpl-edit-link').value.trim(),badge:document.getElementById('tpl-edit-badge-text').value.trim(),badgeClass:document.getElementById('tpl-edit-badge-class').value,order:parseInt(document.getElementById('tpl-edit-order').value)||1,active:document.getElementById('tpl-edit-active').checked,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  if(uploadedImgUrl)data.imageUrl=uploadedImgUrl;
+  const btn=document.getElementById('tplSaveBtn');if(btn){btn.disabled=true;btn.textContent='⏳ Saving...';}
+  try{
+    if(editingTplId){await db.collection('templates').doc(editingTplId).update(data);showAdminToast('✅ Updated!','success');}
+    else{data.createdAt=firebase.firestore.FieldValue.serverTimestamp();data.imgFile='w'+(allTemplates.length+1)+'.jpg';if(!data.imageUrl)data.imageUrl=GITHUB_BASE+data.imgFile;await db.collection('templates').add(data);showAdminToast('✅ Added!','success');}
+    closeTplModal();await loadTemplates();
+  }catch(e){showAdminToast('❌ '+e.message,'error');if(btn){btn.disabled=false;btn.textContent='💾 Save';}}
+}
+
+async function toggleTemplateActive(id,newActive){try{await db.collection('templates').doc(id).update({active:newActive});showAdminToast(newActive?'✅ Active':'⭕ Inactive','success');await loadTemplates();}catch(e){showAdminToast('❌ '+e.message,'error');}}
+async function deleteTemplate(id,name){if(!confirm(`"${name}" delete karna chahte ho?`))return;try{await db.collection('templates').doc(id).delete();showAdminToast('🗑️ Deleted','success');await loadTemplates();}catch(e){showAdminToast('❌ '+e.message,'error');}}
+
+document.addEventListener('DOMContentLoaded',()=>{if(document.getElementById('templatesPage'))initTemplates();});
