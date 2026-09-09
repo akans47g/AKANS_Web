@@ -388,83 +388,191 @@ body::before {
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-<script src="../firebase-config.js"></script>
-<script src="admin-all.js"></script>
-<script src="admin-login.js"></script>
-
-
-<!-- PWA Install Banner -->
-<div id="pwaInstallBanner" style="
-  position:fixed; bottom:80px; left:1rem; right:1rem; z-index:400;
-  background:#fff; border:1.5px solid #dde2f5; border-radius:18px;
-  padding:1rem 1.1rem; display:none; align-items:center; gap:0.8rem;
-  box-shadow:0 8px 30px rgba(37,99,235,0.15);
-  animation:slideUp 0.35s ease both;
-  ">
-  <img src="../logo.jpg" alt="AKANS" style="width:44px;height:44px;border-radius:10px;object-fit:cover;flex-shrink:0;"
-       onerror="this.style.display='none'"/>
-  <div style="flex:1;min-width:0;">
-    <div style="font-size:0.85rem;font-weight:700;color:#1a1f3c;margin-bottom:0.1rem;">AKANS App Install Karein</div>
-    <div style="font-size:0.73rem;color:#8890b5;">Home screen par add karein — faster access!</div>
-  </div>
-  <button onclick="installPWA()" style="
-    background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;
-    border:none;border-radius:10px;padding:0.5rem 1rem;
-    font-size:0.78rem;font-weight:700;cursor:pointer;
-    font-family:'DM Sans',sans-serif;white-space:nowrap;flex-shrink:0;">
-    ⬇️ Install
-  </button>
-  <button onclick="dismissInstall()" style="
-    background:none;border:none;color:#8890b5;
-    cursor:pointer;font-size:1.1rem;flex-shrink:0;padding:0.2rem;">✕</button>
-</div>
-<style>
-@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-#pwaInstallBanner.show{display:flex!important;}
-</style>
-
-<!-- PWA Service Worker Registration -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('../sw.js', { scope: '/AKANS_Web/' })
-      .then(reg => console.log('[PWA] SW registered:', reg.scope))
-      .catch(err => console.warn('[PWA] SW failed:', err));
-  });
+// ── FIREBASE INIT ──────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyBqfFVCakhPXoS5EOD_x_xseYArTsiLI2A",
+  authDomain: "akans-website.firebaseapp.com",
+  projectId: "akans-website",
+  storageBucket: "akans-website.firebasestorage.app",
+  messagingSenderId: "319077212996",
+  appId: "1:319077212996:web:bf6c437bf17e047f65ad11"
+};
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+// ── CONSTANTS ──────────────────────────────────────────────────────
+const ADMIN_EMAIL      = 'akans47g@gmail.com';
+const SESSION_DURATION = 24 * 60 * 60 * 1000;
+const MAX_ATTEMPTS     = 5;
+const LOCKOUT_MINUTES  = 30;
+
+// ── TOAST ──────────────────────────────────────────────────────────
+function showAdminToast(msg, type = 'info') {
+  let t = document.getElementById('adminToast');
+  if (!t) return;
+  t.textContent = msg;
+  t.className   = `admin-toast ${type} show`;
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 3200);
 }
 
-// ── INSTALL PROMPT ─────────────────────────────────────────────
-let deferredPrompt = null;
-const installBanner = document.getElementById('pwaInstallBanner');
+// ── TOGGLE PASSWORD ────────────────────────────────────────────────
+function toggleAdminPass() {
+  const inp = document.getElementById('adminPass');
+  const btn = document.getElementById('togglePassBtn');
+  if (!inp) return;
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    if (btn) btn.textContent = '🙈';
+  } else {
+    inp.type = 'password';
+    if (btn) btn.textContent = '👁️';
+  }
+}
 
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredPrompt = e;
-  if (installBanner) installBanner.classList.add('show');
-});
-
-function installPWA() {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  deferredPrompt.userChoice.then(choice => {
-    if (choice.outcome === 'accepted') {
-      console.log('[PWA] User installed the app');
-      if (installBanner) installBanner.classList.remove('show');
+// ── SESSION CHECK ──────────────────────────────────────────────────
+function checkSession() {
+  try {
+    const s = JSON.parse(localStorage.getItem('adminSession') || 'null');
+    if (s && s.isAdmin && (Date.now() - s.timestamp) < SESSION_DURATION) {
+      window.location.replace('admin-dashboard.html');
+      return true;
     }
-    deferredPrompt = null;
-  });
+  } catch(e) {}
+  localStorage.removeItem('adminSession');
+  return false;
 }
 
-function dismissInstall() {
-  if (installBanner) installBanner.classList.remove('show');
-  sessionStorage.setItem('pwaPromptDismissed', '1');
+// ── LOADING STATE ──────────────────────────────────────────────────
+function setLoading(id, loading, text) {
+  const btn = document.getElementById(id);
+  if (!btn) return;
+  btn.disabled  = loading;
+  btn.innerHTML = loading
+    ? '<span style="display:inline-block;animation:spinAnim 1s linear infinite">⟳</span> Please wait...'
+    : text;
 }
 
-// Already installed check
-window.addEventListener('appinstalled', () => {
-  if (installBanner) installBanner.classList.remove('show');
-  console.log('[PWA] App installed successfully!');
-});
+// ── SAVE SESSION ───────────────────────────────────────────────────
+function saveAdminSession(user) {
+  localStorage.setItem('adminSession', JSON.stringify({
+    uid: user.uid, email: user.email,
+    displayName: user.displayName || 'Admin',
+    photoURL: user.photoURL || '',
+    isAdmin: true, timestamp: Date.now()
+  }));
+  localStorage.removeItem('adminLoginAttempts');
+  localStorage.removeItem('adminLockoutEnd');
+}
+
+// ── ADMIN LOGIN ────────────────────────────────────────────────────
+async function adminLogin() {
+  const lockEnd = parseInt(localStorage.getItem('adminLockoutEnd') || '0');
+  if (Date.now() < lockEnd) {
+    const mins = Math.ceil((lockEnd - Date.now()) / 60000);
+    showAdminToast('🔒 ' + mins + ' minute baad try karein', 'error');
+    return;
+  }
+
+  const email = document.getElementById('adminEmail')?.value.trim();
+  const pass  = document.getElementById('adminPass')?.value;
+  if (!email) { showAdminToast('⚠️ Email daalo', 'warning'); return; }
+  if (!pass)  { showAdminToast('⚠️ Password daalo', 'warning'); return; }
+  if (email !== ADMIN_EMAIL) { showAdminToast('❌ Ye email admin nahi hai', 'error'); failAttempt(); return; }
+
+  setLoading('loginBtn', true, '');
+
+  try {
+    const cred    = await auth.signInWithEmailAndPassword(email, pass);
+    const userDoc = await db.collection('users').doc(cred.user.uid).get();
+
+    if (!userDoc.exists || userDoc.data().role !== 'admin') {
+      await auth.signOut();
+      showAdminToast('❌ role:admin Firestore mein set karo', 'error');
+      failAttempt();
+      setLoading('loginBtn', false, '🔐 Admin Login');
+      return;
+    }
+
+    saveAdminSession(cred.user);
+    db.collection('adminLogs').add({ action:'login', adminEmail:cred.user.email, timestamp:firebase.firestore.FieldValue.serverTimestamp() }).catch(()=>{});
+    showAdminToast('✅ Welcome Admin!', 'success');
+    setTimeout(() => window.location.replace('admin-dashboard.html'), 800);
+
+  } catch(e) {
+    const msgs = { 'auth/wrong-password':'❌ Galat password', 'auth/user-not-found':'❌ Email registered nahi', 'auth/too-many-requests':'❌ Bahut zyada attempts', 'auth/network-request-failed':'❌ Internet check karo' };
+    showAdminToast(msgs[e.code] || '❌ ' + e.message, 'error');
+    failAttempt();
+    setLoading('loginBtn', false, '🔐 Admin Login');
+  }
+}
+
+// ── GOOGLE ADMIN LOGIN ─────────────────────────────────────────────
+async function adminGoogleLogin() {
+  setLoading('googleAdminBtn', true, '');
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ login_hint: ADMIN_EMAIL });
+    await auth.signInWithRedirect(provider);
+  } catch(e) {
+    showAdminToast('❌ ' + e.message, 'error');
+    setLoading('googleAdminBtn', false, '<div class="google-logo"></div> Continue with Google');
+  }
+}
+
+// ── HANDLE REDIRECT ────────────────────────────────────────────────
+auth.getRedirectResult().then(async result => {
+  if (!result || !result.user) return;
+  const user = result.user;
+  if (user.email !== ADMIN_EMAIL) { await auth.signOut(); showAdminToast('❌ Ye Gmail admin nahi hai!', 'error'); return; }
+  try {
+    const doc = await db.collection('users').doc(user.uid).get();
+    if (!doc.exists || doc.data().role !== 'admin') { await auth.signOut(); showAdminToast('❌ role:admin set karo', 'error'); return; }
+    saveAdminSession(user);
+    showAdminToast('✅ Google login successful!', 'success');
+    setTimeout(() => window.location.replace('admin-dashboard.html'), 800);
+  } catch(e) { await auth.signOut(); showAdminToast('❌ ' + e.message, 'error'); }
+}).catch(e => { if (e.code !== 'auth/no-current-user') console.error(e.code); });
+
+// ── FAIL ATTEMPT ───────────────────────────────────────────────────
+function failAttempt() {
+  const n = parseInt(localStorage.getItem('adminLoginAttempts') || '0') + 1;
+  localStorage.setItem('adminLoginAttempts', n);
+  if (n >= MAX_ATTEMPTS) {
+    localStorage.setItem('adminLockoutEnd', Date.now() + LOCKOUT_MINUTES * 60000);
+    localStorage.removeItem('adminLoginAttempts');
+    showLock(LOCKOUT_MINUTES * 60);
+  } else if (n >= MAX_ATTEMPTS - 2) {
+    showAdminToast('⚠️ Sirf ' + (MAX_ATTEMPTS - n) + ' moka baki!', 'warning');
+  }
+}
+
+// ── LOCK ───────────────────────────────────────────────────────────
+function showLock(secs) {
+  const ov = document.getElementById('lockOverlay');
+  const tm = document.getElementById('lockTimerDisplay');
+  if (!ov) return;
+  ov.classList.add('show');
+  const tick = setInterval(() => {
+    secs--;
+    if (tm) tm.textContent = Math.floor(secs/60).toString().padStart(2,'0') + ':' + (secs%60).toString().padStart(2,'0');
+    if (secs <= 0) { clearInterval(tick); ov.classList.remove('show'); localStorage.removeItem('adminLockoutEnd'); }
+  }, 1000);
+  if (tm) tm.textContent = Math.floor(secs/60).toString().padStart(2,'0') + ':' + (secs%60).toString().padStart(2,'0');
+}
+
+// ── ENTER KEY ──────────────────────────────────────────────────────
+document.addEventListener('keydown', e => { if (e.key === 'Enter') adminLogin(); });
+
+// ── INIT ───────────────────────────────────────────────────────────
+if (!checkSession()) {
+  const lockEnd = parseInt(localStorage.getItem('adminLockoutEnd') || '0');
+  if (Date.now() < lockEnd) showLock(Math.ceil((lockEnd - Date.now()) / 1000));
+}
 </script>
 </body>
-</html>
