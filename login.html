@@ -556,24 +556,15 @@ function resetLock() {
     }
   }
 
-  // ── GOOGLE LOGIN (Redirect — mobile ke liye) ──────────────
+  // ── GOOGLE LOGIN (Popup only — GitHub Pages ke liye) ──────
   async function googleLogin() {
-    try {
-      showToast('🔄 Google pe redirect ho raha hai...');
-      await auth.signInWithRedirect(googleProvider);
-    } catch(e) {
-      showToast('❌ Google login failed: ' + e.message);
-    }
-  }
+    const btns = document.querySelectorAll('[onclick="googleLogin()"]');
+    btns.forEach(b => { b.disabled = true; b.innerHTML = '⏳ Please wait...'; });
 
-  // ── REDIRECT RESULT HANDLE (page load pe) ─────────────────
-  // ── GOOGLE REDIRECT RESULT ─────────────────────────────────────────
-  (async () => {
     try {
-      const result = await auth.getRedirectResult();
-      if (!result || !result.user) return;
+      const result = await auth.signInWithPopup(googleProvider);
+      const user   = result.user;
 
-      const user = result.user;
       showToast('✅ Google login successful!');
 
       // Save to Firestore if new user
@@ -590,19 +581,28 @@ function resetLock() {
             createdAt:   firebase.firestore.FieldValue.serverTimestamp()
           });
         }
-      } catch(e) {
-        console.warn('Firestore save error:', e.message);
-      }
+      } catch(e) { console.warn('Firestore:', e.message); }
 
-      // Absolute URL redirect — most reliable
       window.location.replace('https://akans47g.github.io/AKANS_Web/index.html');
 
     } catch(e) {
-      if (e.code === 'auth/no-current-user') return;
-      if (e.code === 'auth/null-user') return;
-      console.error('[Google Redirect Error]', e.code, e.message);
+      console.error('Google login error:', e.code, e.message);
+      if (e.code === 'auth/popup-closed-by-user') {
+        showToast('⚠️ Popup band ho gaya — dobara try karo', 'warning');
+      } else if (e.code === 'auth/popup-blocked') {
+        showToast('⚠️ Browser ne popup block kiya — allow karo', 'warning');
+      } else {
+        showToast('❌ Google login failed: ' + e.message);
+      }
+      btns.forEach(b => { b.disabled = false; b.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" style="vertical-align:middle;margin-right:8px"/>Continue with Google'; });
     }
-  })();
+  }
+
+  // ── REDIRECT RESULT HANDLE (page load pe) ─────────────────
+  // ── REDIRECT RESULT (cleanup — popup se handle hota hai) ──────────
+  auth.getRedirectResult().catch(e => {
+    if (e.code !== 'auth/no-current-user') console.warn('Redirect result:', e.code);
+  });
 
   // ── FORGOT PASSWORD ───────────────────────────────────
   async function forgotPass(e) {
