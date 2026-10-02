@@ -293,9 +293,7 @@ body::before {
 <div class="bg-blob bg-blob-3"></div>
 
 <!-- LOCK OVERLAY -->
-<div class="lock-overlay" id="lockOverlay">
-  <div class="lock-icon-big">🔒</div>
-  <div class="lock-title">Account Temporarily Locked</div>
+<div class="lock-title">Account Temporarily Locked</div>
   <div class="lock-sub">
     Bahut zyada galat attempts ki wajah se account lock ho gaya hai.<br>
     Neeche dikhaye gaye waqt ke baad try karein.
@@ -408,8 +406,6 @@ const db   = firebase.firestore();
 // ── CONSTANTS ──────────────────────────────────────────────────────
 const ADMIN_EMAIL      = 'akans47g@gmail.com';
 const SESSION_DURATION = 24 * 60 * 60 * 1000;
-const MAX_ATTEMPTS     = 5;
-const LOCKOUT_MINUTES  = 30;
 
 // ── TOAST ──────────────────────────────────────────────────────────
 function showAdminToast(msg, type = 'info') {
@@ -494,8 +490,7 @@ async function adminLogin() {
     if (!userDoc.exists || userDoc.data().role !== 'admin') {
       await auth.signOut();
       showAdminToast('❌ role:admin Firestore mein set karo', 'error');
-      failAttempt();
-      setLoading('loginBtn', false, '🔐 Admin Login');
+        setLoading('loginBtn', false, '🔐 Admin Login');
       return;
     }
 
@@ -507,7 +502,6 @@ async function adminLogin() {
   } catch(e) {
     const msgs = { 'auth/wrong-password':'❌ Galat password', 'auth/user-not-found':'❌ Email registered nahi', 'auth/too-many-requests':'❌ Bahut zyada attempts', 'auth/network-request-failed':'❌ Internet check karo' };
     showAdminToast(msgs[e.code] || '❌ ' + e.message, 'error');
-    failAttempt();
     setLoading('loginBtn', false, '🔐 Admin Login');
   }
 }
@@ -539,40 +533,14 @@ auth.getRedirectResult().then(async result => {
   } catch(e) { await auth.signOut(); showAdminToast('❌ ' + e.message, 'error'); }
 }).catch(e => { if (e.code !== 'auth/no-current-user') console.error(e.code); });
 
-// ── FAIL ATTEMPT ───────────────────────────────────────────────────
-function failAttempt() {
-  const n = parseInt(localStorage.getItem('adminLoginAttempts') || '0') + 1;
-  localStorage.setItem('adminLoginAttempts', n);
-  if (n >= MAX_ATTEMPTS) {
-    localStorage.setItem('adminLockoutEnd', Date.now() + LOCKOUT_MINUTES * 60000);
-    localStorage.removeItem('adminLoginAttempts');
-    showLock(LOCKOUT_MINUTES * 60);
-  } else if (n >= MAX_ATTEMPTS - 2) {
-    showAdminToast('⚠️ Sirf ' + (MAX_ATTEMPTS - n) + ' moka baki!', 'warning');
-  }
-}
 
-// ── LOCK ───────────────────────────────────────────────────────────
-function showLock(secs) {
-  const ov = document.getElementById('lockOverlay');
-  const tm = document.getElementById('lockTimerDisplay');
-  if (!ov) return;
-  ov.classList.add('show');
-  const tick = setInterval(() => {
-    secs--;
-    if (tm) tm.textContent = Math.floor(secs/60).toString().padStart(2,'0') + ':' + (secs%60).toString().padStart(2,'0');
-    if (secs <= 0) { clearInterval(tick); ov.classList.remove('show'); localStorage.removeItem('adminLockoutEnd'); }
-  }, 1000);
-  if (tm) tm.textContent = Math.floor(secs/60).toString().padStart(2,'0') + ':' + (secs%60).toString().padStart(2,'0');
-}
+
+
 
 // ── ENTER KEY ──────────────────────────────────────────────────────
 document.addEventListener('keydown', e => { if (e.key === 'Enter') adminLogin(); });
 
 // ── INIT ───────────────────────────────────────────────────────────
-if (!checkSession()) {
-  const lockEnd = parseInt(localStorage.getItem('adminLockoutEnd') || '0');
-  if (Date.now() < lockEnd) showLock(Math.ceil((lockEnd - Date.now()) / 1000));
-}
+checkSession();
 </script>
 </body>
