@@ -310,10 +310,5 @@ function sendBulkReminder() {
 
 // ── INIT ──────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  if (document.getElementById('whatsappPage')) initWhatsApp();
+  if (document.getElementById('whatsappPage')) initWithAuth(initWhatsApp);
 });
-
-// ╔══════════════════════════════════════════════════════════════╗
-// ║         admin-all3.js COMPLETE ✅                            ║
-// ║         Admin Panel JS — Sections 9, 10, 11                  ║
-// ╚══════════════════════════════════════════════════════════════╝
