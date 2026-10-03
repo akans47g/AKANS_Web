@@ -364,9 +364,5 @@ window.addEventListener('beforeunload', () => { if(unsubUsers) unsubUsers(); });
 
 // ── INIT ──────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  if (document.getElementById('usersPage')) initUsers();
+  if (document.getElementById('usersPage')) initWithAuth(initUsers);
 });
-
-// ╔══════════════════════════════════════════════════════════════╗
-// ║   SECTION 8, 9... admin-all2.js mein aage add honge         ║
-// ╚══════════════════════════════════════════════════════════════╝
