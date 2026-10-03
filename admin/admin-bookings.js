@@ -185,4 +185,4 @@ function exportBookingsCSV() {
 }
 
 window.addEventListener('beforeunload',()=>{if(unsubBookings)unsubBookings();});
-document.addEventListener('DOMContentLoaded',()=>{if(document.getElementById('bookingsPage'))initBookings();});
+document.addEventListener('DOMContentLoaded',()=>{if(document.getElementById('bookingsPage'))initWithAuth(initBookings);});
