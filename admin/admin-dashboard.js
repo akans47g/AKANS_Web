@@ -196,5 +196,5 @@ async function loadTemplateChart() {
 
 // ── INIT ──────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  if (document.getElementById('dashboardPage')) initDashboard();
+  if (document.getElementById('dashboardPage')) initWithAuth(initDashboard);
 });
