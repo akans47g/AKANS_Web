@@ -379,9 +379,5 @@ function exportCouponsCSV() {
 
 // ── INIT ──────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  if (document.getElementById('couponsPage')) initCoupons();
+  if (document.getElementById('couponsPage')) initWithAuth(initCoupons);
 });
-
-// ╔══════════════════════════════════════════════════════════════╗
-// ║   SECTION 7, 8... admin-all2.js mein aage add honge         ║
-// ╚══════════════════════════════════════════════════════════════╝
