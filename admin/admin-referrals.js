@@ -383,9 +383,5 @@ window.addEventListener('beforeunload', () => {
 
 // ── INIT ──────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  if (document.getElementById('referralsPage')) initReferrals();
+  if (document.getElementById('referralsPage')) initWithAuth(initReferrals);
 });
-
-// ╔══════════════════════════════════════════════════════════════╗
-// ║   admin-all2.js COMPLETE — Section 9+ → admin-all3.js       ║
-// ╚══════════════════════════════════════════════════════════════╝
