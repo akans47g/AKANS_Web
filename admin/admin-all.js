@@ -114,6 +114,26 @@ function setStatCard(id, value) {
 
 function goTo(url) { window.location.href = url; }
 
+// ── WAIT FOR AUTH THEN INIT ────────────────────────────────────────
+// Ye function Firebase Auth restore hone ka wait karta hai
+// Bina iske Firestore "Missing permissions" deta hai
+function initWithAuth(fn) {
+  if (auth.currentUser) { fn(); return; }
+  const unsub = auth.onAuthStateChanged(user => {
+    unsub();
+    if (user) {
+      fn();
+    } else {
+      // Auth nahi mili - session check
+      const session = JSON.parse(localStorage.getItem('adminSession') || 'null');
+      if (!session || !session.isAdmin) {
+        window.location.replace('admin-login.html');
+      }
+    }
+  });
+}
+
+
 // ── ADMIN NAV ─────────────────────────────────────────────────────
 const ADMIN_NAV = [
   { id:'dashboard',  icon:'📊', label:'Dashboard',            url:'admin-dashboard.html'  },
@@ -348,7 +368,7 @@ function exportBookingsCSV() {
 }
 
 window.addEventListener('beforeunload',()=>{if(unsubBookings)unsubBookings();});
-document.addEventListener('DOMContentLoaded',()=>{if(document.getElementById('bookingsPage'))initBookings();});
+document.addEventListener('DOMContentLoaded',()=>{ if(document.getElementById('bookingsPage')) initWithAuth(initBookings); });
 
 // ╔══════════════════════════════════════════════════════════════╗
 // ║         SECTION 4 — admin-templates.html                    ║
@@ -449,4 +469,4 @@ async function saveTplChanges() {
 async function toggleTemplateActive(id,newActive){try{await db.collection('templates').doc(id).update({active:newActive});showAdminToast(newActive?'✅ Active':'⭕ Inactive','success');await loadTemplates();}catch(e){showAdminToast('❌ '+e.message,'error');}}
 async function deleteTemplate(id,name){if(!confirm(`"${name}" delete karna chahte ho?`))return;try{await db.collection('templates').doc(id).delete();showAdminToast('🗑️ Deleted','success');await loadTemplates();}catch(e){showAdminToast('❌ '+e.message,'error');}}
 
-document.addEventListener('DOMContentLoaded',()=>{if(document.getElementById('templatesPage'))initTemplates();});
+document.addEventListener('DOMContentLoaded',()=>{ if(document.getElementById('templatesPage')) initWithAuth(initTemplates); });
