@@ -258,9 +258,5 @@ function copyField(id) {
 
 // ── INIT ──────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  if (document.getElementById('settingsPage')) initSettings();
+  if (document.getElementById('settingsPage')) initWithAuth(initSettings);
 });
-
-// ╔══════════════════════════════════════════════════════════════╗
-// ║   SECTION 10, 11... admin-all3.js mein aage add honge       ║
-// ╚══════════════════════════════════════════════════════════════╝
