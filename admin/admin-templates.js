@@ -102,4 +102,4 @@ async function saveTplChanges() {
 async function toggleTemplateActive(id,newActive){try{await db.collection('templates').doc(id).update({active:newActive});showAdminToast(newActive?'✅ Active':'⭕ Inactive','success');await loadTemplates();}catch(e){showAdminToast('❌ '+e.message,'error');}}
 async function deleteTemplate(id,name){if(!confirm(`"${name}" delete karna chahte ho?`))return;try{await db.collection('templates').doc(id).delete();showAdminToast('🗑️ Deleted','success');await loadTemplates();}catch(e){showAdminToast('❌ '+e.message,'error');}}
 
-document.addEventListener('DOMContentLoaded',()=>{if(document.getElementById('templatesPage'))initTemplates();});
+document.addEventListener('DOMContentLoaded',()=>{if(document.getElementById('templatesPage'))initWithAuth(initTemplates);});
