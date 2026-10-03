@@ -379,9 +379,5 @@ window.addEventListener('beforeunload', () => {
 
 // ── INIT ──────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  if (document.getElementById('reviewsPage')) initReviews();
+  if (document.getElementById('reviewsPage')) initWithAuth(initReviews);
 });
-
-// ╔══════════════════════════════════════════════════════════════╗
-// ║   SECTION 6, 7... admin-all2.js mein aage add honge         ║
-// ╚══════════════════════════════════════════════════════════════╝
