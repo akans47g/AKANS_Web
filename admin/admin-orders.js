@@ -297,9 +297,5 @@ window.addEventListener('beforeunload', () => { if(unsubOrders) unsubOrders(); }
 
 // ── INIT ──────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  if (document.getElementById('ordersPage')) initOrders();
+  if (document.getElementById('ordersPage')) initWithAuth(initOrders);
 });
-
-// ╔══════════════════════════════════════════════════════════════╗
-// ║   SECTION 11 — Admin-whatsapp.html yahan add hoga           ║
-// ╚══════════════════════════════════════════════════════════════╝
