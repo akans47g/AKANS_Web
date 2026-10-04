@@ -846,13 +846,7 @@ let orders = [];
 // Status labels
 const statusMap = {
   active:    { label:'Active',    cls:'active',    icon:'🟢' },
-  delivered: { label:'Delivered', cls:'delivered', icon:'✅' },
-  expired:   { label:'Expired',   cls:'expired',   icon:'🔴' }
-};
-
-// Status labels
-const statusMap = {
-  active:    { label:'Active',    cls:'active',    icon:'🟢' },
+  pending:   { label:'Pending',   cls:'active',    icon:'🟡' },
   delivered: { label:'Delivered', cls:'delivered', icon:'✅' },
   expired:   { label:'Expired',   cls:'expired',   icon:'🔴' }
 };
@@ -864,7 +858,7 @@ function buildCard(o) {
     <div class="order-card" data-status="${o.status}">
       <div class="card-top">
         <div>
-          <div class="order-id">#${o.id}</div>
+          <div class="order-id">#${o.orderId || o.id}</div>
           <div class="order-template">${o.template}</div>
           <div class="order-couple">💑 ${o.couple}</div>
         </div>
@@ -936,9 +930,6 @@ function editOrder(id) {
 auth.onAuthStateChanged(async user => {
   const list    = document.getElementById('ordersList');
   const empty   = document.getElementById('emptyState');
-  const lwrap   = document.getElementById('loadMoreWrap');
-  const rcount  = document.getElementById('resultsCount');
-
   if(!user) {
     // Not logged in → show login prompt
     list.innerHTML = `
@@ -951,13 +942,11 @@ auth.onAuthStateChanged(async user => {
     document.getElementById('statTotal').textContent = '—';
     document.getElementById('statActive').textContent = '—';
     document.getElementById('statDone').textContent   = '—';
-    lwrap.style.display = 'none';
     return;
   }
 
   // Logged in → fetch orders from Firestore
   try {
-    rcount.textContent = 'Loading orders...';
     const snap = await db.collection('orders')
       .where('userId','==', user.uid)
       .orderBy('createdAt','desc')
@@ -974,7 +963,6 @@ auth.onAuthStateChanged(async user => {
 
   } catch(e) {
     console.error('Firestore error:', e);
-    rcount.textContent = 'Error loading orders.';
     list.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--text-3);">⚠️ Could not load orders. Please try again.</div>`;
   }
 });
