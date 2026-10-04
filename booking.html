@@ -707,10 +707,7 @@ function toggleTerms() {
   err.classList.remove('show');
 }
 
-const COUPONS = {
-  'AKANS_100': { discount: 100, type: 'fixed', label: '₹100 Off' }
-  // Admin panel se aur coupons add honge
-};
+// Coupons ab Firestore se load honge — applyCoupon() mein
 
 const UPI_IDS = {
   phonepe: '9021958286@ybl',
@@ -762,8 +759,8 @@ function toggleEvent(name) {
   }
 }
 
-// ── COUPON ────────────────────────────────────────────────
-function applyCoupon() {
+// ── COUPON (Firestore se validate hota hai) ───────────────
+async function applyCoupon() {
   const code = document.getElementById('couponInput').value.trim().toUpperCase();
   const ok   = document.getElementById('couponSuccess');
   const err  = document.getElementById('couponError');
@@ -772,23 +769,87 @@ function applyCoupon() {
 
   if(!code) { showToast('⚠️ Coupon code daalo pehle'); return; }
 
-  if(COUPONS[code]) {
-    const c = COUPONS[code];
-    const discount = c.type === 'fixed' ? c.discount : Math.round(basePrice * c.discount / 100);
-    finalPrice = basePrice - discount;
+  // Button disable karo checking ke dauran
+  const applyBtn = document.querySelector('.coupon-btn');
+  applyBtn.disabled = true;
+  applyBtn.textContent = '⏳ Checking...';
+
+  try {
+    // Firestore se coupon dhundo
+    const snap = await db.collection('coupons')
+      .where('code', '==', code)
+      .limit(1).get();
+
+    if (snap.empty) {
+      err.textContent = '❌ Galat coupon code. Dobara try karein.';
+      err.classList.add('show');
+      showToast('❌ Galat coupon code');
+      return;
+    }
+
+    const c = snap.docs[0].data();
+
+    // Active check
+    if (!c.active) {
+      err.textContent = '❌ Yeh coupon active nahi hai.';
+      err.classList.add('show');
+      showToast('❌ Coupon active nahi hai');
+      return;
+    }
+
+    // Expiry check
+    if (c.expiryDate && c.expiryDate.toDate() < new Date()) {
+      err.textContent = '❌ Coupon expire ho gaya.';
+      err.classList.add('show');
+      showToast('❌ Coupon expire ho gaya');
+      return;
+    }
+
+    // Max uses check
+    if (c.maxUses > 0 && (c.usedCount || 0) >= c.maxUses) {
+      err.textContent = '❌ Is coupon ki limit khatam ho gayi.';
+      err.classList.add('show');
+      showToast('❌ Coupon limit khatam');
+      return;
+    }
+
+    // Min order check
+    if (c.minOrder > 0 && basePrice < c.minOrder) {
+      err.textContent = '❌ Is coupon ke liye min. order ₹' + c.minOrder + ' chahiye.';
+      err.classList.add('show');
+      showToast('❌ Min order ₹' + c.minOrder + ' chahiye');
+      return;
+    }
+
+    // Discount calculate karo (discountType: 'fixed' ya 'percent')
+    let discount = 0;
+    if (c.discountType === 'percent') {
+      discount = Math.round(basePrice * c.discountValue / 100);
+    } else {
+      discount = c.discountValue || 0;
+    }
+    discount = Math.min(discount, basePrice); // Discount price se zyada nahi ho sakta
+
+    finalPrice    = basePrice - discount;
     couponApplied = true;
 
     document.getElementById('priceOriginal').style.display = 'block';
-    document.getElementById('priceDisplay').textContent   = finalPrice.toLocaleString('en-IN');
+    document.getElementById('priceDisplay').textContent    = finalPrice.toLocaleString('en-IN');
     document.querySelectorAll('.current-amount').forEach(el => el.textContent = finalPrice.toLocaleString('en-IN'));
     document.getElementById('discountBadge').style.display = 'inline-block';
     document.getElementById('discountAmt').textContent     = discount;
     ok.classList.add('show');
     err.classList.remove('show');
     showToast('🎉 Coupon apply ho gaya! ₹' + discount + ' ki discount!');
-  } else {
+
+  } catch(e) {
+    err.textContent = '❌ Error hua: ' + e.message;
     err.classList.add('show');
-    showToast('❌ Galat coupon code');
+    showToast('❌ Coupon check mein error');
+    console.error('Coupon error:', e);
+  } finally {
+    applyBtn.disabled = false;
+    applyBtn.textContent = 'Apply';
   }
 }
 
