@@ -563,6 +563,11 @@ body { padding-bottom: 86px; }
   <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
   <meta name="apple-mobile-web-app-title" content="AKANS"/>
   <link rel="apple-touch-icon" href="logo.jpg"/>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
 </head>
 <body>
 
@@ -703,105 +708,94 @@ body { padding-bottom: 86px; }
 </section>
 
 <script>
-// ── TEMPLATE DATA ─────────────────────────────────────────
-// GitHub raw image base URL — change YOUR_USERNAME and YOUR_REPO
+// ── TEMPLATES: Firestore se load honge ─────────────────────
 const GITHUB_IMG_BASE = 'https://raw.githubusercontent.com/akans47g/AKANS_Web/main/';
+const fallbackColors  = ['#0d3b1a','#2d0a14','#f5f0e0','#fce4ec','#ff9a9e','#1a0a3a'];
 
-const templates = [
-  {
-    img:   'w1.jpg',
-    badge: 'Limited Edition', badgeClass: 'badge-limited',
-    name:  'Emerald Noir',
-    desc:  'Deep green and gold with ornate corner accents',
-    link:  '#template-1'   // <-- apna actual link yahan daalo   // <-- apna link yahan daalo
-  },
-  {
-    img:   'w2.jpg',
-    badge: 'Most Liked', badgeClass: 'badge-liked',
-    name:  'Crimson Royale',
-    desc:  'Dark charcoal base with gold and deep red',
-    link:  '#template-2'   // <-- apna actual link yahan daalo
-  },
-  {
-    img:   'w3.jpg',
-    badge: 'New', badgeClass: 'badge-new',
-    name:  'Royal Elegance',
-    desc:  'Classic ivory and gold with palace motifs',
-    link:  '#template-3'   // <-- apna actual link yahan daalo
-  },
-  {
-    img:   'w4.jpg',
-    badge: 'New', badgeClass: 'badge-new',
-    name:  'Garden Romance',
-    desc:  'Soft rose and blush with floral accents',
-    link:  '#template-4'   // <-- apna actual link yahan daalo
-  },
-  {
-    img:   'w5.jpg',
-    badge: 'Popular', badgeClass: 'badge-hot',
-    name:  'Rose Gold Blush',
-    desc:  'Blush pink and rose gold with ornate floral door',
-    link:  '#template-5'   // <-- apna actual link yahan daalo
-  },
-  {
-    img:   'w6.jpg',
-    badge: 'Fan Fav', badgeClass: 'badge-liked',
-    name:  'Midnight Royal',
-    desc:  'Deep purple and silver with celestial star motifs',
-    link:  '#template-6'   // <-- apna actual link yahan daalo
-  },
-];
-
-const fallbackColors = ['#0d3b1a','#2d0a14','#f5f0e0','#fce4ec','#fce4ec','#1a0a3a'];
-
+// db already declared in firebase-config.js
 const grid = document.getElementById('templatesGrid');
 
-templates.forEach((t, i) => {
-  const imgUrl = GITHUB_IMG_BASE + t.img;
+// Loading placeholder
+grid.innerHTML = `<div style="text-align:center;padding:3rem;color:#7c3aed;grid-column:1/-1;">
+  <div style="font-size:2rem;margin-bottom:0.5rem;">⏳</div>Loading templates...</div>`;
 
-  const card = document.createElement('a');
-  card.href = t.link;
-  card.target = '_blank';
-  card.rel = 'noopener noreferrer';
-  card.className = 'template-card';
-  card.style.textDecoration = 'none';
-  card.style.display = 'block';
+db.collection('templates')
+  .where('active', '==', true)
+  .orderBy('order', 'asc')
+  .get()
+  .catch(() =>
+    // 'order' field may not exist — fallback without orderBy
+    db.collection('templates').where('active', '==', true).get()
+  )
+  .then(snap => {
+    if (snap.empty) {
+      grid.innerHTML = `<div style="text-align:center;padding:3rem;color:#888;grid-column:1/-1;">
+        Koi template available nahi hai abhi.</div>`;
+      return;
+    }
 
-  card.innerHTML = `
-    <div class="template-img" style="background:${fallbackColors[i]}; position:relative;">
-      <span class="badge ${t.badgeClass}">${t.badge}</span>
-      <img
-        src="${imgUrl}"
-        alt="${t.name}"
-        style="width:100%;height:100%;object-fit:cover;display:block;border-radius:0;"
-        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-      />
-      <span class="preview-label" style="display:none;">Preview</span>
-    </div>
-    <div class="template-info">
-      <div class="template-name">${t.name}</div>
-      <div class="template-desc">${t.desc}</div>
-      <div style="display:flex;flex-direction:column;gap:0.4rem;">
-        <div class="btn-select" style="width:100%;font-size:0.8rem;">View Template →</div>
-        <a href="booking.html?t=${encodeURIComponent(t.name)}&tid=${i+1}"
-           class="btn-create" style="width:100%;text-align:center;padding:0.55rem;"
-           onclick="event.stopPropagation();">✨ Create Now</a>
-      </div>
-    </div>
-  `;
+    grid.innerHTML = ''; // Clear loading
 
-  // Hover effect
-  card.addEventListener('mouseenter', () => {
-    card.style.transform = 'translateY(-6px)';
-    card.style.boxShadow = '0 16px 40px rgba(37,99,235,0.22)';
+    snap.docs.forEach((doc, i) => {
+      const t = doc.data();
+      const imgUrl = t.img
+        ? (t.img.startsWith('http') ? t.img : GITHUB_IMG_BASE + t.img)
+        : '';
+      const badgeClass = t.badgeClass || 'badge-new';
+      const badge      = t.badge      || 'New';
+      const bgColor    = fallbackColors[i % fallbackColors.length];
+      const viewLink   = t.link       || '#';
+
+      const card = document.createElement('a');
+      card.href             = viewLink;
+      card.target           = '_blank';
+      card.rel              = 'noopener noreferrer';
+      card.className        = 'template-card';
+      card.style.textDecoration = 'none';
+      card.style.display    = 'block';
+
+      card.innerHTML = `
+        <div class="template-img" style="background:${bgColor}; position:relative;">
+          <span class="badge ${badgeClass}">${badge}</span>
+          ${imgUrl ? `<img
+            src="${imgUrl}"
+            alt="${t.name || 'Template'}"
+            style="width:100%;height:100%;object-fit:cover;display:block;border-radius:0;"
+            onerror="this.style.display='none';"
+          />` : ''}
+          <span class="preview-label" style="display:none;">Preview</span>
+        </div>
+        <div class="template-info">
+          <div class="template-name">${t.name || 'Template'}</div>
+          <div class="template-desc">${t.desc || ''}</div>
+          <div style="display:flex;flex-direction:column;gap:0.4rem;">
+            <a href="${viewLink}" target="_blank" rel="noopener noreferrer"
+               class="btn-select" style="width:100%;font-size:0.8rem;text-align:center;text-decoration:none;"
+               onclick="event.stopPropagation();">View Template →</a>
+            <a href="booking.html?t=${encodeURIComponent(t.name || '')}&tid=${doc.id}"
+               class="btn-create" style="width:100%;text-align:center;padding:0.55rem;text-decoration:none;"
+               onclick="event.stopPropagation();">✨ Create Now</a>
+          </div>
+        </div>
+      `;
+
+      card.addEventListener('mouseenter', () => {
+        card.style.transform  = 'translateY(-6px)';
+        card.style.boxShadow  = '0 16px 40px rgba(37,99,235,0.22)';
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform  = '';
+        card.style.boxShadow  = '';
+      });
+
+      grid.appendChild(card);
+    });
+  })
+  .catch(err => {
+    console.error('Templates load error:', err);
+    grid.innerHTML = `<div style="text-align:center;padding:3rem;color:#888;grid-column:1/-1;">
+      ⚠️ Templates load nahi ho sake. Refresh karein.</div>`;
   });
-  card.addEventListener('mouseleave', () => {
-    card.style.transform = '';
-    card.style.boxShadow = '';
-  });
-
-  grid.appendChild(card);
-});
 </script>
 
 <!-- ══════════ CTA BAND ══════════ -->
