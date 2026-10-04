@@ -293,7 +293,9 @@ body::before {
 <div class="bg-blob bg-blob-3"></div>
 
 <!-- LOCK OVERLAY -->
-<div class="lock-title">Account Temporarily Locked</div>
+<div class="lock-overlay" id="lockOverlay">
+  <div class="lock-icon-big">🔒</div>
+  <div class="lock-title">Account Temporarily Locked</div>
   <div class="lock-sub">
     Bahut zyada galat attempts ki wajah se account lock ho gaya hai.<br>
     Neeche dikhaye gaye waqt ke baad try karein.
@@ -386,9 +388,6 @@ body::before {
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <script>
 // ── FIREBASE INIT ──────────────────────────────────────────────────
 const firebaseConfig = {
@@ -431,8 +430,63 @@ function toggleAdminPass() {
   }
 }
 
+// ── LOCKOUT CONSTANTS ──────────────────────────────────────────────
+const MAX_ATTEMPTS  = 5;
+const LOCKOUT_MINS  = 30;
+
+// ── FAIL ATTEMPT (lockout counter) ────────────────────────────────
+function failAttempt() {
+  const attempts = parseInt(localStorage.getItem('adminLoginAttempts') || '0') + 1;
+  localStorage.setItem('adminLoginAttempts', String(attempts));
+
+  if (attempts >= MAX_ATTEMPTS) {
+    const lockEnd = Date.now() + LOCKOUT_MINS * 60 * 1000;
+    localStorage.setItem('adminLockoutEnd', String(lockEnd));
+    localStorage.setItem('adminLoginAttempts', '0');
+    showLockOverlay(lockEnd);
+  } else {
+    const rem = MAX_ATTEMPTS - attempts;
+    showAdminToast(`⚠️ ${rem} aur galat attempt → ${LOCKOUT_MINS} min lock`, 'warning');
+  }
+}
+
+// ── SHOW LOCK OVERLAY ──────────────────────────────────────────────
+function showLockOverlay(lockEnd) {
+  const overlay = document.getElementById('lockOverlay');
+  if (overlay) overlay.classList.add('show');
+  startLockTimer(lockEnd);
+}
+
+// ── LOCK COUNTDOWN TIMER ───────────────────────────────────────────
+function startLockTimer(lockEnd) {
+  const display = document.getElementById('lockTimerDisplay');
+  const tick = () => {
+    const rem = lockEnd - Date.now();
+    if (rem <= 0) {
+      if (display) display.textContent = '00:00';
+      const overlay = document.getElementById('lockOverlay');
+      if (overlay) overlay.classList.remove('show');
+      localStorage.removeItem('adminLockoutEnd');
+      localStorage.removeItem('adminLoginAttempts');
+      return;
+    }
+    const m = Math.floor(rem / 60000);
+    const s = Math.floor((rem % 60000) / 1000);
+    if (display) display.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    setTimeout(tick, 1000);
+  };
+  tick();
+}
+
 // ── SESSION CHECK ──────────────────────────────────────────────────
 function checkSession() {
+  // Pehle lockout check karo
+  const lockEnd = parseInt(localStorage.getItem('adminLockoutEnd') || '0');
+  if (Date.now() < lockEnd) {
+    showLockOverlay(lockEnd);
+    return false;
+  }
+  // Phir existing session check karo
   try {
     const s = JSON.parse(localStorage.getItem('adminSession') || 'null');
     if (s && s.isAdmin && (Date.now() - s.timestamp) < SESSION_DURATION) {
@@ -484,15 +538,18 @@ async function adminLogin() {
   setLoading('loginBtn', true, '');
 
   try {
-    const cred    = await auth.signInWithEmailAndPassword(email, pass);
-    const userDoc = await db.collection('users').doc(cred.user.uid).get();
+    const cred = await auth.signInWithEmailAndPassword(email, pass);
 
-    if (!userDoc.exists || userDoc.data().role !== 'admin') {
-      await auth.signOut();
-      showAdminToast('❌ role:admin Firestore mein set karo', 'error');
-        setLoading('loginBtn', false, '🔐 Admin Login');
-      return;
-    }
+    // Email already ADMIN_EMAIL verified upar → direct login
+    // Firestore rules email se check karta hai, role doc ki zaroorat nahi
+    // Users doc ensure karo (create/update) taki dashboard kaam kare
+    db.collection('users').doc(cred.user.uid).set({
+      uid:         cred.user.uid,
+      email:       cred.user.email,
+      displayName: cred.user.displayName || 'Admin',
+      role:        'admin',
+      lastLogin:   firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true }).catch(() => {});
 
     saveAdminSession(cred.user);
     db.collection('adminLogs').add({ action:'login', adminEmail:cred.user.email, timestamp:firebase.firestore.FieldValue.serverTimestamp() }).catch(()=>{});
@@ -500,8 +557,15 @@ async function adminLogin() {
     setTimeout(() => window.location.replace('admin-dashboard.html'), 800);
 
   } catch(e) {
-    const msgs = { 'auth/wrong-password':'❌ Galat password', 'auth/user-not-found':'❌ Email registered nahi', 'auth/too-many-requests':'❌ Bahut zyada attempts', 'auth/network-request-failed':'❌ Internet check karo' };
+    const msgs = {
+      'auth/wrong-password':         '❌ Galat password',
+      'auth/user-not-found':         '❌ Email registered nahi',
+      'auth/invalid-credential':     '❌ Email ya password galat hai',
+      'auth/too-many-requests':      '❌ Bahut zyada attempts — thodi der baad try karo',
+      'auth/network-request-failed': '❌ Internet check karo'
+    };
     showAdminToast(msgs[e.code] || '❌ ' + e.message, 'error');
+    failAttempt();
     setLoading('loginBtn', false, '🔐 Admin Login');
   }
 }
@@ -523,14 +587,30 @@ async function adminGoogleLogin() {
 auth.getRedirectResult().then(async result => {
   if (!result || !result.user) return;
   const user = result.user;
-  if (user.email !== ADMIN_EMAIL) { await auth.signOut(); showAdminToast('❌ Ye Gmail admin nahi hai!', 'error'); return; }
+  if (user.email !== ADMIN_EMAIL) {
+    await auth.signOut();
+    showAdminToast('❌ Ye Gmail admin nahi hai! akans47g@gmail.com use karo', 'error');
+    return;
+  }
   try {
-    const doc = await db.collection('users').doc(user.uid).get();
-    if (!doc.exists || doc.data().role !== 'admin') { await auth.signOut(); showAdminToast('❌ role:admin set karo', 'error'); return; }
+    // Email ADMIN_EMAIL verify ho gayi → direct login
+    // Users doc create/update karo
+    await db.collection('users').doc(user.uid).set({
+      uid:         user.uid,
+      email:       user.email,
+      displayName: user.displayName || 'Admin',
+      photoURL:    user.photoURL || '',
+      role:        'admin',
+      lastLogin:   firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
     saveAdminSession(user);
+    db.collection('adminLogs').add({ action:'google_login', adminEmail:user.email, timestamp:firebase.firestore.FieldValue.serverTimestamp() }).catch(()=>{});
     showAdminToast('✅ Google login successful!', 'success');
     setTimeout(() => window.location.replace('admin-dashboard.html'), 800);
-  } catch(e) { await auth.signOut(); showAdminToast('❌ ' + e.message, 'error'); }
+  } catch(e) {
+    await auth.signOut();
+    showAdminToast('❌ ' + e.message, 'error');
+  }
 }).catch(e => { if (e.code !== 'auth/no-current-user') console.error(e.code); });
 
 
@@ -544,3 +624,4 @@ document.addEventListener('keydown', e => { if (e.key === 'Enter') adminLogin();
 checkSession();
 </script>
 </body>
+</html>
