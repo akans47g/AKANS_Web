@@ -744,15 +744,19 @@ db.collection('templates')
       const badgeClass = t.badgeClass || 'badge-new';
       const badge      = t.badge      || 'New';
       const bgColor    = fallbackColors[i % fallbackColors.length];
-      const viewLink   = t.link       || '#';
+      // Admin panel field name koi bhi ho sakta hai — sab try karo
+      const viewLink   = t.link || t.previewLink || t.demoUrl || t.url || t.templateUrl || t.preview || '';
 
-      const card = document.createElement('a');
-      card.href             = viewLink;
-      card.target           = '_blank';
-      card.rel              = 'noopener noreferrer';
+      const card = document.createElement('div');
       card.className        = 'template-card';
-      card.style.textDecoration = 'none';
       card.style.display    = 'block';
+      card.style.cursor     = 'pointer';
+
+      // View Template button — real link ya disabled
+      const viewBtnHtml = viewLink
+        ? `<a href="${viewLink}" target="_blank" rel="noopener noreferrer"
+              class="btn-select" style="width:100%;font-size:0.8rem;text-align:center;text-decoration:none;display:block;">View Template →</a>`
+        : `<span class="btn-select" style="width:100%;font-size:0.8rem;text-align:center;display:block;opacity:0.5;cursor:default;">View Template →</span>`;
 
       card.innerHTML = `
         <div class="template-img" style="background:${bgColor}; position:relative;">
@@ -769,12 +773,9 @@ db.collection('templates')
           <div class="template-name">${t.name || 'Template'}</div>
           <div class="template-desc">${t.desc || ''}</div>
           <div style="display:flex;flex-direction:column;gap:0.4rem;">
-            <a href="${viewLink}" target="_blank" rel="noopener noreferrer"
-               class="btn-select" style="width:100%;font-size:0.8rem;text-align:center;text-decoration:none;"
-               onclick="event.stopPropagation();">View Template →</a>
+            ${viewBtnHtml}
             <a href="booking.html?t=${encodeURIComponent(t.name || '')}&tid=${doc.id}"
-               class="btn-create" style="width:100%;text-align:center;padding:0.55rem;text-decoration:none;"
-               onclick="event.stopPropagation();">✨ Create Now</a>
+               class="btn-create" style="width:100%;text-align:center;padding:0.55rem;text-decoration:none;display:block;">✨ Create Now</a>
           </div>
         </div>
       `;
