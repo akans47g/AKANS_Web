@@ -118,17 +118,22 @@ function goTo(url) { window.location.href = url; }
 // Ye function Firebase Auth restore hone ka wait karta hai
 // Bina iske Firestore "Missing permissions" deta hai
 function initWithAuth(fn) {
+  // Case 1: Firebase Auth already restored (synchronous) — seedha fn() chalao
   if (auth.currentUser) { fn(); return; }
+
+  // Case 2: Async wait karo — Firebase indexedDB se session restore karta hai
   const unsub = auth.onAuthStateChanged(user => {
-    unsub();
+    unsub(); // Ek baar fire hone ke baad unsubscribe
     if (user) {
+      // ✅ Firebase Auth session valid — fn() chalao (Firestore writes kaam karengi)
       fn();
     } else {
-      // Auth nahi mili - session check
-      const session = JSON.parse(localStorage.getItem('adminSession') || 'null');
-      if (!session || !session.isAdmin) {
-        window.location.replace('admin-login.html');
-      }
+      // ❌ Firebase Auth null hai (session expire hua ya cleared)
+      // LocalStorage session hoga toh bhi kaam nahi karega — Firestore auth ko dekhta hai
+      // ISLIYE: localStorage clear karo aur login page pe bhejo
+      localStorage.removeItem('adminSession');
+      auth.signOut().catch(() => {});
+      window.location.replace('admin-login.html');
     }
   });
 }
