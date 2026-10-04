@@ -853,7 +853,7 @@ const statusMap = {
 
 // Build card HTML
 function buildCard(o) {
-  const s = statusMap[o.status];
+  const s = statusMap[o.status] || { label: o.status || 'Unknown', cls: 'active', icon: '🟡' };
   return `
     <div class="order-card" data-status="${o.status}">
       <div class="card-top">
@@ -947,12 +947,29 @@ auth.onAuthStateChanged(async user => {
 
   // Logged in → fetch orders from Firestore
   try {
-    const snap = await db.collection('orders')
-      .where('userId','==', user.uid)
-      .orderBy('createdAt','desc')
-      .get();
+    // Try with orderBy first (needs composite index in Firestore)
+    let snap;
+    try {
+      snap = await db.collection('orders')
+        .where('userId','==', user.uid)
+        .orderBy('createdAt','desc')
+        .get();
+    } catch(indexErr) {
+      // Composite index nahi bana — fallback: bina orderBy ke load karo
+      console.warn('Index missing, falling back:', indexErr.message);
+      snap = await db.collection('orders')
+        .where('userId','==', user.uid)
+        .get();
+    }
 
     orders = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    // Client-side sort by createdAt desc
+    orders.sort((a,b) => {
+      const ta = a.createdAt?.toDate?.() || new Date(0);
+      const tb = b.createdAt?.toDate?.() || new Date(0);
+      return tb - ta;
+    });
 
     // Update stats
     document.getElementById('statTotal').textContent  = orders.length;
@@ -963,7 +980,7 @@ auth.onAuthStateChanged(async user => {
 
   } catch(e) {
     console.error('Firestore error:', e);
-    list.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--text-3);">⚠️ Could not load orders. Please try again.</div>`;
+    list.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--text-3);">⚠️ Could not load orders. Please try again.<br><small style="font-size:0.75rem;">${e.message}</small></div>`;
   }
 });
 </script>
