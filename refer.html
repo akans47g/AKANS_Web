@@ -1112,6 +1112,8 @@ function genCode() {
 }
 
 let myCode = '';
+let currentUser = null;
+let availableBalance = 0;
 const BASE_URL = SITE_URL + '?ref=';
 
 // ── AUTH CHECK → SHOW/HIDE OVERLAY + LOAD CODE ───────────
@@ -1125,6 +1127,7 @@ auth.onAuthStateChanged(async user => {
     return;
   }
   // Logged in → hide overlay
+  currentUser = user;
   overlay.classList.remove('show');
   document.querySelector('.page').style.filter = '';
   document.querySelector('.page').style.pointerEvents = '';
@@ -1143,7 +1146,8 @@ auth.onAuthStateChanged(async user => {
         email: user.email,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         totalReferred: 0,
-        totalEarned: 0
+        totalEarned: 0,
+        totalWithdrawn: 0
       });
     }
     renderCode(myCode);
@@ -1176,12 +1180,21 @@ function renderCode(code) {
   document.getElementById('shareTG').href = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('Use my referral code ' + code + ' on AKANS!')}`;
 }
 
-function regenerateCode() {
+async function regenerateCode() {
+  if(!currentUser) { showToast('❌ Please login first'); return; }
   if(!confirm('Generate a new referral code? Your old code will stop working.')) return;
-  myCode = genCode();
-  localStorage.setItem('referCode', myCode);
-  renderCode(myCode);
-  showToast('🔄 New code generated!');
+  const newCode = genCode();
+  try {
+    await db.collection('referrals').doc(currentUser.uid).update({
+      code: newCode,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    myCode = newCode;
+    renderCode(myCode);
+    showToast('🔄 New code generated!');
+  } catch(e) {
+    showToast('❌ Error: ' + e.message);
+  }
 }
 
 // ── COPY ──────────────────────────────────────────────────
@@ -1202,13 +1215,39 @@ function copyRefLink() {
 }
 
 // ── WITHDRAW ──────────────────────────────────────────────
-function requestWithdraw() {
+async function requestWithdraw() {
+  if(!currentUser) { alert('Please login first.'); return; }
   const upi = document.getElementById('upiInput').value.trim();
   if(!upi) { alert('Please enter your UPI ID first.'); return; }
   if(!upi.includes('@')) { alert('Please enter a valid UPI ID (e.g. name@upi).'); return; }
-  if(confirm(`Request withdrawal to: ${upi}?\n\nAmount: ₹598\nProcessed in 24-48 hrs.`)) {
-    showToast('✅ Withdrawal requested!');
+  if(availableBalance < 100) {
+    alert('Minimum withdrawal amount is ₹100.\nYour available balance: ₹' + availableBalance);
+    return;
+  }
+  if(!confirm(`Request withdrawal to: ${upi}?\n\nAmount: ₹${availableBalance}\nProcessed in 24-48 hrs.`)) return;
+  const btn = document.querySelector('.withdraw-btn');
+  btn.disabled = true; btn.textContent = '⏳ Submitting...';
+  try {
+    await db.collection('withdrawals').add({
+      userId: currentUser.uid,
+      email: currentUser.email,
+      upiId: upi,
+      amount: availableBalance,
+      status: 'pending',
+      type: 'referral',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    await db.collection('referrals').doc(currentUser.uid).update({
+      totalWithdrawn: firebase.firestore.FieldValue.increment(availableBalance)
+    });
+    availableBalance = 0;
+    document.getElementById('withdrawAmt').textContent = '0';
     document.getElementById('upiInput').value = '';
+    showToast('✅ Withdrawal requested! Processing in 24-48 hrs.');
+  } catch(e) {
+    showToast('❌ Error: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = '💸 Request Withdrawal';
   }
 }
 
@@ -1219,27 +1258,36 @@ function requestWithdraw() {
 async function loadReferralData(uid, code) {
   const friendsList = document.getElementById('friendsList');
   try {
-    // Find users who signed up with this referral code
+    // Find users who signed up with this referral code — no orderBy to avoid composite index error
     const snap = await db.collection('users')
       .where('referredBy','==', code)
-      .orderBy('createdAt','desc')
       .get();
 
-    const friends = snap.docs.map(doc => doc.data());
+    // Sort in JS instead
+    const friends = snap.docs.map(doc => doc.data())
+      .sort((a,b) => {
+        const at = a.createdAt?.toDate?.() || 0;
+        const bt = b.createdAt?.toDate?.() || 0;
+        return bt - at;
+      });
 
     // Load referral stats from referrals doc
     const refDoc = await db.collection('referrals').doc(uid).get();
     const refData = refDoc.exists ? refDoc.data() : {};
 
-    const totalEarned  = refData.totalEarned  || 0;
-    const totalPending = refData.totalPending  || 0;
+    const totalEarned    = refData.totalEarned    || 0;
+    const totalWithdrawn = refData.totalWithdrawn  || 0;
+    const totalPending   = refData.totalPending    || 0;
+
+    // Calculate actual available balance
+    availableBalance = Math.max(0, totalEarned - totalWithdrawn);
 
     // Update stats
     document.getElementById('statReferred').textContent = friends.length;
     document.getElementById('statSuccess').textContent  = friends.filter(f=>f.orderPlaced).length;
     document.getElementById('statEarned').textContent   = '₹' + totalEarned;
     document.getElementById('statPending').textContent  = '₹' + totalPending;
-    document.getElementById('withdrawAmt').textContent  = totalEarned;
+    document.getElementById('withdrawAmt').textContent  = availableBalance;
 
     // Render friends list
     if(friends.length === 0) {
@@ -1253,6 +1301,8 @@ async function loadReferralData(uid, code) {
         const initials = (f.displayName || f.email || 'U').charAt(0).toUpperCase();
         const date = f.createdAt ? new Date(f.createdAt.toDate()).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : 'Recently';
         const paid = f.orderPlaced;
+        // Show actual commission earned if stored, else show percentage label
+        const earn = f.commissionEarned ? '₹' + f.commissionEarned : (paid ? '+20%' : '₹0');
         return `
           <div class="friend-item">
             <div class="friend-avatar">${initials}</div>
@@ -1261,7 +1311,7 @@ async function loadReferralData(uid, code) {
               <div class="friend-date">Joined ${date}</div>
             </div>
             <div class="friend-right">
-              <div class="friend-earn">${paid ? '+₹299' : '₹299'}</div>
+              <div class="friend-earn">${paid ? earn : '⏳'}</div>
               <span class="friend-status ${paid ? 'fst-done' : 'fst-pending'}">${paid ? '✅ Paid' : '⏳ Pending'}</span>
             </div>
           </div>`;
