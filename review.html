@@ -905,10 +905,10 @@ body { padding-bottom: 86px; }
       <div class="tab" data-filter="low">⭐⭐ & below (2)</div>
     </div>
     <select class="sort-select" id="sortSelect">
+      <option value="highest" selected>Highest ★</option>
+      <option value="lowest">Lowest ★</option>
       <option value="newest">Newest</option>
       <option value="oldest">Oldest</option>
-      <option value="highest">Highest ★</option>
-      <option value="lowest">Lowest ★</option>
     </select>
   </div>
 
@@ -1133,7 +1133,7 @@ function getMerged() {
 
 // ── STATE ─────────────────────────────────────────────────
 let currentFilter = 'all';
-let currentSort   = 'newest';
+let currentSort   = 'highest';
 let showCount     = 12;
 let isAdmin       = false;
 let adminTaps     = 0;
@@ -1231,18 +1231,17 @@ function markHelpful(btn) {
 let selectedRating = 0;
 
 function openWriteReview() {
-  // Check if logged in
-  auth.onAuthStateChanged(user => {
-    if(!user) {
-      showToast('🔑 Please login to write a review');
-      setTimeout(() => window.location.href='login.html', 1200);
-      return;
-    }
-    // Pre-fill name from Firebase
-    const nameInput = document.getElementById('wm-name');
-    if(user.displayName) nameInput.value = user.displayName;
-    document.getElementById('writeModal').classList.add('open');
-  });
+  // Use auth.currentUser — synchronous, no memory leak
+  const user = auth.currentUser;
+  if(!user) {
+    showToast('🔑 Please login to write a review');
+    setTimeout(() => window.location.href='login.html', 1200);
+    return;
+  }
+  // Pre-fill name from Firebase
+  const nameInput = document.getElementById('wm-name');
+  if(user.displayName) nameInput.value = user.displayName;
+  document.getElementById('writeModal').classList.add('open');
 }
 
 function closeWriteModal() {
@@ -1299,9 +1298,13 @@ async function submitReview() {
   }
 }
 
-// Close modal on overlay click
-document.getElementById('writeModal').addEventListener('click', function(e) {
-  if(e.target === this) closeWriteModal();
+// Close modal on overlay click — wrapped in DOMContentLoaded because
+// writeModal element is defined AFTER this script block in the HTML
+document.addEventListener('DOMContentLoaded', () => {
+  const wm = document.getElementById('writeModal');
+  if(wm) wm.addEventListener('click', function(e) {
+    if(e.target === this) closeWriteModal();
+  });
 });
 
 // ── ADMIN MODE ────────────────────────────────────────────
@@ -1349,13 +1352,27 @@ function closeModal() {
 
 function saveEdit() {
   if(!editingId) return;
-  edits[editingId] = {
+  const updated = {
     name:     document.getElementById('editName').value.trim(),
     rating:   parseInt(document.getElementById('editRating').value),
     template: document.getElementById('editTemplate').value.trim(),
     text:     document.getElementById('editText').value.trim(),
   };
+  edits[editingId] = updated;
   localStorage.setItem('reviewEdits', JSON.stringify(edits));
+  // Also update Firestore for user-submitted reviews (id >= 1000)
+  if(editingId >= 1000) {
+    const review = getMerged().find(r => r.id === editingId);
+    if(review && review._docId) {
+      db.collection('reviews').doc(review._docId).update({
+        name:      updated.name,
+        rating:    updated.rating,
+        template:  updated.template,
+        text:      updated.text,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).catch(e => console.error('Firestore update failed:', e));
+    }
+  }
   closeModal();
   renderReviews();
   showToast('✅ Review updated!');
@@ -1363,6 +1380,22 @@ function saveEdit() {
 
 function deleteReview(id) {
   if(!confirm('Delete this review?')) return;
+  // For user-submitted Firestore reviews, delete from Firestore directly
+  if(id >= 1000) {
+    const review = getMerged().find(r => r.id === id);
+    if(review && review._docId) {
+      db.collection('reviews').doc(review._docId).delete()
+        .catch(e => console.error('Firestore delete failed:', e));
+      const idx = reviews.findIndex(r => r.id === id);
+      if(idx !== -1) reviews.splice(idx, 1);
+      delete edits[id];
+      localStorage.setItem('reviewEdits', JSON.stringify(edits));
+      renderReviews();
+      showToast('🗑️ Review deleted');
+      return;
+    }
+  }
+  // For hardcoded reviews, mark as deleted in localStorage
   edits[id] = {...getMerged().find(r=>r.id===id), text:'[Deleted by Admin]', name:'[Removed]'};
   localStorage.setItem('reviewEdits', JSON.stringify(edits));
   renderReviews();
@@ -1405,24 +1438,54 @@ renderReviews();
 // ── LOAD USER REVIEWS FROM FIRESTORE (approved only) ─────
 (async () => {
   try {
+    // No orderBy — avoids composite index requirement; sort in JS instead
     const snap = await db.collection('reviews')
       .where('approved','==',true)
-      .orderBy('createdAt','desc')
       .get();
 
     if(!snap.empty) {
       const firestoreReviews = snap.docs.map((doc,i) => ({
         id: 1000 + i,
+        _docId: doc.id,          // Store doc ID so admin edit/delete works
         ...doc.data(),
         date: doc.data().date || 'Recent'
-      }));
+      })).sort((a,b) => {
+        const at = a.createdAt?.toDate?.() || 0;
+        const bt = b.createdAt?.toDate?.() || 0;
+        return bt - at;
+      });
+
       // Merge: Firestore reviews first, then hardcoded
       reviews.unshift(...firestoreReviews);
+
       // Update stats
       const total = reviews.length;
       const avg   = (reviews.reduce((s,r)=>s+r.rating,0)/total).toFixed(1);
       document.querySelector('.rating-number').textContent = avg;
       document.querySelector('.rating-count').textContent  = total + ' reviews';
+
+      // Update filter tab counts dynamically
+      const c5   = reviews.filter(r=>r.rating===5).length;
+      const c4   = reviews.filter(r=>r.rating===4).length;
+      const c3   = reviews.filter(r=>r.rating===3).length;
+      const cLow = reviews.filter(r=>r.rating<=2).length;
+      document.querySelectorAll('.tab').forEach(tab => {
+        if(tab.dataset.filter==='all')  tab.textContent = `All (${total})`;
+        else if(tab.dataset.filter==='5')   tab.textContent = `⭐⭐⭐⭐⭐ (${c5})`;
+        else if(tab.dataset.filter==='4')   tab.textContent = `⭐⭐⭐⭐ (${c4})`;
+        else if(tab.dataset.filter==='3')   tab.textContent = `⭐⭐⭐ (${c3})`;
+        else if(tab.dataset.filter==='low') tab.textContent = `⭐⭐ & below (${cLow})`;
+      });
+
+      // Update rating bars dynamically
+      document.querySelectorAll('.bar-row').forEach(row => {
+        const label = parseInt(row.querySelector('.bar-label').textContent);
+        const count = reviews.filter(r=>r.rating===label).length;
+        row.querySelector('.bar-count').textContent = count;
+        const pct = total > 0 ? (count/total*100).toFixed(1)+'%' : '0%';
+        row.querySelector('.bar-fill').style.width = pct;
+      });
+
       renderReviews();
     }
   } catch(e) {
