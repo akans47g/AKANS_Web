@@ -3,257 +3,270 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Offline — AKANS Web Development Services</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet"/>
+<title>No Internet — AKANS Web Development Services</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-html,body{height:100%;font-family:'DM Sans',sans-serif;}
-body{
-  min-height:100vh; display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-  background:linear-gradient(145deg,#f5f7ff 0%,#eef1fb 100%);
-  padding:2rem; text-align:center; position:relative; overflow:hidden;
+:root {
+  --blue:   #2563eb;
+  --purple: #7c3aed;
+  --text:   #1a1f3c;
+  --text-2: #4b5280;
+  --text-3: #8890b5;
+  --border: #dde2f5;
+  --bg:     #f5f7ff;
 }
-body::before{
-  content:''; position:fixed; inset:0; pointer-events:none;
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { height:100%; }
+
+body {
+  min-height: 100vh;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+  text-align: center;
+  padding: 2rem 1.5rem;
+  position: relative; overflow: hidden;
+}
+
+/* background glow */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
   background:
-    radial-gradient(ellipse 60% 50% at 20% 20%,rgba(37,99,235,0.07) 0%,transparent 60%),
-    radial-gradient(ellipse 50% 50% at 80% 80%,rgba(124,58,237,0.05) 0%,transparent 60%);
+    radial-gradient(ellipse 70% 50% at 15% 10%, rgba(37,99,235,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 85% 90%, rgba(124,58,237,0.07) 0%, transparent 60%);
 }
 
-/* Floating circles */
-.circle {
-  position:fixed; border-radius:50%; pointer-events:none;
-  border:1px solid; opacity:0.07;
-  animation:spin linear infinite;
-}
-.c1{width:300px;height:300px;border-color:#2563eb;top:-80px;right:-80px;animation-duration:25s;}
-.c2{width:200px;height:200px;border-color:#7c3aed;bottom:-50px;left:-50px;animation-duration:18s;animation-direction:reverse;}
-@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-
-/* Main content */
-.content{position:relative;z-index:1;max-width:420px;}
-
-/* Wifi animation */
-.wifi-wrap{margin-bottom:1.5rem;}
-.wifi-icon{font-size:4.5rem;animation:wifiBounce 2.5s ease-in-out infinite;}
-@keyframes wifiBounce{
-  0%,100%{transform:scale(1);filter:grayscale(0.3);}
-  50%{transform:scale(1.08);filter:grayscale(0);}
+.card {
+  position: relative; z-index: 1;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  padding: 3rem 2.5rem 2.5rem;
+  max-width: 400px; width: 100%;
+  box-shadow: 0 8px 40px rgba(37,99,235,0.12), 0 2px 8px rgba(0,0,0,0.06);
+  animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
 }
 
-.title{
-  font-family:'Playfair Display',serif;
-  font-size:clamp(1.6rem,5vw,2.2rem);
-  font-weight:800; color:#1a1f3c; margin-bottom:0.6rem;
+/* animated WiFi icon */
+.wifi-wrap {
+  width: 90px; height: 90px; margin: 0 auto 1.8rem;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
 }
-.subtitle{
-  font-size:1rem; color:#4b5280; line-height:1.75;
-  margin-bottom:2rem;
+.wifi-bg {
+  width: 90px; height: 90px; border-radius: 50%;
+  background: linear-gradient(135deg, #eff4ff, #f3eeff);
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.5rem;
+  animation: pulse-icon 2.5s ease-in-out infinite;
 }
-.subtitle span{color:#2563eb;font-weight:700;}
+@keyframes pulse-icon {
+  0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37,99,235,0.15); }
+  50%      { transform: scale(1.05); box-shadow: 0 0 0 12px rgba(37,99,235,0); }
+}
 
-/* Status card */
-.status-card{
-  background:#fff; border:1px solid #dde2f5; border-radius:18px;
-  padding:1.3rem 1.5rem; margin-bottom:1.8rem;
-  box-shadow:0 4px 20px rgba(37,99,235,0.08);
-  display:flex; flex-direction:column; gap:0.7rem;
+/* signal bars (animated) */
+.signal {
+  position: absolute; bottom: 4px; right: 4px;
+  display: flex; align-items: flex-end; gap: 3px;
+  background: #fff; border-radius: 8px; padding: 4px 5px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.1);
 }
-.status-row{display:flex;align-items:center;gap:0.8rem;font-size:0.85rem;}
-.status-dot{
-  width:10px;height:10px;border-radius:50%;flex-shrink:0;
+.bar {
+  width: 5px; border-radius: 2px 2px 0 0;
+  background: var(--border);
+  animation: blink 1.8s ease-in-out infinite;
 }
-.dot-red{background:#ef4444;animation:pulse-red 2s infinite;}
-.dot-green{background:#22c55e;animation:pulse-green 2s infinite;}
-@keyframes pulse-red{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.5)}50%{box-shadow:0 0 0 5px rgba(239,68,68,0)}}
-@keyframes pulse-green{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.5)}50%{box-shadow:0 0 0 5px rgba(34,197,94,0)}}
-.status-label{color:#1a1f3c;font-weight:600;}
-.status-sub{color:#8890b5;font-size:0.78rem;margin-left:auto;}
+.bar:nth-child(1) { height: 6px;  animation-delay: 0s; }
+.bar:nth-child(2) { height: 10px; animation-delay: 0.2s; }
+.bar:nth-child(3) { height: 14px; animation-delay: 0.4s; }
+@keyframes blink {
+  0%,100% { background: var(--border); }
+  50%      { background: rgba(37,99,235,0.25); }
+}
 
-/* Buttons */
-.btn-group{display:flex;flex-direction:column;gap:0.7rem;}
-.btn-retry{
-  background:linear-gradient(135deg,#2563eb,#7c3aed);
-  color:#fff; border:none; padding:0.9rem 2rem;
-  border-radius:14px; font-size:0.95rem; font-weight:700;
-  font-family:'DM Sans',sans-serif; cursor:pointer;
-  box-shadow:0 6px 22px rgba(37,99,235,0.3);
-  transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
-  display:flex;align-items:center;justify-content:center;gap:0.5rem;
+.brand {
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--blue);
+  margin-bottom: 0.6rem;
 }
-.btn-retry:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(37,99,235,0.4);}
-.btn-retry:active{transform:scale(0.97);}
-.btn-home{
-  background:#fff; color:#4b5280;
-  border:1.5px solid #dde2f5; padding:0.85rem 2rem;
-  border-radius:14px; font-size:0.9rem; font-weight:600;
-  font-family:'DM Sans',sans-serif; cursor:pointer;
-  text-decoration:none; display:flex;align-items:center;justify-content:center;gap:0.5rem;
-  transition:all 0.2s;
-}
-.btn-home:hover{border-color:rgba(37,99,235,0.3);color:#2563eb;background:#eff4ff;}
 
-/* Cached pages */
-.cached-section{margin-top:1.8rem;}
-.cached-title{font-size:0.72rem;font-weight:700;letter-spacing:0.12em;
-  text-transform:uppercase;color:#8890b5;margin-bottom:0.7rem;}
-.cached-links{display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:center;}
-.cached-link{
-  font-size:0.78rem;font-weight:600;color:#2563eb;
-  background:#eff4ff;border:1px solid rgba(37,99,235,0.2);
-  padding:0.3rem 0.8rem;border-radius:20px;text-decoration:none;
-  transition:all 0.2s;
+h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.7rem; font-weight: 900;
+  color: var(--text); margin-bottom: 0.7rem; line-height: 1.2;
 }
-.cached-link:hover{background:#2563eb;color:#fff;}
 
-/* Connection indicator */
-.conn-status{
-  margin-top:1.5rem;font-size:0.78rem;color:#8890b5;
-  display:flex;align-items:center;justify-content:center;gap:0.4rem;
+.sub {
+  font-size: 0.9rem; color: var(--text-2);
+  line-height: 1.75; margin-bottom: 2rem;
 }
-#connText{font-weight:600;}
+
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  margin: 0 0 1.5rem;
+}
+
+/* offline features */
+.features {
+  display: flex; flex-direction: column; gap: 0.7rem;
+  margin-bottom: 2rem; text-align: left;
+}
+.feature {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 12px; font-size: 0.84rem; color: var(--text-2);
+}
+.feature-icon {
+  width: 34px; height: 34px; flex-shrink: 0; border-radius: 9px;
+  background: #fff; border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+}
+.feature strong { display: block; font-size: 0.84rem; color: var(--text); }
+.feature span   { font-size: 0.73rem; }
+
+/* retry button */
+.retry-btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  color: #fff; border: none; padding: 0.9rem;
+  border-radius: 14px; font-size: 0.95rem; font-weight: 700;
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  box-shadow: 0 4px 20px rgba(37,99,235,0.35);
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  margin-bottom: 0.9rem;
+}
+.retry-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(37,99,235,0.45); }
+.retry-btn:active { transform: scale(0.97); }
+
+.home-link {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  font-size: 0.83rem; font-weight: 600; color: var(--text-3);
+  text-decoration: none; transition: color 0.2s;
+}
+.home-link:hover { color: var(--blue); }
+
+/* status dot */
+.status-row {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0.5rem; margin-top: 1.5rem;
+  font-size: 0.72rem; color: var(--text-3);
+}
+.status-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #ef4444;
+  animation: status-pulse 1.5s ease-in-out infinite;
+}
+.status-dot.online { background: #22c55e; }
+@keyframes status-pulse {
+  0%,100% { opacity:1; } 50% { opacity:0.4; }
+}
+
+@keyframes popIn {
+  from { opacity:0; transform:scale(0.88) translateY(20px); }
+  to   { opacity:1; transform:scale(1) translateY(0); }
+}
+
+@media(max-width:440px){
+  .card { padding: 2rem 1.4rem 1.8rem; }
+  h1 { font-size: 1.45rem; }
+}
 </style>
 </head>
 <body>
-<div class="circle c1"></div>
-<div class="circle c2"></div>
 
-<div class="content">
+<div class="card">
 
   <div class="wifi-wrap">
-    <div class="wifi-icon" id="wifiIcon">📡</div>
+    <div class="wifi-bg">📶</div>
+    <div class="signal">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+    </div>
   </div>
 
-  <h1 class="title" id="mainTitle">Aap Offline Hain</h1>
-  <p class="subtitle" id="mainSub">
-    Internet connection nahi hai. <span>AKANS</span> ko use karne ke liye<br>
-    internet se connect karein.
+  <div class="brand">AKANS Web Development</div>
+  <h1>No Internet Connection</h1>
+  <p class="sub">
+    Abhi internet nahi hai.<br>
+    Connection check karo aur retry karo 📡
   </p>
 
-  <!-- Status Card -->
-  <div class="status-card">
-    <div class="status-row">
-      <div class="status-dot dot-red" id="netDot"></div>
-      <span class="status-label" id="netLabel">Internet Connection</span>
-      <span class="status-sub" id="netStatus">Disconnected</span>
-    </div>
-    <div class="status-row">
-      <div class="status-dot dot-green"></div>
-      <span class="status-label">Cached Pages</span>
-      <span class="status-sub">Available Offline</span>
-    </div>
-  </div>
+  <div class="divider"></div>
 
-  <!-- Buttons -->
-  <div class="btn-group">
-    <button class="btn-retry" onclick="retryConnection()">
-      🔄 Dobara Try Karein
-    </button>
-    <a href="index.html" class="btn-home">
-      🏠 Home Page Par Jao
-    </a>
-  </div>
-
-  <!-- Cached Pages -->
-  <div class="cached-section">
-    <div class="cached-title">Offline Accessible Pages</div>
-    <div class="cached-links">
-      <a href="index.html"   class="cached-link">🏠 Home</a>
-      <a href="account.html" class="cached-link">👤 Account</a>
-      <a href="review.html"  class="cached-link">⭐ Reviews</a>
-      <a href="support.html" class="cached-link">🆘 Support</a>
-      <a href="about.html"   class="cached-link">ℹ️ About</a>
+  <!-- What still works offline -->
+  <div class="features">
+    <div class="feature">
+      <div class="feature-icon">📋</div>
+      <div>
+        <strong>Cached Pages</strong>
+        <span>Pehle se dekhe gaye pages kaam karenge</span>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🌐</div>
+      <div>
+        <strong>Online Hone Par</strong>
+        <span>Sab automatically refresh ho jayega</span>
+      </div>
     </div>
   </div>
 
-  <!-- Connection monitor -->
-  <div class="conn-status">
-    <span id="connDot">🔴</span>
-    <span id="connText">Offline</span>
-    <span>— Auto-detect ho raha hai...</span>
+  <button class="retry-btn" onclick="retryConnection()">
+    🔄 Retry Connection
+  </button>
+
+  <a href="/AKANS_Web/" class="home-link">🏠 Go to Home Page</a>
+
+  <div class="status-row">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">Checking connection...</span>
   </div>
 
 </div>
 
 <script>
-// ── CONNECTION MONITOR ─────────────────────────────────────────────
-function updateConnectionStatus() {
-  const online = navigator.onLine;
-  const dot    = document.getElementById('connDot');
-  const text   = document.getElementById('connText');
-  const netDot = document.getElementById('netDot');
-  const netSt  = document.getElementById('netStatus');
-  const icon   = document.getElementById('wifiIcon');
-  const title  = document.getElementById('mainTitle');
-  const sub    = document.getElementById('mainSub');
-
-  if (online) {
-    dot.textContent   = '🟢';
-    text.textContent  = 'Online — Redirecting...';
-    text.style.color  = '#16a34a';
-    netDot.className  = 'status-dot dot-green';
-    netSt.textContent = 'Connected';
-    icon.textContent  = '🌐';
-    title.textContent = 'Connection Wapas Aa Gayi!';
-    sub.innerHTML     = 'Internet connect ho gaya. <span style="color:#2563eb;font-weight:700;">Redirect ho raha hai...</span>';
-    // 1.5 second mein wapas bhejo
-    setTimeout(() => {
-      window.location.href = document.referrer || 'index.html';
-    }, 1500);
+// Check online status and update UI
+function updateStatus() {
+  const dot  = document.getElementById('statusDot');
+  const text = document.getElementById('statusText');
+  if(navigator.onLine) {
+    dot.classList.add('online');
+    text.textContent = 'Connection restored! Redirecting...';
+    setTimeout(() => window.location.href = '/AKANS_Web/', 1200);
   } else {
-    dot.textContent   = '🔴';
-    text.textContent  = 'Offline';
-    text.style.color  = '#8890b5';
-    netDot.className  = 'status-dot dot-red';
-    netSt.textContent = 'Disconnected';
-    icon.textContent  = '📡';
+    dot.classList.remove('online');
+    text.textContent = 'Still offline — please check your connection';
   }
 }
 
 function retryConnection() {
-  const btn = document.querySelector('.btn-retry');
-  btn.innerHTML = '<span style="animation:spin 1s linear infinite;display:inline-block">⟳</span> Checking...';
+  const btn = document.querySelector('.retry-btn');
+  btn.textContent = '⏳ Checking...';
   btn.disabled = true;
-
-  // Network test
-  fetch('https://www.google.com/favicon.ico?_=' + Date.now(), {
-    mode: 'no-cors', cache: 'no-store'
-  })
-  .then(() => {
-    window.location.href = document.referrer || 'index.html';
-  })
-  .catch(() => {
-    btn.innerHTML = '🔄 Dobara Try Karein';
-    btn.disabled  = false;
-    // Shake animation
-    btn.style.animation = 'shake 0.3s ease';
-    setTimeout(() => btn.style.animation = '', 400);
-  });
+  setTimeout(() => {
+    updateStatus();
+    btn.textContent = '🔄 Retry Connection';
+    btn.disabled = false;
+  }, 1500);
 }
 
-// Listen for connection changes
-window.addEventListener('online',  updateConnectionStatus);
-window.addEventListener('offline', updateConnectionStatus);
+// Auto-redirect when connection restores
+window.addEventListener('online',  updateStatus);
+window.addEventListener('offline', updateStatus);
 
 // Initial check
-updateConnectionStatus();
-
-// Auto retry every 10 seconds
-setInterval(() => {
-  if (!navigator.onLine) return;
-  fetch('https://www.google.com/favicon.ico?_=' + Date.now(), {
-    mode:'no-cors', cache:'no-store'
-  }).then(() => updateConnectionStatus()).catch(() => {});
-}, 10000);
-
-// Shake animation
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
-  @keyframes spin { to{transform:rotate(360deg)} }
-`;
-document.head.appendChild(style);
+updateStatus();
 </script>
+
 </body>
 </html>
