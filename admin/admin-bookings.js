@@ -1,188 +1,386 @@
-// ══════════════════════════════════════════════════════════════════
-// AKANS Admin Panel — Page specific JS
-// admin-shared.js ke baad load karo
-// ══════════════════════════════════════════════════════════════════
-
-// ╔══════════════════════════════════════════════════════════════╗
-// ║         SECTION 3 — admin-bookings.html                     ║
-// ╚══════════════════════════════════════════════════════════════╝
-
-let allBookings = [], filteredBookings = [], currentFilter = 'all',
-    currentSearch = '', unsubBookings = null, editingBookingId = null;
-
-async function initBookings() {
-  const session = requireAdminSession(); if (!session) return;
-  renderSidebar('bookings');
-  const hName = document.getElementById('adminHeaderName');
-  if (hName) hName.textContent = session.displayName || 'Admin';
-  startBookingsListener();
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bookings — AKANS Admin</title>
+<link rel="manifest" href="admin-manifest.json"/>
+<meta name="theme-color" content="#2563eb"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="AKANS Admin"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#f1f5f9;--surface:#ffffff;--surface2:#f8fafc;
+  --border:#e2e8f0;--fg:#0f172a;--fg2:#475569;--fg3:#94a3b8;
+  --accent:#2563eb;--accent-lt:#eff6ff;
+  --success:#16a34a;--warn:#d97706;--danger:#dc2626;
+  --nav-h:64px;--radius:12px;--shadow:0 1px 4px rgba(0,0,0,0.07);
 }
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflow-x:hidden;}
 
-function startBookingsListener() {
-  if (unsubBookings) unsubBookings();
-  const grid = document.getElementById('bookingsGrid');
-  if (grid) grid.innerHTML = `<div class="b-loading"><div class="b-loading-spinner"></div><div>Loading...</div></div>`;
-  unsubBookings = db.collection('bookings').orderBy('createdAt','desc')
-    .onSnapshot(snap => {
-      allBookings = snap.docs.map(d => ({ _id:d.id, ...d.data() }));
-      updateBookingStats(); applyFilterAndSearch();
-    }, err => showAdminToast('⚠️ ' + err.message, 'error'));
+/* HEADER */
+.page-header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1rem;height:56px;display:flex;align-items:center;gap:0.75rem;position:sticky;top:0;z-index:100;box-shadow:var(--shadow);}
+.page-header h1{font-size:1rem;font-weight:700;color:var(--fg);flex:1;}
+.hdr-btn{display:flex;align-items:center;gap:0.35rem;padding:0.4rem 0.85rem;border-radius:8px;font-size:0.78rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;border:1.5px solid;transition:all 0.18s;}
+.hdr-btn-export{background:#f0fdf4;color:var(--success);border-color:#bbf7d0;}
+.hdr-btn-export:hover{background:var(--success);color:#fff;border-color:var(--success);}
+.hdr-btn-refresh{background:var(--accent-lt);color:var(--accent);border-color:#bfdbfe;}
+.hdr-btn-refresh:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
+.install-btn{display:none;align-items:center;gap:0.35rem;padding:0.4rem 0.85rem;border-radius:8px;background:var(--accent);color:#fff;border:none;font-size:0.78rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;}
+.install-btn.visible{display:flex;}
+
+/* CONTENT */
+.page-content{padding:1rem;padding-bottom:calc(var(--nav-h) + 1.5rem);max-width:1200px;margin:0 auto;}
+
+/* STATS STRIP */
+.stats-strip{display:flex;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);background:var(--surface);box-shadow:var(--shadow);margin-bottom:1rem;}
+.strip-item{flex:1;text-align:center;padding:0.75rem 0.4rem;border-right:1px solid var(--border);transition:background 0.15s;cursor:pointer;}
+.strip-item:last-child{border-right:none;}
+.strip-item:hover{background:var(--surface2);}
+.strip-num{font-size:1.35rem;font-weight:800;display:block;line-height:1;}
+.strip-lbl{font-size:0.62rem;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--fg3);margin-top:0.15rem;display:block;}
+.strip-all .strip-num{color:var(--fg);}
+.strip-pending .strip-num{color:var(--warn);}
+.strip-inprogress .strip-num{color:var(--accent);}
+.strip-completed .strip-num{color:var(--success);}
+.strip-cancelled .strip-num{color:var(--danger);}
+
+/* REVENUE STRIP */
+.revenue-strip{display:flex;align-items:center;gap:0.8rem;background:linear-gradient(135deg,#1e3a8a,#1e1b4b);border-radius:var(--radius);padding:0.75rem 1.1rem;margin-bottom:1rem;}
+.rev-label{font-size:0.72rem;font-weight:600;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.07em;}
+.rev-amount{font-size:1.3rem;font-weight:800;color:#60a5fa;margin-left:0.4rem;}
+.rev-count{margin-left:auto;font-size:0.75rem;color:rgba(255,255,255,0.4);font-weight:500;}
+
+/* TOOLBAR */
+.toolbar{display:flex;align-items:center;gap:0.6rem;margin-bottom:0.85rem;flex-wrap:wrap;}
+.search-wrap{flex:1;min-width:180px;display:flex;align-items:center;gap:0.5rem;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:0 0.85rem;transition:border-color 0.2s;}
+.search-wrap:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,0.08);}
+.search-icon{color:var(--fg3);font-size:0.9rem;flex-shrink:0;}
+.search-input{flex:1;border:none;background:transparent;outline:none;font-size:0.84rem;font-family:'Inter',sans-serif;color:var(--fg);padding:0.58rem 0;}
+.search-input::placeholder{color:var(--fg3);}
+
+/* FILTER TABS */
+.b-tabs{display:flex;gap:0.3rem;margin-bottom:1rem;overflow-x:auto;scrollbar-width:none;flex-wrap:wrap;}
+.b-tabs::-webkit-scrollbar{display:none;}
+.b-tab{display:flex;align-items:center;gap:0.3rem;padding:0.35rem 0.85rem;border-radius:30px;border:1.5px solid var(--border);background:var(--surface);font-size:0.73rem;font-weight:600;color:var(--fg2);cursor:pointer;transition:all 0.18s;white-space:nowrap;font-family:'Inter',sans-serif;}
+.b-tab:hover{border-color:rgba(37,99,235,0.3);color:var(--accent);background:var(--accent-lt);}
+.b-tab.active{background:var(--accent);color:#fff;border-color:transparent;box-shadow:0 2px 8px rgba(37,99,235,0.3);}
+.b-tab-count{background:rgba(0,0,0,0.1);border-radius:20px;padding:0.05rem 0.4rem;font-size:0.67rem;}
+.b-tab.active .b-tab-count{background:rgba(255,255,255,0.2);}
+
+/* BOOKINGS GRID */
+.bookings-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:0.9rem;}
+
+/* BOOKING CARD */
+.b-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;box-shadow:var(--shadow);transition:transform 0.2s,box-shadow 0.2s,border-color 0.2s;animation:cardIn 0.3s ease both;}
+.b-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.08);border-color:rgba(37,99,235,0.2);}
+@keyframes cardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.b-card-top{display:flex;align-items:center;justify-content:space-between;gap:0.5rem;margin-bottom:0.55rem;}
+.b-order-id{font-size:0.68rem;font-weight:700;color:var(--fg3);letter-spacing:0.1em;font-family:monospace;}
+.b-card-badges{display:flex;align-items:center;gap:0.35rem;}
+.verified-badge{font-size:0.63rem;font-weight:700;color:var(--success);background:#f0fdf4;border:1px solid #bbf7d0;padding:0.16rem 0.5rem;border-radius:20px;}
+.status-pill{font-size:0.7rem;font-weight:700;padding:0.2rem 0.6rem;border-radius:20px;white-space:nowrap;}
+.b-template{font-size:0.76rem;color:#6366f1;font-weight:700;margin-bottom:0.3rem;}
+.b-couple{font-size:0.9rem;font-weight:600;color:var(--fg);margin-bottom:0.4rem;}
+.b-meta-row{display:flex;gap:0.9rem;font-size:0.73rem;color:var(--fg3);margin-bottom:0.45rem;flex-wrap:wrap;}
+.b-payment-row{display:flex;align-items:center;gap:0.55rem;flex-wrap:wrap;margin-bottom:0.55rem;padding:0.45rem 0.65rem;background:var(--surface2);border-radius:8px;}
+.b-amount{font-size:0.86rem;font-weight:800;color:var(--success);}
+.b-coupon{font-size:0.7rem;font-weight:700;color:#7c3aed;background:#f5f3ff;padding:0.13rem 0.5rem;border-radius:20px;}
+.b-wa{font-size:0.73rem;color:var(--fg2);margin-left:auto;}
+.b-has-screenshot{font-size:0.7rem;color:var(--accent);font-weight:600;margin-bottom:0.55rem;background:var(--accent-lt);padding:0.28rem 0.6rem;border-radius:6px;display:inline-block;}
+.b-actions{display:flex;gap:0.45rem;flex-wrap:wrap;}
+.b-btn{display:flex;align-items:center;justify-content:center;gap:0.28rem;padding:0.45rem 0.75rem;border-radius:8px;font-size:0.74rem;font-weight:700;cursor:pointer;border:1.5px solid;font-family:'Inter',sans-serif;text-decoration:none;transition:all 0.18s;white-space:nowrap;}
+.b-btn-primary{background:var(--accent);color:#fff;border-color:transparent;flex:1;}
+.b-btn-primary:hover{background:#1d4ed8;box-shadow:0 4px 12px rgba(37,99,235,0.3);}
+.b-btn-wa{background:#f0fdf4;color:var(--success);border-color:#bbf7d0;}
+.b-btn-wa:hover{background:var(--success);color:#fff;}
+.b-status-wrap{flex:1;}
+.b-status-select{width:100%;padding:0.45rem 0.55rem;border:1.5px solid var(--border);border-radius:8px;font-size:0.74rem;font-weight:600;font-family:'Inter',sans-serif;outline:none;cursor:pointer;background:var(--surface);transition:border-color 0.2s;}
+.b-status-select:focus{border-color:var(--accent);}
+
+/* STATES */
+.b-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.7rem;padding:4rem;color:var(--fg3);font-size:0.86rem;grid-column:1/-1;}
+.b-loading-spinner{width:34px;height:34px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.b-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.55rem;padding:4rem;grid-column:1/-1;}
+.b-empty-icon{font-size:2.8rem;opacity:0.35;}
+.b-empty-title{font-size:1rem;font-weight:700;color:var(--fg2);}
+.b-empty-sub{font-size:0.82rem;color:var(--fg3);}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:500;display:none;align-items:flex-start;justify-content:center;padding:1.5rem 1rem;overflow-y:auto;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--surface);border-radius:18px;width:100%;max-width:600px;box-shadow:0 20px 50px rgba(0,0,0,0.22);animation:modalIn 0.3s ease both;margin:auto;overflow:hidden;display:flex;flex-direction:column;}
+@keyframes modalIn{from{opacity:0;transform:translateY(16px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.2rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:2;}
+.modal-title{font-size:0.95rem;font-weight:700;color:var(--fg);}
+.modal-close{background:none;border:none;cursor:pointer;width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:0.95rem;color:var(--fg2);transition:all 0.18s;}
+.modal-close:hover{background:#fef2f2;color:var(--danger);}
+.modal-body-scroll{padding:1.1rem 1.2rem;overflow-y:auto;max-height:75vh;}
+.detail-header{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1.1rem;}
+.detail-order-id{font-size:0.7rem;font-weight:700;color:var(--fg3);letter-spacing:0.12em;font-family:monospace;margin-bottom:0.2rem;}
+.detail-template{font-size:0.86rem;color:#6366f1;font-weight:700;}
+.detail-section{margin-bottom:1.1rem;padding-bottom:1.1rem;border-bottom:1px solid var(--border);}
+.detail-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.detail-sec-title{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--fg3);margin-bottom:0.7rem;}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.55rem;}
+.detail-item{background:var(--surface2);border-radius:9px;padding:0.55rem 0.75rem;}
+.detail-item.full{grid-column:1/-1;}
+.di-label{display:block;font-size:0.63rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--fg3);margin-bottom:0.18rem;}
+.di-val{font-size:0.82rem;font-weight:600;color:var(--fg);word-break:break-word;}
+.di-val.strong-green{color:var(--success);font-size:0.97rem;font-weight:800;}
+.di-val.mono{font-family:monospace;font-size:0.8rem;}
+.di-link{font-size:0.82rem;font-weight:700;color:var(--accent);text-decoration:none;}
+.di-link:hover{text-decoration:underline;}
+.detail-timeline{display:flex;flex-direction:column;gap:0.6rem;}
+.tl-row{display:flex;align-items:flex-start;gap:0.65rem;padding:0.55rem 0.75rem;background:var(--surface2);border-radius:9px;}
+.tl-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.tl-dot.blue{background:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,0.15);}
+.tl-dot.purple{background:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,0.15);}
+.tl-dot.green{background:var(--success);box-shadow:0 0 0 3px rgba(22,163,74,0.15);}
+.tl-dot.gold{background:var(--warn);box-shadow:0 0 0 3px rgba(217,119,6,0.15);}
+.tl-row small{font-size:0.74rem;color:var(--fg2);}
+.detail-event{display:flex;flex-wrap:wrap;gap:0.7rem;align-items:center;background:var(--surface2);border-radius:9px;padding:0.55rem 0.75rem;margin-bottom:0.45rem;font-size:0.8rem;color:var(--fg2);}
+.detail-event strong{font-weight:700;color:var(--fg);}
+.admin-action-row{display:flex;flex-direction:column;gap:0.3rem;margin-bottom:0.85rem;}
+.action-label{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--fg2);}
+.action-select,.action-input{width:100%;padding:0.6rem 0.8rem;border:1.5px solid var(--border);border-radius:9px;font-size:0.84rem;font-family:'Inter',sans-serif;color:var(--fg);outline:none;background:var(--surface);transition:border-color 0.2s;}
+.action-select:focus,.action-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,0.08);}
+.action-textarea{width:100%;padding:0.6rem 0.8rem;border:1.5px solid var(--border);border-radius:9px;font-size:0.84rem;font-family:'Inter',sans-serif;color:var(--fg);outline:none;resize:vertical;min-height:65px;transition:border-color 0.2s;}
+.action-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,0.08);}
+.modal-action-btns{display:flex;gap:0.55rem;flex-wrap:wrap;margin-top:0.85rem;}
+.mab-save{flex:1;padding:0.68rem;border-radius:10px;border:none;background:var(--accent);color:#fff;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;box-shadow:0 4px 12px rgba(37,99,235,0.25);}
+.mab-save:hover{background:#1d4ed8;}
+.mab-wa{display:flex;align-items:center;justify-content:center;padding:0.68rem 0.95rem;border-radius:10px;border:1.5px solid #bbf7d0;background:#f0fdf4;color:var(--success);font-size:0.84rem;font-weight:700;text-decoration:none;font-family:'Inter',sans-serif;transition:all 0.2s;white-space:nowrap;}
+.mab-wa:hover{background:var(--success);color:#fff;}
+.mab-link{display:flex;align-items:center;justify-content:center;padding:0.68rem 0.95rem;border-radius:10px;border:1.5px solid #bfdbfe;background:var(--accent-lt);color:var(--accent);font-size:0.84rem;font-weight:700;text-decoration:none;font-family:'Inter',sans-serif;transition:all 0.2s;white-space:nowrap;}
+.mab-link:hover{background:var(--accent);color:#fff;}
+.mab-delete{padding:0.68rem 0.95rem;border-radius:10px;border:1.5px solid #fecaca;background:#fef2f2;color:var(--danger);font-size:0.84rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;white-space:nowrap;}
+.mab-delete:hover{background:var(--danger);color:#fff;}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:stretch;z-index:200;box-shadow:0 -2px 12px rgba(0,0,0,0.08);}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.22rem;text-decoration:none;color:var(--fg3);border:none;background:none;cursor:pointer;font-family:'Inter',sans-serif;transition:color 0.18s;padding:0;}
+.bn-item:hover,.bn-item.active{color:var(--accent);}
+.bn-icon{font-size:1.25rem;line-height:1;}
+.bn-label{font-size:0.6rem;font-weight:600;letter-spacing:0.04em;}
+
+/* MORE MENU */
+.more-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300;display:none;}
+.more-overlay.open{display:block;}
+.more-menu{position:fixed;bottom:0;left:0;right:0;z-index:310;background:var(--surface);border-radius:20px 20px 0 0;padding:0.6rem 1.2rem 2rem;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);box-shadow:0 -8px 30px rgba(0,0,0,0.15);}
+.more-menu.open{transform:translateY(0);}
+.more-handle{width:40px;height:4px;background:var(--border);border-radius:4px;margin:0.5rem auto 1rem;}
+.more-title{font-size:0.72rem;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.85rem;}
+.more-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;}
+.mm-item{display:flex;flex-direction:column;align-items:center;gap:0.35rem;padding:0.75rem 0.5rem;border-radius:12px;background:var(--surface2);text-decoration:none;color:var(--fg2);border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.18s;}
+.mm-item:hover{background:var(--accent-lt);color:var(--accent);}
+.mm-item.mm-logout{color:var(--danger);}
+.mm-item.mm-logout:hover{background:#fef2f2;}
+.mm-icon{font-size:1.4rem;}
+.mm-label{font-size:0.67rem;font-weight:600;text-align:center;}
+
+/* TOAST */
+.admin-toast{position:fixed;bottom:calc(var(--nav-h) + 12px);left:50%;transform:translateX(-50%) translateY(10px);font-size:0.81rem;font-weight:600;padding:0.65rem 1.4rem;border-radius:30px;opacity:0;white-space:nowrap;transition:opacity 0.25s,transform 0.25s;z-index:9999;pointer-events:none;font-family:'Inter',sans-serif;}
+.admin-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.admin-toast.success{background:#166534;color:#bbf7d0;border:1px solid #15803d;}
+.admin-toast.error{background:#7f1d1d;color:#fca5a5;border:1px solid #b91c1c;}
+.admin-toast.warning{background:#78350f;color:#fde68a;border:1px solid #b45309;}
+.admin-toast.info{background:#1e3a8a;color:#bfdbfe;border:1px solid #1d4ed8;}
+
+/* RESPONSIVE */
+@media(max-width:480px){
+  .b-actions{flex-direction:column;}
+  .b-btn-primary,.b-status-wrap{width:100%;}
+  .hdr-btn span{display:none;}
+  .stats-strip{flex-wrap:wrap;}
+  .strip-item{min-width:calc(50% - 0.5px);}
+  .detail-grid{grid-template-columns:1fr;}
+  .modal-overlay{padding:0.4rem;}
+  .modal-body-scroll{max-height:78vh;}
 }
+</style>
+</head>
+<body>
 
-function updateBookingStats() {
-  const counts = {all:0,pending:0,inprogress:0,completed:0,cancelled:0};
-  let rev = 0;
-  allBookings.forEach(b => {
-    counts.all++; counts[b.status||'pending'] = (counts[b.status||'pending']||0)+1;
-    rev += (b.amountPaid||0);
-  });
-  Object.keys(counts).forEach(k => { const e=document.getElementById('count-'+k); if(e) e.textContent=counts[k]; });
-  const re=document.getElementById('total-revenue'); if(re) re.textContent='₹'+rev.toLocaleString('en-IN');
-  setBadge('badge-bookings', counts.pending);
-}
+<!-- HEADER -->
+<header class="page-header">
+  <div style="font-size:1.3rem;">📦</div>
+  <h1>Bookings</h1>
+  <button class="install-btn" id="installBtn" onclick="installAdminApp()">⬇ Install</button>
+  <button class="hdr-btn hdr-btn-export" onclick="exportBookingsCSV()">📥 <span>Export CSV</span></button>
+  <button class="hdr-btn hdr-btn-refresh" onclick="startBookingsListener()">🔄 <span>Refresh</span></button>
+</header>
 
-function switchFilter(filter) {
-  currentFilter = filter;
-  document.querySelectorAll('.b-tab').forEach(t => t.classList.toggle('active', t.dataset.filter===filter));
-  applyFilterAndSearch();
-}
+<!-- CONTENT -->
+<div class="page-content" id="bookingsPage">
 
-function onSearch(val) { currentSearch = val.toLowerCase().trim(); applyFilterAndSearch(); }
-
-function applyFilterAndSearch() {
-  filteredBookings = allBookings.filter(b => {
-    const ok = currentFilter==='all' || (b.status||'pending')===currentFilter;
-    if (!ok) return false;
-    if (!currentSearch) return true;
-    return [b.groomName,b.brideName,b.template,b.whatsapp,b.transactionId,b._id].join(' ').toLowerCase().includes(currentSearch);
-  });
-  renderBookingsGrid();
-  const c=document.getElementById('showing-count'); if(c) c.textContent=filteredBookings.length+' bookings';
-}
-
-function renderBookingsGrid() {
-  const grid = document.getElementById('bookingsGrid'); if (!grid) return;
-  if (!filteredBookings.length) { grid.innerHTML=`<div class="b-empty"><div class="b-empty-icon">📭</div><div class="b-empty-title">Koi booking nahi</div></div>`; return; }
-  grid.innerHTML = filteredBookings.map(b => buildBookingCard(b)).join('');
-}
-
-function buildBookingCard(b) {
-  const S={pending:{label:'Pending',color:'#f59e0b',bg:'#fffbeb',border:'#fde68a'},inprogress:{label:'In Progress',color:'#3b82f6',bg:'#eff6ff',border:'#bfdbfe'},completed:{label:'Completed',color:'#16a34a',bg:'#f0fdf4',border:'#bbf7d0'},cancelled:{label:'Cancelled',color:'#ef4444',bg:'#fef2f2',border:'#fecaca'}};
-  const s=S[b.status||'pending']||S.pending;
-  const shortId='#AK'+b._id.slice(-6).toUpperCase();
-  const date=b.createdAt?.toDate?.() ? b.createdAt.toDate().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'}) : '—';
-  const weddingDate=b.weddingCeremony?.date ? new Date(b.weddingCeremony.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
-  return `<div class="b-card" id="card-${b._id}">
-    <div class="b-card-top"><div class="b-order-id">${shortId}</div><div class="b-card-badges">${b.paymentVerified?'<span class="verified-badge">✅ Verified</span>':''}<span class="status-pill" style="color:${s.color};background:${s.bg};border:1px solid ${s.border};">${s.label}</span></div></div>
-    <div class="b-template">🎨 ${b.template||'—'}</div>
-    <div class="b-couple">💑 <strong>${b.groomName||'?'}</strong> &amp; <strong>${b.brideName||'?'}</strong></div>
-    <div class="b-meta-row"><span>💒 ${weddingDate}</span><span>📅 ${date}</span></div>
-    <div class="b-payment-row"><span class="b-amount">💰 ₹${(b.amountPaid||0).toLocaleString('en-IN')}</span>${b.couponCode?`<span class="b-coupon">🎟️ ${b.couponCode}</span>`:''}<span class="b-wa">📱 ${b.whatsapp||'—'}</span></div>
-    ${b.screenshotB64?`<div class="b-has-screenshot">📸 Screenshot available</div>`:''}
-    <div class="b-actions">
-      <button class="b-btn b-btn-primary" onclick="openBookingDetail('${b._id}')">👁️ View</button>
-      <a class="b-btn b-btn-wa" href="https://wa.me/91${b.whatsapp||''}" target="_blank">💬 WhatsApp</a>
-      <select class="b-status-select" onchange="quickStatusChange('${b._id}',this.value)" style="color:${s.color};">
-        <option value="pending" ${(b.status||'pending')==='pending'?'selected':''}>⏳ Pending</option>
-        <option value="inprogress" ${b.status==='inprogress'?'selected':''}>🔵 In Progress</option>
-        <option value="completed" ${b.status==='completed'?'selected':''}>✅ Completed</option>
-        <option value="cancelled" ${b.status==='cancelled'?'selected':''}>❌ Cancelled</option>
-      </select>
-    </div></div>`;
-}
-
-async function quickStatusChange(id, newStatus) {
-  try { await db.collection('bookings').doc(id).update({status:newStatus,statusUpdatedAt:firebase.firestore.FieldValue.serverTimestamp()}); showAdminToast('✅ Status updated!','success'); }
-  catch(e) { showAdminToast('❌ '+e.message,'error'); }
-}
-
-async function openBookingDetail(id) {
-  editingBookingId = id;
-  const modal = document.getElementById('bookingModal'); if (!modal) return;
-  modal.classList.add('open');
-  document.getElementById('modalContent').innerHTML = `<div style="text-align:center;padding:3rem;color:#94a3b8;">⏳ Loading...</div>`;
-  try {
-    const doc = await db.collection('bookings').doc(id).get();
-    if (!doc.exists) { showAdminToast('❌ Not found','error'); closeModal(); return; }
-    renderModalContent({_id:doc.id,...doc.data()});
-  } catch(e) { showAdminToast('❌ '+e.message,'error'); closeModal(); }
-}
-
-function renderModalContent(b) {
-  const S={pending:'Pending',inprogress:'In Progress',completed:'Completed',cancelled:'Cancelled'};
-  document.getElementById('modalContent').innerHTML = `<div class="modal-body-scroll">
-    <div class="detail-header"><div><div class="detail-order-id">#AK${b._id.slice(-6).toUpperCase()}</div><div class="detail-template">🎨 ${b.template||'—'}</div></div><span class="status-pill">${S[b.status||'pending']||'Pending'}</span></div>
-    <div class="detail-section"><div class="detail-sec-title">💑 Couple Details</div>
-      <div class="detail-grid">
-        <div class="detail-item"><span class="di-label">Dulhe Ka Naam</span><span class="di-val">${b.groomName||'—'}</span></div>
-        <div class="detail-item"><span class="di-label">Dulhe Ke Walid</span><span class="di-val">${b.groomFather||'—'}</span></div>
-        <div class="detail-item"><span class="di-label">Dulhan Ka Naam</span><span class="di-val">${b.brideName||'—'}</span></div>
-        <div class="detail-item"><span class="di-label">Dulhan Ke Walid</span><span class="di-val">${b.brideFather||'—'}</span></div>
-      </div></div>
-    <div class="detail-section"><div class="detail-sec-title">💰 Payment</div>
-      <div class="detail-grid">
-        <div class="detail-item"><span class="di-label">Amount</span><span class="di-val strong-green">₹${(b.amountPaid||0).toLocaleString('en-IN')}</span></div>
-        <div class="detail-item"><span class="di-label">Transaction ID</span><span class="di-val mono">${b.transactionId||'—'}</span></div>
-        <div class="detail-item"><span class="di-label">WhatsApp</span><span class="di-val">📱 ${b.whatsapp||'—'}</span></div>
-        <div class="detail-item"><span class="di-label">Payment</span><span class="di-val">${b.paymentVerified?'✅ Verified':'⏳ Pending'}</span></div>
-      </div>
-      ${b.screenshotB64?`<div style="margin-top:0.8rem;"><img src="${b.screenshotB64}" style="max-width:100%;max-height:250px;border-radius:10px;object-fit:contain;" onclick="window.open(this.src,'_blank')"/></div>`:''}
+  <!-- REVENUE STRIP -->
+  <div class="revenue-strip">
+    <div>
+      <div class="rev-label">Total Revenue</div>
+      <span class="rev-amount" id="total-revenue">₹—</span>
     </div>
-    <div class="detail-section"><div class="detail-sec-title">⚙️ Admin Actions</div>
-      <div class="admin-action-row"><label class="action-label">Status</label>
-        <select id="modalStatusSelect" class="action-select">
-          <option value="pending" ${(b.status||'pending')==='pending'?'selected':''}>⏳ Pending</option>
-          <option value="inprogress" ${b.status==='inprogress'?'selected':''}>🔵 In Progress</option>
-          <option value="completed" ${b.status==='completed'?'selected':''}>✅ Completed</option>
-          <option value="cancelled" ${b.status==='cancelled'?'selected':''}>❌ Cancelled</option>
-        </select></div>
-      <div class="admin-action-row"><label class="action-label">Card Link</label>
-        <input type="url" id="modalCardLink" class="action-input" value="${b.cardLink||''}" placeholder="https://..."/></div>
-      <div class="admin-action-row"><label class="action-label">Admin Note</label>
-        <textarea id="modalAdminNote" class="action-textarea">${b.adminNote||''}</textarea></div>
-      <div class="admin-action-row" style="flex-direction:row;align-items:center;gap:0.8rem;">
-        <input type="checkbox" id="modalPayVerify" ${b.paymentVerified?'checked':''} style="width:18px;height:18px;accent-color:#16a34a;"/>
-        <label for="modalPayVerify" style="font-size:0.85rem;font-weight:600;">✅ Payment Verified</label></div>
-      <div class="modal-action-btns">
-        <button class="mab-save" onclick="saveBookingChanges('${b._id}')">💾 Save</button>
-        <a class="mab-wa" href="https://wa.me/91${b.whatsapp||''}" target="_blank">💬 WhatsApp</a>
-        <button class="mab-delete" onclick="deleteBooking('${b._id}')">🗑️ Delete</button>
-      </div></div></div>`;
+    <div class="rev-count" id="showing-count">Loading...</div>
+  </div>
+
+  <!-- STATS STRIP -->
+  <div class="stats-strip">
+    <div class="strip-item strip-all" onclick="switchFilter('all')">
+      <span class="strip-num" id="count-all">—</span>
+      <span class="strip-lbl">All</span>
+    </div>
+    <div class="strip-item strip-pending" onclick="switchFilter('pending')">
+      <span class="strip-num" id="count-pending">—</span>
+      <span class="strip-lbl">Pending</span>
+    </div>
+    <div class="strip-item strip-inprogress" onclick="switchFilter('inprogress')">
+      <span class="strip-num" id="count-inprogress">—</span>
+      <span class="strip-lbl">In Progress</span>
+    </div>
+    <div class="strip-item strip-completed" onclick="switchFilter('completed')">
+      <span class="strip-num" id="count-completed">—</span>
+      <span class="strip-lbl">Done</span>
+    </div>
+    <div class="strip-item strip-cancelled" onclick="switchFilter('cancelled')">
+      <span class="strip-num" id="count-cancelled">—</span>
+      <span class="strip-lbl">Cancelled</span>
+    </div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" type="text"
+             placeholder="Naam, template, WhatsApp, Transaction ID..."
+             oninput="onSearch(this.value)"/>
+    </div>
+  </div>
+
+  <!-- FILTER TABS -->
+  <div class="b-tabs">
+    <button class="b-tab active" data-filter="all" onclick="switchFilter('all')">
+      All <span class="b-tab-count" id="tab-count-all">—</span>
+    </button>
+    <button class="b-tab" data-filter="pending" onclick="switchFilter('pending')">
+      ⏳ Pending <span class="b-tab-count" id="tab-count-pending">—</span>
+    </button>
+    <button class="b-tab" data-filter="inprogress" onclick="switchFilter('inprogress')">
+      🔵 In Progress <span class="b-tab-count" id="tab-count-inprogress">—</span>
+    </button>
+    <button class="b-tab" data-filter="completed" onclick="switchFilter('completed')">
+      ✅ Completed <span class="b-tab-count" id="tab-count-completed">—</span>
+    </button>
+    <button class="b-tab" data-filter="cancelled" onclick="switchFilter('cancelled')">
+      ❌ Cancelled <span class="b-tab-count" id="tab-count-cancelled">—</span>
+    </button>
+  </div>
+
+  <!-- BOOKINGS GRID -->
+  <div class="bookings-grid" id="bookingsGrid">
+    <div class="b-loading">
+      <div class="b-loading-spinner"></div>
+      <div>Bookings load ho rahi hain...</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOOKING DETAIL MODAL -->
+<div class="modal-overlay" id="bookingModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">📦 Booking Details</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modalContent">
+      <div style="text-align:center;padding:3rem;color:var(--fg3);">Loading...</div>
+    </div>
+  </div>
+</div>
+
+<!-- MORE MENU -->
+<div class="more-overlay" id="moreOverlay" onclick="toggleMoreMenu()"></div>
+<div class="more-menu" id="moreMenu">
+  <div class="more-handle"></div>
+  <div class="more-title">More Pages</div>
+  <div class="more-grid">
+    <a href="admin-users.html" class="mm-item"><span class="mm-icon">👥</span><span class="mm-label">Users</span></a>
+    <a href="admin-orders.html" class="mm-item"><span class="mm-icon">🛒</span><span class="mm-label">Orders</span></a>
+    <a href="admin-coupons.html" class="mm-item"><span class="mm-icon">🎟️</span><span class="mm-label">Coupons</span></a>
+    <a href="admin-referrals.html" class="mm-item"><span class="mm-icon">🔗</span><span class="mm-label">Referrals</span></a>
+    <a href="admin-whatsapp.html" class="mm-item"><span class="mm-icon">💬</span><span class="mm-label">WhatsApp</span></a>
+    <a href="admin-settings.html" class="mm-item"><span class="mm-icon">⚙️</span><span class="mm-label">Settings</span></a>
+    <button class="mm-item mm-logout" onclick="adminLogout()"><span class="mm-icon">🚪</span><span class="mm-label">Logout</span></button>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <a href="admin-dashboard.html" class="bn-item"><span class="bn-icon">🏠</span><span class="bn-label">Home</span></a>
+  <a href="admin-bookings.html" class="bn-item active"><span class="bn-icon">📦</span><span class="bn-label">Bookings</span></a>
+  <a href="admin-templates.html" class="bn-item"><span class="bn-icon">🎨</span><span class="bn-label">Templates</span></a>
+  <a href="admin-reviews.html" class="bn-item"><span class="bn-icon">⭐</span><span class="bn-label">Reviews</span></a>
+  <button class="bn-item" onclick="toggleMoreMenu()"><span class="bn-icon">⋯</span><span class="bn-label">More</span></button>
+</nav>
+
+<div class="admin-toast" id="adminToast"></div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="../firebase-config.js"></script>
+<script src="admin-all.js"></script>
+<script src="admin-bookings.js"></script>
+
+<script>
+// Tab count sync
+const origUpdateStats = typeof updateBookingStats === 'function' ? updateBookingStats : null;
+function updateBookingStats() {
+  if(origUpdateStats) origUpdateStats.call(this);
+  ['all','pending','inprogress','completed','cancelled'].forEach(k => {
+    const count = allBookings.filter(b => k==='all' || (b.status||'pending')===k).length;
+    const el = document.getElementById('tab-count-' + k);
+    if(el) el.textContent = count;
+  });
 }
 
-async function saveBookingChanges(id) {
-  const status=document.getElementById('modalStatusSelect')?.value;
-  const note=document.getElementById('modalAdminNote')?.value.trim();
-  const verified=document.getElementById('modalPayVerify')?.checked;
-  const cardLink=document.getElementById('modalCardLink')?.value.trim();
-  const btn=document.querySelector('.mab-save');
-  if(btn){btn.disabled=true;btn.textContent='⏳ Saving...';}
-  try {
-    await db.collection('bookings').doc(id).update({status,adminNote:note,paymentVerified:verified,cardLink:cardLink||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
-    showAdminToast('✅ Updated!','success'); closeModal();
-    if(status==='completed'&&cardLink){
-      const b=allBookings.find(x=>x._id===id);
-      if(b?.whatsapp){const msg=encodeURIComponent(`🎉 *AKANS Web*\n\nAapka wedding card ready hai! 💍\n💑 ${b.groomName} & ${b.brideName}\n🔗 ${cardLink}\n\nMubarakbaad! 🎊`);window.open(`https://wa.me/91${b.whatsapp}?text=${msg}`,'_blank');}
-    }
-  } catch(e){showAdminToast('❌ '+e.message,'error');if(btn){btn.disabled=false;btn.textContent='💾 Save';}}
+// More menu
+function toggleMoreMenu() {
+  const menu = document.getElementById('moreMenu');
+  const overlay = document.getElementById('moreOverlay');
+  const open = menu.classList.toggle('open');
+  overlay.classList.toggle('open', open);
+  document.body.style.overflow = open ? 'hidden' : '';
 }
 
-async function deleteBooking(id) {
-  if(!confirm('Delete karna chahte ho?')) return;
-  try{await db.collection('bookings').doc(id).delete();showAdminToast('🗑️ Deleted','success');closeModal();}
-  catch(e){showAdminToast('❌ '+e.message,'error');}
+// PWA Install
+let _deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _deferredPrompt = e;
+  document.getElementById('installBtn').classList.add('visible');
+});
+function installAdminApp() {
+  if (!_deferredPrompt) return;
+  _deferredPrompt.prompt();
+  _deferredPrompt.userChoice.then(() => {
+    _deferredPrompt = null;
+    document.getElementById('installBtn').classList.remove('visible');
+  });
 }
-
-function closeModal() { document.getElementById('bookingModal')?.classList.remove('open'); editingBookingId=null; }
-
-function exportBookingsCSV() {
-  if(!filteredBookings.length){showAdminToast('⚠️ No data','warning');return;}
-  const headers=['Order ID','Template','Groom','Bride','Amount','Status','WhatsApp','Date'];
-  const rows=filteredBookings.map(b=>['#AK'+b._id.slice(-6).toUpperCase(),b.template||'',b.groomName||'',b.brideName||'',b.amountPaid||0,b.status||'pending',b.whatsapp||'',b.createdAt?.toDate?.()?.toLocaleDateString('en-IN')||''].map(v=>`"${v}"`));
-  const csv=[headers.join(','),...rows.map(r=>r.join(','))].join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`bookings-${new Date().toISOString().split('T')[0]}.csv`;a.click();
-  showAdminToast('✅ CSV downloaded!','success');
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installBtn').classList.remove('visible');
+  _deferredPrompt = null;
+});
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('../sw.js').catch(() => {});
 }
-
-window.addEventListener('beforeunload',()=>{if(unsubBookings)unsubBookings();});
-document.addEventListener('DOMContentLoaded',()=>{if(document.getElementById('bookingsPage'))initWithAuth(initBookings);});
+</script>
+</body>
+</html>
