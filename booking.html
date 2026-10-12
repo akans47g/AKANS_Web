@@ -709,12 +709,42 @@ function toggleTerms() {
 
 // Coupons ab Firestore se load honge — applyCoupon() mein
 
-const UPI_IDS = {
+let UPI_IDS = {
   phonepe: '9021958286@ybl',
   gpay:    'moinkhanmanyar@okhdfcbank',
   paytm:   'akans.m7@ptaxis',
   upi:     '9021958286@ybl'
 };
+
+// ── LOAD SETTINGS FROM FIRESTORE (Admin se price & UPI sync) ──
+async function loadSettings() {
+  try {
+    const doc = await db.collection('settings').doc('main').get();
+    if (!doc.exists) return;
+    const s = doc.data();
+
+    // Price update — multiple field name fallbacks for compatibility
+    const price = parseInt(s.templatePrice || s.price || 0);
+    if (price > 0) {
+      basePrice  = price;
+      finalPrice = price;
+      document.getElementById('priceDisplay').textContent = price.toLocaleString('en-IN');
+      document.querySelectorAll('.current-amount').forEach(el =>
+        el.textContent = price.toLocaleString('en-IN'));
+    }
+
+    // UPI IDs update
+    if (s.phonePeUPI || s.phonepe) UPI_IDS.phonepe = s.phonePeUPI || s.phonepe;
+    if (s.gpayUPI    || s.gpay)    UPI_IDS.gpay    = s.gpayUPI    || s.gpay;
+    if (s.paytmUPI   || s.paytm)   UPI_IDS.paytm   = s.paytmUPI   || s.paytm;
+    const upiRaw = s.upiNumber || s.upiNum || s.upi || null;
+    if (upiRaw) UPI_IDS.upi = upiRaw.includes('@') ? upiRaw : upiRaw + '@ybl';
+
+  } catch(e) {
+    console.warn('[Settings] Firestore load failed, using defaults:', e);
+  }
+}
+loadSettings(); // Page load hote hi Firestore se settings fetch karo
 
 // ── INIT ──────────────────────────────────────────────────
 // Get template from URL
