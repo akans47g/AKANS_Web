@@ -643,6 +643,30 @@ body { padding-bottom: 86px; }
 .toggle-switch.on { background: linear-gradient(135deg, var(--blue), var(--purple)); }
 .toggle-switch.on::after { transform: translateX(19px); }
 
+/* ── INSTALL APP ROW — gradient highlight ── */
+#installAppRow {
+  background: linear-gradient(135deg, #eff6ff 0%, #f3eeff 100%);
+}
+#installAppRow:hover {
+  background: linear-gradient(135deg, #dbeafe 0%, #ede9fe 100%);
+}
+#installAppRow .menu-text strong { color: var(--blue); }
+#installAppRow .menu-text span   { color: #6d28d9; font-weight: 600; }
+.install-btn-pill {
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  color: #fff; border: none; border-radius: 10px;
+  padding: 0.38rem 0.9rem; font-size: 0.78rem; font-weight: 700;
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  box-shadow: 0 3px 10px rgba(37,99,235,0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+  white-space: nowrap;
+}
+#installAppRow:hover .install-btn-pill {
+  transform: translateY(-1px) scale(1.04);
+  box-shadow: 0 5px 16px rgba(37,99,235,0.4);
+}
+
 /* Logout */
 .logout-btn {
   width: 100%; margin-top: 1.7rem;
@@ -806,6 +830,38 @@ body { padding-bottom: 86px; }
     </a>
   </div>
 
+  <!-- ══ APP SECTION ══════════════════════════════════════
+       installSection   → shown when app is installable (beforeinstallprompt)
+       installedSection → shown after successful install
+       Both hidden by default; JS controls which one shows.
+  ════════════════════════════════════════════════════════ -->
+  <div id="installSection" style="display:none;">
+    <div class="menu-label">App</div>
+    <div class="menu-group">
+      <div class="menu-item" id="installAppRow" onclick="installPWA()">
+        <div class="menu-icon" style="background:linear-gradient(135deg,#eff6ff,#f3eeff);border:1px solid rgba(124,58,237,0.2);font-size:1.2rem;">📲</div>
+        <div class="menu-text">
+          <strong>Install App</strong>
+          <span>Home screen pe add karein — fast access!</span>
+        </div>
+        <button class="install-btn-pill" onclick="installPWA();event.stopPropagation();">⬇️ Install</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="installedSection" style="display:none;">
+    <div class="menu-label">App</div>
+    <div class="menu-group">
+      <div class="menu-item" style="pointer-events:none;cursor:default;">
+        <div class="menu-icon" style="background:#dcfce7;border:1px solid #bbf7d0;font-size:1.1rem;">✅</div>
+        <div class="menu-text">
+          <strong style="color:#16a34a;">App Installed!</strong>
+          <span>AKANS app aapke home screen par hai</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- LOGOUT -->
   <button class="logout-btn" id="logoutBtn">🚪 Logout</button>
 
@@ -941,31 +997,46 @@ const installBanner = document.getElementById('pwaInstallBanner');
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredPrompt = e;
+  // Show floating banner
   if (installBanner) installBanner.classList.add('show');
+  // Show "Install App" menu section
+  const installSection = document.getElementById('installSection');
+  if (installSection) installSection.style.display = 'block';
 });
 
 function installPWA() {
   if (!deferredPrompt) return;
   deferredPrompt.prompt();
   deferredPrompt.userChoice.then(choice => {
-    if (choice.outcome === 'accepted') {
-      console.log('[PWA] User installed the app');
-      if (installBanner) installBanner.classList.remove('show');
-    }
+    console.log('[PWA] User choice:', choice.outcome);
     deferredPrompt = null;
+    if (choice.outcome === 'accepted') {
+      _showInstalledState();
+    }
   });
 }
 
 function dismissInstall() {
   if (installBanner) installBanner.classList.remove('show');
   sessionStorage.setItem('pwaPromptDismissed', '1');
+  // Keep menu row visible so user can still install from menu
 }
 
-// Already installed check
+// Already installed event
 window.addEventListener('appinstalled', () => {
-  if (installBanner) installBanner.classList.remove('show');
   console.log('[PWA] App installed successfully!');
+  deferredPrompt = null;
+  _showInstalledState();
 });
+
+// Helper: swap install → installed UI
+function _showInstalledState() {
+  if (installBanner) installBanner.classList.remove('show');
+  const installSection   = document.getElementById('installSection');
+  const installedSection = document.getElementById('installedSection');
+  if (installSection)   installSection.style.display   = 'none';
+  if (installedSection) installedSection.style.display = 'block';
+}
 </script>
 </body>
 </html>
