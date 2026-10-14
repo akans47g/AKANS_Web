@@ -523,6 +523,126 @@ body{background:var(--bg);color:var(--fg);min-height:100vh;padding-bottom:calc(v
     </div>
   </div>
 
+  <!-- INSIGHT TILES -->
+  <div class="sec-head">
+    <span class="sec-title">Key Insights</span>
+  </div>
+  <div class="insight-strip">
+    <div class="insight-tile it-revenue">
+      <div class="it-icon">💰</div>
+      <div class="it-value" id="it-revenue">—</div>
+      <div class="it-label">This Month Revenue</div>
+      <div class="it-change neutral" id="it-revenue-change">Loading...</div>
+    </div>
+    <div class="insight-tile it-aov">
+      <div class="it-icon">📊</div>
+      <div class="it-value" id="it-aov">—</div>
+      <div class="it-label">Avg Order Value</div>
+      <div class="it-change neutral" id="it-aov-change">Per booking</div>
+    </div>
+    <div class="insight-tile it-rate">
+      <div class="it-icon">✅</div>
+      <div class="it-value" id="it-confirm-rate">—</div>
+      <div class="it-label">Confirmation Rate</div>
+      <div class="it-change neutral" id="it-rate-change">Confirmed / Total</div>
+    </div>
+    <div class="insight-tile it-rating">
+      <div class="it-icon">⭐</div>
+      <div class="it-value" id="it-avg-rating">—</div>
+      <div class="it-label">Avg Customer Rating</div>
+      <div class="it-change neutral" id="it-rating-change">Based on reviews</div>
+    </div>
+  </div>
+
+  <!-- ANALYTICS CHARTS -->
+  <div class="sec-head">
+    <span class="sec-title">Advanced Analytics</span>
+  </div>
+  <div class="analytics-grid">
+    <div class="ac-card">
+      <div class="ac-head">
+        <span class="ac-title">📅 Monthly Revenue (6 Months)</span>
+        <span class="ac-badge" id="monthly-total-badge">—</span>
+      </div>
+      <div class="ac-wrap">
+        <canvas id="monthlyRevenueChart"></canvas>
+      </div>
+    </div>
+    <div class="ac-card">
+      <div class="ac-head">
+        <span class="ac-title">🔵 Booking Status Breakdown</span>
+        <span class="ac-badge" id="status-total-badge">—</span>
+      </div>
+      <div class="ac-wrap">
+        <canvas id="statusDonutChart"></canvas>
+      </div>
+    </div>
+    <div class="ac-card">
+      <div class="ac-head">
+        <span class="ac-title">💸 Revenue Split (Advance vs Balance)</span>
+        <span class="ac-badge" id="split-total-badge">—</span>
+      </div>
+      <div class="ac-wrap">
+        <canvas id="revenueSplitChart"></canvas>
+      </div>
+    </div>
+    <div class="ac-card">
+      <div class="ac-head">
+        <span class="ac-title">🗓️ Upcoming Weddings (30 Days)</span>
+        <span class="ac-badge" id="upcoming-badge">—</span>
+      </div>
+      <div class="ac-wrap" id="upcoming-list" style="overflow-y:auto;height:180px;">
+        <div class="ac-empty">⏳ Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MONTHLY GOAL -->
+  <div class="goal-card" id="goalCard">
+    <div class="goal-head">
+      <span class="goal-title">🎯 Monthly Revenue Target</span>
+      <span class="goal-month" id="goal-month-label">—</span>
+    </div>
+    <div class="goal-amounts">
+      <span class="goal-current" id="goal-current">₹0</span>
+      <span class="goal-sep">/</span>
+      <span class="goal-target" id="goal-target-display">₹50,000</span>
+    </div>
+    <div class="goal-bar-bg">
+      <div class="goal-bar-fill" id="goal-bar" style="width:0%"></div>
+    </div>
+    <div class="goal-footer">
+      <span class="goal-pct" id="goal-pct">0% achieved</span>
+      <button class="goal-edit" onclick="editGoalTarget()">✏️ Change Target</button>
+    </div>
+  </div>
+
+  <!-- BALANCE TRACKER -->
+  <div class="sec-head">
+    <span class="sec-title">⚠️ Balance Pending Tracker</span>
+    <span class="sec-link" id="bal-pending-count">Loading...</span>
+  </div>
+  <div class="bal-tracker" id="balTracker">
+    <div class="bal-tracker-head">
+      <span class="bal-tracker-title">Customers with Unpaid Balance (65%)</span>
+      <span class="bal-total-pill" id="bal-total-pill">₹0 pending</span>
+    </div>
+    <div id="balanceList">
+      <div class="bal-row"><div class="ac-empty">⏳ Loading...</div></div>
+    </div>
+  </div>
+
+  <!-- ACTIVITY FEED -->
+  <div class="sec-head">
+    <span class="sec-title">🔴 Live Activity Feed</span>
+    <span class="sec-link" style="color:var(--success);">● Live</span>
+  </div>
+  <div class="activity-card">
+    <div class="activity-list" id="activityFeed">
+      <div class="act-item"><div class="ac-empty">⏳ Loading activity...</div></div>
+    </div>
+  </div>
+
   <!-- RECENT BOOKINGS -->
   <div class="sec-head">
     <span class="sec-title">Recent Bookings</span>
@@ -621,7 +741,6 @@ body{background:var(--bg);color:var(--fg);min-height:100vh;padding-bottom:calc(v
 <!-- Chart.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <!-- Firebase -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -657,6 +776,355 @@ window.addEventListener('appinstalled',()=>{
   if(b)b.style.display='none';
 });
 if('serviceWorker'in navigator)navigator.serviceWorker.register('../sw.js').catch(()=>{});
+</script>
+
+<!-- ── ANALYTICS & INSIGHTS JS ── -->
+<script>
+(function(){
+  /* ── helpers ── */
+  const fmt = n => '₹'+Number(n).toLocaleString('en-IN');
+  const fmtK = n => n>=1000 ? '₹'+(n/1000).toFixed(1)+'K' : '₹'+n;
+  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const now = new Date();
+  const THIS_M = now.getMonth(), THIS_Y = now.getFullYear();
+
+  /* ── wait for Firebase ── */
+  function waitForDb(cb, tries=0){
+    if(window.db){ cb(); }
+    else if(tries < 30){ setTimeout(()=>waitForDb(cb,tries+1),300); }
+  }
+
+  /* ── GOAL target from localStorage ── */
+  let goalTarget = parseInt(localStorage.getItem('akans_goal_target')||'50000',10);
+  function editGoalTarget(){
+    const v = prompt('Monthly revenue target set karo (₹):',goalTarget);
+    if(v && !isNaN(parseInt(v))){
+      goalTarget = parseInt(v);
+      localStorage.setItem('akans_goal_target', goalTarget);
+      updateGoalUI(window._analyticsMonthRevenue||0);
+    }
+  }
+  window.editGoalTarget = editGoalTarget;
+
+  function updateGoalUI(monthRev){
+    window._analyticsMonthRevenue = monthRev;
+    const pct = Math.min(100, Math.round(monthRev/goalTarget*100));
+    document.getElementById('goal-current').textContent = fmt(monthRev);
+    document.getElementById('goal-target-display').textContent = fmt(goalTarget);
+    document.getElementById('goal-pct').textContent = pct+'% achieved';
+    document.getElementById('goal-bar').style.width = pct+'%';
+    const d = new Date();
+    document.getElementById('goal-month-label').textContent =
+      monthNames[d.getMonth()]+' '+d.getFullYear();
+  }
+
+  /* ── CHART defaults ── */
+  const chartDefaults = {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ display:false }, tooltip:{ backgroundColor:'#1e293b', titleColor:'#f8fafc', bodyColor:'#cbd5e1', padding:10 }},
+  };
+
+  /* ── init charts (empty) ── */
+  let monthlyChart, donutChart, splitChart;
+
+  function initCharts(){
+    const mCtx = document.getElementById('monthlyRevenueChart');
+    const dCtx = document.getElementById('statusDonutChart');
+    const sCtx = document.getElementById('revenueSplitChart');
+    if(!mCtx||!dCtx||!sCtx) return;
+
+    /* Monthly Revenue Bar */
+    monthlyChart = new Chart(mCtx.getContext('2d'), {
+      type:'bar',
+      data:{ labels:[], datasets:[{
+        label:'Revenue', data:[],
+        backgroundColor:'rgba(37,99,235,0.15)',
+        borderColor:'#2563eb', borderWidth:2,
+        borderRadius:6, borderSkipped:false,
+      }]},
+      options:{...chartDefaults,
+        scales:{
+          x:{ grid:{display:false}, ticks:{color:'#94a3b8',font:{size:11}} },
+          y:{ grid:{color:'#f1f5f9'}, ticks:{color:'#94a3b8',font:{size:11},
+            callback:v=>fmtK(v) }},
+        }
+      }
+    });
+
+    /* Status Donut */
+    donutChart = new Chart(dCtx.getContext('2d'), {
+      type:'doughnut',
+      data:{ labels:['Confirmed','Pending','Cancelled'],
+        datasets:[{ data:[0,0,0],
+          backgroundColor:['#22c55e','#f59e0b','#ef4444'],
+          borderWidth:0, hoverOffset:8
+        }]
+      },
+      options:{...chartDefaults,
+        plugins:{...chartDefaults.plugins,
+          legend:{ display:true, position:'bottom',
+            labels:{ color:'#475569', font:{size:11}, padding:12 }
+          }
+        },
+        cutout:'65%'
+      }
+    });
+
+    /* Revenue Split Horizontal Bar */
+    splitChart = new Chart(sCtx.getContext('2d'), {
+      type:'bar',
+      data:{ labels:['Advance Collected','Balance Collected','Balance Pending'],
+        datasets:[{
+          data:[0,0,0],
+          backgroundColor:['#2563eb','#16a34a','#f59e0b'],
+          borderRadius:6, borderSkipped:false,
+        }]
+      },
+      options:{...chartDefaults,
+        indexAxis:'y',
+        scales:{
+          x:{ grid:{color:'#f1f5f9'}, ticks:{color:'#94a3b8',font:{size:11},
+            callback:v=>fmtK(v) }},
+          y:{ grid:{display:false}, ticks:{color:'#475569',font:{size:11}} }
+        }
+      }
+    });
+  }
+
+  /* ── FETCH BOOKINGS & POPULATE ALL ── */
+  function loadAnalytics(){
+    window.db.collection('bookings').get().then(snap=>{
+      const docs = snap.docs.map(d=>({id:d.id,...d.data()}));
+
+      /* --- 1. Monthly revenue (last 6 months) --- */
+      const mRevMap = {};
+      let monthRevThis = 0;
+      for(let i=5;i>=0;i--){
+        const d=new Date(THIS_Y,THIS_M-i,1);
+        mRevMap[d.getMonth()+'_'+d.getFullYear()] = 0;
+      }
+      docs.forEach(b=>{
+        const ts = b.createdAt?.toDate ? b.createdAt.toDate() : null;
+        if(!ts) return;
+        const key = ts.getMonth()+'_'+ts.getFullYear();
+        if(key in mRevMap){
+          const rev = (b.advancePaid?Number(b.advanceAmount||0):0)
+                    + (b.balancePaid?Number(b.balanceAmount||0):0);
+          mRevMap[key] = (mRevMap[key]||0) + rev;
+        }
+        if(ts.getMonth()===THIS_M && ts.getFullYear()===THIS_Y){
+          const rev = (b.advancePaid?Number(b.advanceAmount||0):0)
+                    + (b.balancePaid?Number(b.balanceAmount||0):0);
+          monthRevThis += rev;
+        }
+      });
+      const mLabels=[], mData=[];
+      for(let i=5;i>=0;i--){
+        const d=new Date(THIS_Y,THIS_M-i,1);
+        mLabels.push(monthNames[d.getMonth()]);
+        mData.push(mRevMap[d.getMonth()+'_'+d.getFullYear()]||0);
+      }
+      if(monthlyChart){
+        monthlyChart.data.labels=mLabels;
+        monthlyChart.data.datasets[0].data=mData;
+        monthlyChart.update();
+      }
+      const mTotal = mData.reduce((a,b)=>a+b,0);
+      const badge = document.getElementById('monthly-total-badge');
+      if(badge) badge.textContent = fmt(mTotal)+' (6M)';
+
+      /* --- insight tile: this month revenue --- */
+      const itRev = document.getElementById('it-revenue');
+      if(itRev) itRev.textContent = fmtK(monthRevThis);
+      const itRevC = document.getElementById('it-revenue-change');
+      if(itRevC){
+        const lastM = mData[mData.length-2]||0;
+        if(lastM>0){
+          const diff = Math.round((monthRevThis-lastM)/lastM*100);
+          itRevC.textContent = (diff>=0?'↑ +':'↓ ')+Math.abs(diff)+'% vs last month';
+          itRevC.className = 'it-change '+(diff>=0?'up':'down');
+        } else { itRevC.textContent='First month data'; }
+      }
+
+      /* --- 2. Status donut --- */
+      let confirmed=0, pending=0, cancelled=0;
+      docs.forEach(b=>{
+        const s=(b.status||'').toLowerCase();
+        if(s==='confirmed'||s==='completed') confirmed++;
+        else if(s==='cancelled'||s==='rejected') cancelled++;
+        else pending++;
+      });
+      if(donutChart){
+        donutChart.data.datasets[0].data=[confirmed,pending,cancelled];
+        donutChart.update();
+      }
+      const sBadge = document.getElementById('status-total-badge');
+      if(sBadge) sBadge.textContent = docs.length+' total';
+
+      /* --- insight: confirmation rate --- */
+      const total=docs.length||1;
+      const rate = Math.round(confirmed/total*100);
+      const itRate = document.getElementById('it-confirm-rate');
+      if(itRate) itRate.textContent = rate+'%';
+      const itRateC = document.getElementById('it-rate-change');
+      if(itRateC) itRateC.textContent = confirmed+' of '+docs.length+' confirmed';
+      if(itRateC) itRateC.className='it-change '+(rate>=70?'up':rate>=40?'neutral':'down');
+
+      /* --- insight: AOV --- */
+      const totalRev = docs.reduce((a,b)=>a+(Number(b.totalAmount)||0),0);
+      const aov = docs.length ? Math.round(totalRev/docs.length) : 0;
+      const itAov = document.getElementById('it-aov');
+      if(itAov) itAov.textContent = fmtK(aov);
+
+      /* --- 3. Revenue split --- */
+      let advCollected=0, balCollected=0, balPending=0;
+      docs.forEach(b=>{
+        if(b.advancePaid) advCollected+=Number(b.advanceAmount||0);
+        if(b.balancePaid) balCollected+=Number(b.balanceAmount||0);
+        else balPending+=Number(b.balanceAmount||0);
+      });
+      if(splitChart){
+        splitChart.data.datasets[0].data=[advCollected,balCollected,balPending];
+        splitChart.update();
+      }
+      const spBadge = document.getElementById('split-total-badge');
+      if(spBadge) spBadge.textContent = fmt(advCollected+balCollected)+' collected';
+
+      /* --- 4. Monthly goal update --- */
+      updateGoalUI(monthRevThis);
+
+      /* --- 5. Balance tracker --- */
+      const unpaid = docs.filter(b=>!b.balancePaid && Number(b.balanceAmount||0)>0)
+        .sort((a,b)=>Number(b.balanceAmount||0)-Number(a.balanceAmount||0));
+      const totalPending = unpaid.reduce((a,b)=>a+Number(b.balanceAmount||0),0);
+      const balPill = document.getElementById('bal-total-pill');
+      if(balPill) balPill.textContent = fmt(totalPending)+' pending';
+      const balCount = document.getElementById('bal-pending-count');
+      if(balCount) balCount.textContent = unpaid.length+' customers';
+
+      const balList = document.getElementById('balanceList');
+      if(balList){
+        if(unpaid.length===0){
+          balList.innerHTML='<div class="bal-row"><div class="ac-empty">🎉 Sab payments clear!</div></div>';
+        } else {
+          balList.innerHTML = unpaid.slice(0,8).map(b=>{
+            const initials = ((b.groomName||b.coupleName||'?')[0]||'?').toUpperCase();
+            const phone = b.phone||b.whatsapp||'';
+            const waLink = phone ? `https://wa.me/91${phone.replace(/\D/g,'')}?text=Hello%20${encodeURIComponent(b.groomName||'Customer')}%2C%20wedding%20balance%20amount%20%E2%82%B9${Number(b.balanceAmount||0).toLocaleString('en-IN')}%20pay%20karna%20hai.` : '';
+            return `<div class="bal-row">
+              <div class="bal-av">${initials}</div>
+              <div class="bal-info">
+                <div class="bal-name">${b.groomName||b.coupleName||'—'} &amp; ${b.brideName||''}</div>
+                <div class="bal-meta">${b.weddingDate||'Date TBD'} · ${b.template||'—'}</div>
+              </div>
+              <span class="bal-amt">${fmt(b.balanceAmount||0)}</span>
+              ${waLink?`<a href="${waLink}" target="_blank" class="bal-wa">💬</a>`:''}
+            </div>`;
+          }).join('');
+        }
+      }
+
+      /* --- 6. Upcoming weddings (30 days) --- */
+      const today = new Date(); today.setHours(0,0,0,0);
+      const plus30 = new Date(today); plus30.setDate(plus30.getDate()+30);
+      const upcoming = docs.filter(b=>{
+        if(!b.weddingDate) return false;
+        const d = new Date(b.weddingDate);
+        return d>=today && d<=plus30;
+      }).sort((a,b)=>new Date(a.weddingDate)-new Date(b.weddingDate));
+
+      const upList = document.getElementById('upcoming-list');
+      const upBadge = document.getElementById('upcoming-badge');
+      if(upBadge) upBadge.textContent = upcoming.length+' weddings';
+      if(upList){
+        if(upcoming.length===0){
+          upList.innerHTML='<div class="ac-empty">No upcoming weddings</div>';
+        } else {
+          upList.innerHTML = upcoming.map(b=>{
+            const d = new Date(b.weddingDate);
+            const diff = Math.round((d-today)/(1000*60*60*24));
+            const urgency = diff<=3?'color:#dc2626;font-weight:800':diff<=7?'color:#d97706;font-weight:700':'color:#16a34a;font-weight:600';
+            return `<div style="display:flex;align-items:center;gap:0.6rem;padding:0.55rem 0.85rem;border-bottom:1px solid var(--border);">
+              <div style="width:36px;height:36px;border-radius:8px;background:#eff6ff;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;">
+                <span style="font-size:0.62rem;font-weight:700;color:#2563eb;text-transform:uppercase;">${monthNames[d.getMonth()]}</span>
+                <span style="font-size:0.9rem;font-weight:900;color:#1e40af;line-height:1;">${d.getDate()}</span>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:0.8rem;font-weight:700;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${b.groomName||'—'} &amp; ${b.brideName||'—'}</div>
+                <div style="font-size:0.7rem;color:var(--fg3);">${b.venueName||'Venue TBD'}</div>
+              </div>
+              <span style="font-size:0.72rem;${urgency}">${diff===0?'Today!':diff===1?'Tomorrow':diff+'d'}</span>
+            </div>`;
+          }).join('');
+        }
+      }
+
+      /* --- 7. Activity Feed --- */
+      const recentDocs = [...docs]
+        .filter(b=>b.createdAt)
+        .sort((a,b)=>(b.createdAt?.toDate?.()?.getTime()||0)-(a.createdAt?.toDate?.()?.getTime()||0))
+        .slice(0,10);
+
+      const feed = document.getElementById('activityFeed');
+      if(feed && recentDocs.length>0){
+        feed.innerHTML = recentDocs.map(b=>{
+          const ts = b.createdAt?.toDate?.();
+          const timeAgo = ts ? getTimeAgo(ts) : '—';
+          const events = [];
+          events.push({
+            type:'booking', icon:'📦',
+            text:`<strong>${b.groomName||'Customer'}</strong> ne booking ki — <strong>${b.template||'Template'}</strong>`,
+            time: timeAgo
+          });
+          if(b.advancePaid) events.push({
+            type:'payment', icon:'💰',
+            text:`<strong>${b.groomName||'Customer'}</strong> ne advance ₹${Number(b.advanceAmount||0).toLocaleString('en-IN')} pay kiya`,
+            time: timeAgo
+          });
+          return events;
+        }).flat().slice(0,8).map(ev=>`
+          <div class="act-item">
+            <div class="act-dot ${ev.type}">${ev.icon}</div>
+            <div class="act-body">
+              <div class="act-text">${ev.text}</div>
+              <div class="act-time">${ev.time}</div>
+            </div>
+          </div>`).join('');
+      }
+
+      /* --- 8. Avg rating from reviews (if exists) --- */
+      window.db.collection('reviews').where('approved','==',true).get()
+        .then(rSnap=>{
+          const ratings = rSnap.docs.map(d=>Number(d.data().rating||0)).filter(r=>r>0);
+          if(ratings.length){
+            const avg = (ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1);
+            const itR = document.getElementById('it-avg-rating');
+            if(itR) itR.textContent = avg+' ⭐';
+            const itRC = document.getElementById('it-rating-change');
+            if(itRC){ itRC.textContent = ratings.length+' approved reviews'; itRC.className='it-change up'; }
+          }
+        }).catch(()=>{});
+
+    }).catch(err=>{
+      console.error('Analytics load error:',err);
+    });
+  }
+
+  function getTimeAgo(date){
+    const diff = Math.floor((Date.now()-date.getTime())/1000);
+    if(diff<60) return diff+'s ago';
+    if(diff<3600) return Math.floor(diff/60)+'m ago';
+    if(diff<86400) return Math.floor(diff/3600)+'h ago';
+    return Math.floor(diff/86400)+'d ago';
+  }
+
+  /* ── BOOT ── */
+  document.addEventListener('DOMContentLoaded',()=>{
+    initCharts();
+    waitForDb(loadAnalytics);
+  });
+
+})();
 </script>
 </body>
 </html>
