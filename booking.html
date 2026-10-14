@@ -259,6 +259,73 @@ header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.93);
 .info-banner-text strong { display:block; font-size:0.88rem; font-weight:700; color:#1e40af; margin-bottom:0.2rem; }
 .info-banner-text span { font-size:0.8rem; color:#3b82f6; line-height:1.6; }
 
+/* ── CARD FIELD INDICATOR TAGS ── */
+.card-tag{
+  display:inline-flex;align-items:center;gap:0.18rem;
+  font-size:0.59rem;font-weight:700;line-height:1.5;
+  padding:0.1rem 0.42rem;border-radius:20px;
+  margin-left:0.45rem;vertical-align:middle;white-space:nowrap;
+}
+.ct-groom{background:#fce7f3;color:#9d174d;border:1px solid #f9a8d4;}
+.ct-bride{background:#fdf2f8;color:#be185d;border:1px solid #fbcfe8;}
+.ct-parent{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;}
+.ct-event{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;}
+.ct-venue{background:#f0fdf4;color:#166534;border:1px solid #86efac;}
+.ct-optional{background:#f5f3ff;color:#6d28d9;border:1px solid #ddd6fe;}
+.field-card-hint{
+  font-size:0.69rem;color:#7c3aed;margin-top:0.3rem;
+  display:flex;align-items:flex-start;gap:0.3rem;line-height:1.5;
+  font-weight:500;
+}
+.field-card-hint::before{content:'↳';font-size:0.72rem;opacity:0.6;flex-shrink:0;margin-top:0.02rem;}
+
+/* ── ACCESS NOTE ── */
+.access-note{
+  background:linear-gradient(135deg,#fdf4ff 0%,#eff6ff 100%);
+  border:2px solid #c4b5fd;border-radius:16px;
+  padding:1.1rem 1.2rem;margin-bottom:1.3rem;
+  animation:cardIn 0.35s 0.05s ease both;
+  position:relative;overflow:hidden;
+}
+.access-note::after{
+  content:'🔐';position:absolute;bottom:-8px;right:8px;
+  font-size:4rem;opacity:0.07;transform:rotate(-10deg);pointer-events:none;
+}
+.access-note-head{display:flex;align-items:center;gap:0.6rem;margin-bottom:0.5rem;}
+.access-note-icon{font-size:1.4rem;flex-shrink:0;}
+.access-note-title{font-size:0.9rem;font-weight:800;color:#5b21b6;line-height:1.3;}
+.access-note-body{font-size:0.79rem;color:#4c3889;line-height:1.7;margin-bottom:0.65rem;}
+.access-chips{display:flex;flex-wrap:wrap;gap:0.4rem;}
+.access-chip{
+  display:inline-flex;align-items:center;gap:0.25rem;
+  background:rgba(124,58,237,0.1);border:1px solid #c4b5fd;
+  color:#5b21b6;font-size:0.68rem;font-weight:700;
+  padding:0.18rem 0.52rem;border-radius:20px;
+}
+
+/* ── LANGUAGE SELECTOR ── */
+.lang-bar{
+  display:flex;align-items:center;gap:0.5rem;
+  margin-bottom:1.2rem;animation:cardIn 0.3s ease both;
+  flex-wrap:wrap;
+}
+.lang-label{font-size:0.68rem;font-weight:700;color:var(--text-3);
+  letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap;}
+.lang-pills{display:flex;gap:0.35rem;flex-wrap:wrap;}
+.lang-pill{
+  padding:0.3rem 0.75rem;border-radius:20px;cursor:pointer;
+  font-size:0.75rem;font-weight:600;
+  border:1.5px solid var(--border);background:#fff;color:var(--text-2);
+  transition:all 0.18s;white-space:nowrap;
+  font-family:'DM Sans',sans-serif;
+}
+.lang-pill:hover{border-color:var(--blue);color:var(--blue);}
+.lang-pill.active{
+  background:var(--blue);color:#fff;
+  border-color:var(--blue);
+  box-shadow:0 2px 8px rgba(37,99,235,0.25);
+}
+
 /* ── SCREENSHOT UPLOAD ── */
 .upload-area {
   border:2px dashed var(--border); border-radius:14px;
@@ -357,8 +424,16 @@ header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.93);
     <div class="success-icon">🎉</div>
     <div class="success-title">Booking Ho Gayi!</div>
     <div class="success-sub">
-      Aapki wedding card booking receive ho gayi hai.<br>
-      Hamare team 24 ghante mein aapse WhatsApp pe contact karegi.
+      Aapki wedding card booking receive ho gayi hai! 🎊<br><br>
+      <span style="background:#dbeafe;color:#1e40af;padding:0.3rem 0.8rem;border-radius:8px;font-weight:700;font-size:0.88rem;">
+        ✅ Advance Paid: ₹<span id="successAdvAmt">—</span>
+      </span>
+      &nbsp;
+      <span style="background:#f1f5f9;color:#64748b;padding:0.3rem 0.8rem;border-radius:8px;font-weight:700;font-size:0.88rem;">
+        ⏳ Balance Due: ₹<span id="successBalAmt">—</span>
+      </span>
+      <br><br>
+      Card complete hone ke baad hamare team aapko WhatsApp pe balance payment link bhejegi.
     </div>
     <div class="success-id" id="successId">Order ID: Loading...</div>
     <a href="index.html" class="back-home-btn">🏠 Home Par Jao</a>
@@ -367,52 +442,80 @@ header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.93);
   <!-- MAIN FORM -->
   <div id="mainForm">
 
+  <!-- LANGUAGE SELECTOR -->
+  <div class="lang-bar">
+    <span class="lang-label">Language:</span>
+    <div class="lang-pills">
+      <button class="lang-pill active" onclick="setLang('hi_en',this)">Hinglish</button>
+      <button class="lang-pill" onclick="setLang('en',this)">English</button>
+      <button class="lang-pill" onclick="setLang('hi',this)">हिंदी</button>
+      <button class="lang-pill" onclick="setLang('mr',this)">मराठी</button>
+      <button class="lang-pill" onclick="setLang('ur',this)">اردو</button>
+    </div>
+  </div>
+
   <!-- INFO BANNER -->
   <div class="info-banner">
-    <span class="info-banner-icon">✏️</span>
+    <span class="info-banner-icon">💍</span>
     <div class="info-banner-text">
-      <strong>Yeh Details Baad Mein Bhi Change Ho Sakti Hain!</strong>
-      <span>Form fill karne ke baad bhi aap apne wedding card ki saari details — naam, date, venue, photos — kabhi bhi update kar sakte hain. Hamare team aapko pura control dega. 😊</span>
+      <strong data-i18n="info.title">Yeh details aapki Wedding Card pe seedhi dikhegi!</strong>
+      <span data-i18n="info.sub">Har field ke saath tag diya hai jo batata hai — card ke kis hisse mein woh jayegi.</span>
+    </div>
+  </div>
+
+  <!-- ACCESS NOTE -->
+  <div class="access-note">
+    <div class="access-note-head">
+      <span class="access-note-icon">🔐</span>
+      <div class="access-note-title" data-i18n="access.title">Website complete hone ke baad — Poora control aapka!</div>
+    </div>
+    <div class="access-note-body" data-i18n="access.body">Aapko personal login milega jisse aap kabhi bhi naam, date, venue aur photos khud change kar sakenge.</div>
+    <div class="access-chips">
+      <span class="access-chip" data-i18n="access.c1">✏️ Naam</span>
+      <span class="access-chip" data-i18n="access.c2">📅 Date</span>
+      <span class="access-chip" data-i18n="access.c3">📍 Venue</span>
+      <span class="access-chip" data-i18n="access.c4">🖼️ Photos</span>
+      <span class="access-chip" data-i18n="access.c5">🎨 Design</span>
     </div>
   </div>
 
   <!-- ── 1. COUPLE DETAILS ── -->
-  <div class="sec-label">Dulha & Dulhan Ki Details</div>
+  <div class="sec-label" data-i18n="sec.couple">Dulha &amp; Dulhan Ki Details</div>
   <div class="form-card" style="animation-delay:0.05s">
 
     <div class="field">
-      <label class="field-label">Dulhe Ka Poora Naam <span class="req">*</span></label>
-      <input class="field-input" type="text" id="groomName" placeholder="Jaise: Mohammed Arif Khan"/>
+      <label class="field-label"><span data-i18n="label.groomName">Dulhe Ka Poora Naam</span> <span class="req">*</span><span class="card-tag ct-groom">💍 Card: Groom</span></label>
+      <input class="field-input" type="text" id="groomName" data-i18n-ph="ph.groomName" placeholder="Jaise: Rahul Kumar Sharma"/>
     </div>
 
     <div class="field">
-      <label class="field-label">Dulhe Ke Walid Ka Naam <span class="req">*</span></label>
-      <input class="field-input" type="text" id="groomFather" placeholder="Jaise: Abdul Rehman Khan"/>
+      <label class="field-label"><span data-i18n="label.groomFather">Dulhe Ke Pita Ka Naam</span> <span class="req">*</span><span class="card-tag ct-parent">👔 Card: Father</span></label>
+      <input class="field-input" type="text" id="groomFather" data-i18n-ph="ph.groomFather" placeholder="Jaise: Rajesh Kumar Sharma"/>
     </div>
 
     <div class="field">
-      <label class="field-label">Dulhan Ka Poora Naam <span class="req">*</span></label>
-      <input class="field-input" type="text" id="brideName" placeholder="Jaise: Zainab Fatima Ansari"/>
+      <label class="field-label"><span data-i18n="label.brideName">Dulhan Ka Poora Naam</span> <span class="req">*</span><span class="card-tag ct-bride">👰 Card: Bride</span></label>
+      <input class="field-input" type="text" id="brideName" data-i18n-ph="ph.brideName" placeholder="Jaise: Priya Devi Sharma"/>
     </div>
 
     <div class="field">
-      <label class="field-label">Dulhan Ke Walid Ka Naam <span class="req">*</span></label>
-      <input class="field-input" type="text" id="brideFather" placeholder="Jaise: Yusuf Ansari"/>
+      <label class="field-label"><span data-i18n="label.brideFather">Dulhan Ke Pita Ka Naam</span> <span class="req">*</span><span class="card-tag ct-parent">👗 Card: Father</span></label>
+      <input class="field-input" type="text" id="brideFather" data-i18n-ph="ph.brideFather" placeholder="Jaise: Suresh Lal Sharma"/>
     </div>
 
     <div class="field">
-      <label class="field-label">Mangni Ki Tarikh (Engagement Date)</label>
+      <label class="field-label"><span data-i18n="label.engagement">Mangni Ki Tarikh</span><span class="card-tag ct-optional">📅 Optional</span></label>
       <input class="field-input" type="date" id="engagementDate"/>
     </div>
 
   </div>
 
   <!-- ── 2. WEDDING PROGRAM TIMELINE ── -->
-  <div class="sec-label">Shaadi Ka Program Schedule</div>
+  <div class="sec-label" data-i18n="sec.timeline">Shaadi Ka Program</div>
   <div class="form-card" style="animation-delay:0.1s">
 
     <div class="field">
-      <label class="field-label">👥 Mehmaan Kab Aayenge? (Guest Arrival) <span class="req">*</span></label>
+      <label class="field-label">👥 <span data-i18n="label.guestArrival">Mehmaan Kab Aayenge</span> <span class="req">*</span><span class="card-tag ct-event">⏱️ Card: Timeline</span></label>
       <div class="dt-row">
         <input class="field-input" type="date" id="guestDate"/>
         <input class="field-input" type="time" id="guestTime" value="16:00"/>
@@ -420,7 +523,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.93);
     </div>
 
     <div class="field">
-      <label class="field-label">💍 Nikaah / Wedding Ceremony <span class="req">*</span></label>
+      <label class="field-label">💍 <span data-i18n="label.ceremony">Shaadi / Wedding Ceremony</span> <span class="req">*</span><span class="card-tag ct-event">💍 Card: Main Event</span></label>
       <div class="dt-row">
         <input class="field-input" type="date" id="ceremonyDate"/>
         <input class="field-input" type="time" id="ceremonyTime" value="17:00"/>
@@ -428,63 +531,59 @@ header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.93);
     </div>
 
     <div class="field">
-      <label class="field-label">🥂 Cocktail Hour</label>
+      <label class="field-label">🥂 <span data-i18n="label.cocktail">Cocktail Hour</span><span class="card-tag ct-optional">Optional</span></label>
       <div class="dt-row">
         <input class="field-input" type="date" id="cocktailDate"/>
         <input class="field-input" type="time" id="cocktailTime" value="18:30"/>
       </div>
-      <div class="field-hint">Optional — Agar program mein hai toh bharein</div>
     </div>
 
     <div class="field">
-      <label class="field-label">🍽️ Dinner Reception / Walima</label>
+      <label class="field-label">🍽️ <span data-i18n="label.dinner">Dinner Reception</span><span class="card-tag ct-optional">Optional</span></label>
       <div class="dt-row">
         <input class="field-input" type="date" id="dinnerDate"/>
         <input class="field-input" type="time" id="dinnerTime" value="19:30"/>
       </div>
-      <div class="field-hint">Optional — Agar program mein hai toh bharein</div>
     </div>
 
   </div>
 
   <!-- ── 3. VENUE ── -->
-  <div class="sec-label">Shaadi Ki Jagah (Venue)</div>
+  <div class="sec-label" data-i18n="sec.venue">Shaadi Ki Jagah (Venue)</div>
   <div class="form-card" style="animation-delay:0.15s">
 
     <div class="field">
-      <label class="field-label">📍 Hall / Venue Ka Naam <span class="req">*</span></label>
-      <input class="field-input" type="text" id="venueName" placeholder="Jaise: Grand Palace Banquet Hall"/>
+      <label class="field-label">📍 <span data-i18n="label.venueName">Hall / Venue Ka Naam</span> <span class="req">*</span><span class="card-tag ct-venue">📍 Card: Venue</span></label>
+      <input class="field-input" type="text" id="venueName" data-i18n-ph="ph.venueName" placeholder="Jaise: Shubham Marriage Garden"/>
     </div>
 
     <div class="field">
-      <label class="field-label">🗺️ Poora Pata (Full Address) <span class="req">*</span></label>
-      <textarea class="field-input" id="venueAddress" rows="2"
-        placeholder="Jaise: 123, MG Road, Pune, Maharashtra - 411001"
+      <label class="field-label">🗺️ <span data-i18n="label.venueAddress">Poora Pata (Full Address)</span> <span class="req">*</span><span class="card-tag ct-venue">🗺️ Card: Address</span></label>
+      <textarea class="field-input" id="venueAddress" rows="2" data-i18n-ph="ph.venueAddress"
+        placeholder="Jaise: 123, Main Road, Pune - 411001"
         style="resize:vertical;"></textarea>
     </div>
 
     <div class="field">
-      <label class="field-label">🔗 Google Maps Link</label>
+      <label class="field-label">🔗 <span data-i18n="label.venueMap">Google Maps Link</span><span class="card-tag ct-optional">Optional</span></label>
       <input class="field-input" type="url" id="venueMap" placeholder="https://maps.google.com/..."/>
-      <div class="field-hint">Optional — Agar link hai toh daalo, guests ko dhundhne mein asaani hogi</div>
+      <div class="field-hint" data-i18n="hint.venueMap">Card pe "Get Directions" button ban jayega</div>
     </div>
 
   </div>
 
   <!-- ── 4. PRE-WEDDING EVENTS ── -->
-  <div class="sec-label">Pre-Wedding Rasme (Optional)</div>
+  <div class="sec-label" data-i18n="sec.prewedding">Pre-Wedding Rasme (Optional)</div>
   <div class="form-card" style="animation-delay:0.2s">
-    <div class="field-hint" style="margin-bottom:1rem;">
-      Jo rasme hain unhe ON karein aur details bharein 👇
-    </div>
+    <div class="field-hint" style="margin-bottom:1rem;" data-i18n="hint.prewedding">Jo rasme hain unhe ON karein aur details bharein 👇</div>
 
     <!-- MEHENDI -->
     <div class="event-toggle" id="toggle-mehendi" onclick="toggleEvent('mehendi')">
       <div class="event-toggle-left">
         <span class="event-emoji">🌿</span>
         <div>
-          <div class="event-name">Mehendi</div>
-          <div class="event-sub">Dulhan ki mehendi rasam</div>
+          <div class="event-name" data-i18n="event.mehendi">Mehendi <span class="card-tag ct-event" style="font-size:0.55rem;">Card pe</span></div>
+          <div class="event-sub" data-i18n="event.mehendiSub">Dulhan ki mehendi rasam</div>
         </div>
       </div>
       <div class="toggle-pill" id="pill-mehendi"></div>
@@ -506,8 +605,8 @@ header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.93);
       <div class="event-toggle-left">
         <span class="event-emoji">💛</span>
         <div>
-          <div class="event-name">Haldi</div>
-          <div class="event-sub">Haldi ki khushi bhari rasam</div>
+          <div class="event-name" data-i18n="event.haldi">Haldi <span class="card-tag ct-event" style="font-size:0.55rem;">Card pe</span></div>
+          <div class="event-sub" data-i18n="event.haldiSub">Haldi ki khushi bhari rasam</div>
         </div>
       </div>
       <div class="toggle-pill" id="pill-haldi"></div>
@@ -529,8 +628,8 @@ header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.93);
       <div class="event-toggle-left">
         <span class="event-emoji">🎶</span>
         <div>
-          <div class="event-name">Sangeet</div>
-          <div class="event-sub">Geet sangeet ki shaam</div>
+          <div class="event-name" data-i18n="event.sangeet">Sangeet <span class="card-tag ct-event" style="font-size:0.55rem;">Card pe</span></div>
+          <div class="event-sub" data-i18n="event.sangeetSub">Geet sangeet ki shaam</div>
         </div>
       </div>
       <div class="toggle-pill" id="pill-sangeet"></div>
@@ -555,9 +654,24 @@ header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.93);
 
     <!-- Price Display -->
     <div class="price-display">
+      <div style="font-size:0.72rem;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.2rem;">Total Amount</div>
       <div class="price-original" id="priceOriginal" style="display:none;">₹1,199</div>
       <div class="price-main"><span>₹</span><span id="priceDisplay">1,199</span></div>
       <div class="price-discount-badge" id="discountBadge" style="display:none;">🎉 Coupon Applied!</div>
+      <!-- 35 / 65 SPLIT -->
+      <div class="payment-split">
+        <div class="split-box adv">
+          <div class="split-pct">35% — Aaj Dein</div>
+          <div class="split-amt">₹<span id="advanceDisplay">420</span></div>
+          <div class="split-tag">Advance Payment 💳</div>
+          <div class="adv-badge">Abhi Pay Karein</div>
+        </div>
+        <div class="split-box bal">
+          <div class="split-pct">65% — Baad Mein</div>
+          <div class="split-amt">₹<span id="balanceDisplay">779</span></div>
+          <div class="split-tag">Card Milne Ke Baad 📦</div>
+        </div>
+      </div>
     </div>
 
     <!-- Coupon Code -->
@@ -577,8 +691,10 @@ header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.93);
     <div class="qr-wrap">
       <img src="Qr.jpg" alt="Payment QR Code" class="qr-img"
            onerror="this.outerHTML='<div style=\'width:180px;height:180px;background:#f0f0f0;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:3rem;margin:auto;\'>📱</div>'"/>
-      <div class="qr-label">Scan karein aur pay karein</div>
-      <div class="qr-amount">₹<span class="current-amount">1,199</span></div>
+      <div class="qr-label">Scan karein — Sirf advance pay karein</div>
+      <div style="font-size:0.72rem;color:#1d4ed8;font-weight:700;margin-top:0.3rem;">35% Advance:</div>
+      <div class="qr-amount">₹<span id="advanceQrAmt">420</span></div>
+      <div style="font-size:0.7rem;color:var(--text-3);margin-top:0.2rem;">Total: ₹<span class="current-amount">1,199</span></div>
     </div>
 
     <!-- UPI App Buttons -->
@@ -598,8 +714,12 @@ header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.93);
       </a>
     </div>
 
-    <div class="payment-note">
-      💡 <strong>Note:</strong> Payment karne ke baad Screenshot lena zaroor — Submit karte waqt Transaction ID daalna hoga.
+    <div class="adv-note">
+      <strong>💳 Advance Payment System — Kaise Kaam Karta Hai?</strong>
+      <div class="adv-step">✅ <span>Abhi sirf <strong>35% advance (₹<span id="advNoteAmt">420</span>)</strong> pay karein</span></div>
+      <div class="adv-step">🎨 <span>Hamare team aapka wedding card banayegi</span></div>
+      <div class="adv-step">📲 <span>Card ready hone pe WhatsApp pe link milega</span></div>
+      <div class="adv-step">💰 <span>Baki <strong>65% (₹<span id="balNoteAmt">779</span>)</strong> pay karein, final card paayein</span></div>
     </div>
 
     <!-- Transaction ID -->
@@ -666,6 +786,222 @@ header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.93);
 <div class="toast" id="toast"></div>
 
 <script>
+// ── TRANSLATIONS (i18n) ────────────────────────────────────
+const T = {
+  hi_en: {
+    'info.title':       'Yeh details aapki Wedding Card pe seedhi dikhegi!',
+    'info.sub':         'Har field ke saath tag diya hai jo batata hai — card ke kis hisse mein woh jayegi.',
+    'access.title':     'Website complete hone ke baad — Poora control aapka!',
+    'access.body':      'Aapko personal login milega jisse aap kabhi bhi naam, date, venue aur photos khud change kar sakenge.',
+    'access.c1':'✏️ Naam','access.c2':'📅 Date','access.c3':'📍 Venue','access.c4':'🖼️ Photos','access.c5':'🎨 Design',
+    'sec.couple':       'Dulha & Dulhan Ki Details',
+    'sec.timeline':     'Shaadi Ka Program',
+    'sec.venue':        'Shaadi Ki Jagah (Venue)',
+    'sec.prewedding':   'Pre-Wedding Rasme (Optional)',
+    'label.groomName':  'Dulhe Ka Poora Naam',
+    'label.groomFather':'Dulhe Ke Pita Ka Naam',
+    'label.brideName':  'Dulhan Ka Poora Naam',
+    'label.brideFather':'Dulhan Ke Pita Ka Naam',
+    'label.engagement': 'Mangni Ki Tarikh',
+    'label.guestArrival':'Mehmaan Kab Aayenge',
+    'label.ceremony':   'Shaadi / Wedding Ceremony',
+    'label.cocktail':   'Cocktail Hour',
+    'label.dinner':     'Dinner Reception',
+    'label.venueName':  'Hall / Venue Ka Naam',
+    'label.venueAddress':'Poora Pata (Full Address)',
+    'label.venueMap':   'Google Maps Link',
+    'hint.venueMap':    'Card pe "Get Directions" button ban jayega',
+    'hint.prewedding':  'Jo rasme hain unhe ON karein aur details bharein 👇',
+    'event.mehendi':    'Mehendi','event.mehendiSub':'Dulhan ki mehendi rasam',
+    'event.haldi':      'Haldi',  'event.haldiSub':  'Haldi ki khushi bhari rasam',
+    'event.sangeet':    'Sangeet','event.sangeetSub':'Geet sangeet ki shaam',
+    'ph.groomName':     'Jaise: Rahul Kumar Sharma',
+    'ph.groomFather':   'Jaise: Rajesh Kumar Sharma',
+    'ph.brideName':     'Jaise: Priya Devi Sharma',
+    'ph.brideFather':   'Jaise: Suresh Lal Sharma',
+    'ph.venueName':     'Jaise: Shubham Marriage Garden',
+    'ph.venueAddress':  'Jaise: 123, Main Road, Pune - 411001',
+  },
+  en: {
+    'info.title':       'Details you fill will appear directly on your Wedding Card!',
+    'info.sub':         'Each field has a tag showing exactly which section of the card it will appear in.',
+    'access.title':     'After website completion — Full control is yours!',
+    'access.body':      'You will receive a personal login to update your name, date, venue and photos anytime.',
+    'access.c1':'✏️ Name','access.c2':'📅 Date','access.c3':'📍 Venue','access.c4':'🖼️ Photos','access.c5':'🎨 Design',
+    'sec.couple':       'Couple Details',
+    'sec.timeline':     'Wedding Schedule',
+    'sec.venue':        'Venue Information',
+    'sec.prewedding':   'Pre-Wedding Events (Optional)',
+    'label.groomName':  "Groom's Full Name",
+    'label.groomFather':"Father of Groom",
+    'label.brideName':  "Bride's Full Name",
+    'label.brideFather':"Father of Bride",
+    'label.engagement': 'Engagement Date',
+    'label.guestArrival':'Guest Arrival',
+    'label.ceremony':   'Wedding Ceremony',
+    'label.cocktail':   'Cocktail Hour',
+    'label.dinner':     'Dinner Reception',
+    'label.venueName':  'Venue Name',
+    'label.venueAddress':'Full Address',
+    'label.venueMap':   'Google Maps Link',
+    'hint.venueMap':    'A "Get Directions" button will be added to your card',
+    'hint.prewedding':  'Turn ON the events you want and fill in the details 👇',
+    'event.mehendi':    'Mehendi','event.mehendiSub':'Bride\'s mehendi ceremony',
+    'event.haldi':      'Haldi',  'event.haldiSub':  'Traditional haldi ceremony',
+    'event.sangeet':    'Sangeet','event.sangeetSub':'Musical evening celebration',
+    'ph.groomName':     'e.g. Rahul Kumar Sharma',
+    'ph.groomFather':   'e.g. Rajesh Kumar Sharma',
+    'ph.brideName':     'e.g. Priya Devi Sharma',
+    'ph.brideFather':   'e.g. Suresh Lal Sharma',
+    'ph.venueName':     'e.g. Shubham Marriage Garden',
+    'ph.venueAddress':  'e.g. 123, Main Road, Pune - 411001',
+  },
+  hi: {
+    'info.title':       'नीचे भरी जानकारी सीधे आपके Wedding Card पर दिखेगी!',
+    'info.sub':         'हर फ़ील्ड के साथ टैग दिया है जो बताता है — वह जानकारी कार्ड के किस हिस्से में जाएगी।',
+    'access.title':     'Website पूरी होने के बाद — पूरा कंट्रोल आपका!',
+    'access.body':      'आपको personal login मिलेगा जिससे आप कभी भी नाम, date, venue और photos खुद बदल सकेंगे।',
+    'access.c1':'✏️ नाम','access.c2':'📅 तारीख','access.c3':'📍 Venue','access.c4':'🖼️ Photos','access.c5':'🎨 Design',
+    'sec.couple':       'वर-वधू विवरण',
+    'sec.timeline':     'विवाह कार्यक्रम',
+    'sec.venue':        'विवाह स्थल',
+    'sec.prewedding':   'पूर्व-विवाह कार्यक्रम (वैकल्पिक)',
+    'label.groomName':  'दूल्हे का पूरा नाम',
+    'label.groomFather':'दूल्हे के पिता का नाम',
+    'label.brideName':  'दुल्हन का पूरा नाम',
+    'label.brideFather':'दुल्हन के पिता का नाम',
+    'label.engagement': 'सगाई की तारीख',
+    'label.guestArrival':'मेहमानों का आगमन',
+    'label.ceremony':   'विवाह समारोह',
+    'label.cocktail':   'कॉकटेल आवर',
+    'label.dinner':     'डिनर रिसेप्शन',
+    'label.venueName':  'विवाह स्थल का नाम',
+    'label.venueAddress':'पूरा पता',
+    'label.venueMap':   'Google Maps लिंक',
+    'hint.venueMap':    'Card पर "Get Directions" बटन बन जाएगा',
+    'hint.prewedding':  'जो रस्में हैं उन्हें ON करें और details भरें 👇',
+    'event.mehendi':    'मेहंदी','event.mehendiSub':'दुल्हन की मेहंदी रस्म',
+    'event.haldi':      'हल्दी', 'event.haldiSub':  'हल्दी की खुशी भरी रस्म',
+    'event.sangeet':    'संगीत', 'event.sangeetSub':'गीत-संगीत की शाम',
+    'ph.groomName':     'जैसे: राहुल कुमार शर्मा',
+    'ph.groomFather':   'जैसे: राजेश कुमार शर्मा',
+    'ph.brideName':     'जैसे: प्रिया देवी शर्मा',
+    'ph.brideFather':   'जैसे: सुरेश लाल शर्मा',
+    'ph.venueName':     'जैसे: शुभम विवाह समारोह स्थल',
+    'ph.venueAddress':  'जैसे: 123, मेन रोड, पुणे - 411001',
+  },
+  mr: {
+    'info.title':       'खाली भरलेली माहिती थेट Wedding Card वर दिसेल!',
+    'info.sub':         'प्रत्येक फील्डसोबत टॅग आहे जो सांगतो — ती माहिती कार्डच्या कोणत्या भागात जाईल.',
+    'access.title':     'Website तयार झाल्यावर — संपूर्ण नियंत्रण तुमचे!',
+    'access.body':      'तुम्हाला personal login मिळेल ज्याने तुम्ही कधीही नाव, तारीख, venue व photos स्वतः बदलू शकता.',
+    'access.c1':'✏️ नाव','access.c2':'📅 तारीख','access.c3':'📍 Venue','access.c4':'🖼️ Photos','access.c5':'🎨 Design',
+    'sec.couple':       'वर-वधू तपशील',
+    'sec.timeline':     'विवाह कार्यक्रम वेळापत्रक',
+    'sec.venue':        'विवाह स्थळ',
+    'sec.prewedding':   'पूर्व-विवाह कार्यक्रम (पर्यायी)',
+    'label.groomName':  'नवर्याचे पूर्ण नाव',
+    'label.groomFather':'नवर्याच्या वडिलांचे नाव',
+    'label.brideName':  'नवरीचे पूर्ण नाव',
+    'label.brideFather':'नवरीच्या वडिलांचे नाव',
+    'label.engagement': 'साखरपुडा तारीख',
+    'label.guestArrival':'पाहुणे येण्याची वेळ',
+    'label.ceremony':   'विवाह समारंभ',
+    'label.cocktail':   'कॉकटेल आवर',
+    'label.dinner':     'जेवणाचा कार्यक्रम',
+    'label.venueName':  'विवाह हॉलचे नाव',
+    'label.venueAddress':'पूर्ण पत्ता',
+    'label.venueMap':   'Google Maps लिंक',
+    'hint.venueMap':    'Card वर "Get Directions" बटण तयार होईल',
+    'hint.prewedding':  'जे कार्यक्रम आहेत ते ON करा व तपशील भरा 👇',
+    'event.mehendi':    'मेहंदी','event.mehendiSub':'नवरीची मेहंदी सोहळा',
+    'event.haldi':      'हळदी', 'event.haldiSub':  'हळद लावण्याचा आनंदी सोहळा',
+    'event.sangeet':    'संगीत','event.sangeetSub':'गाण्या-संगीताची संध्याकाळ',
+    'ph.groomName':     'उदा: राहुल कुमार शर्मा',
+    'ph.groomFather':   'उदा: राजेश कुमार शर्मा',
+    'ph.brideName':     'उदा: प्रिया देवी शर्मा',
+    'ph.brideFather':   'उदा: सुरेश लाल शर्मा',
+    'ph.venueName':     'उदा: शुभम मॅरेज गार्डन',
+    'ph.venueAddress':  'उदा: 123, मेन रोड, पुणे - 411001',
+  },
+  ur: {
+    'info.title':       'نیچے بھری گئی تفصیلات براہ راست Wedding Card پر دکھیں گی!',
+    'info.sub':         'ہر فیلڈ کے ساتھ ٹیگ دیا ہے جو بتاتا ہے — وہ معلومات کارڈ کے کس حصے میں جائے گی۔',
+    'access.title':     'Website مکمل ہونے کے بعد — پورا کنٹرول آپ کا!',
+    'access.body':      'آپ کو personal login ملے گا جس سے آپ کبھی بھی نام، تاریخ، venue اور photos خود بدل سکتے ہیں۔',
+    'access.c1':'✏️ نام','access.c2':'📅 تاریخ','access.c3':'📍 Venue','access.c4':'🖼️ Photos','access.c5':'🎨 Design',
+    'sec.couple':       'دولہا و دلہن کی تفصیل',
+    'sec.timeline':     'شادی کا پروگرام',
+    'sec.venue':        'شادی کی جگہ',
+    'sec.prewedding':   'پری ویڈنگ رسومات (اختیاری)',
+    'label.groomName':  'دولہے کا پورا نام',
+    'label.groomFather':'دولہے کے والد کا نام',
+    'label.brideName':  'دلہن کا پورا نام',
+    'label.brideFather':'دلہن کے والد کا نام',
+    'label.engagement': 'منگنی کی تاریخ',
+    'label.guestArrival':'مہمانوں کی آمد',
+    'label.ceremony':   'نکاح / شادی کی رسم',
+    'label.cocktail':   'کاک ٹیل آور',
+    'label.dinner':     'ڈنر ریسپشن',
+    'label.venueName':  'ہال / وینیو کا نام',
+    'label.venueAddress':'پورا پتہ',
+    'label.venueMap':   'Google Maps لنک',
+    'hint.venueMap':    'Card پر "Get Directions" بٹن بن جائے گا',
+    'hint.prewedding':  'جو رسومات ہیں انہیں ON کریں اور تفصیلات بھریں 👇',
+    'event.mehendi':    'مہندی','event.mehendiSub':'دلہن کی مہندی رسم',
+    'event.haldi':      'ہلدی', 'event.haldiSub':  'ہلدی کی خوشی بھری رسم',
+    'event.sangeet':    'سنگیت','event.sangeetSub':'گیت سنگیت کی شام',
+    'ph.groomName':     'مثال: راحل کمار شرما',
+    'ph.groomFather':   'مثال: راجیش کمار شرما',
+    'ph.brideName':     'مثال: پریا دیوی شرما',
+    'ph.brideFather':   'مثال: سریش لال شرما',
+    'ph.venueName':     'مثال: شبھم میرج گارڈن',
+    'ph.venueAddress':  'مثال: 123، مین روڈ، پونے - 411001',
+  }
+};
+
+let currentLang = 'hi_en';
+
+function setLang(lang, pillEl) {
+  if (!T[lang]) return;
+  currentLang = lang;
+
+  // Update active pill
+  document.querySelectorAll('.lang-pill').forEach(p => p.classList.remove('active'));
+  if (pillEl) pillEl.classList.add('active');
+
+  const dict = T[lang];
+
+  // Apply text translations
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (!dict[key]) return;
+    // Preserve any child .card-tag span inside the element
+    const tag = el.querySelector('.card-tag');
+    if (tag) {
+      // Replace only the first text node
+      const firstNode = el.childNodes[0];
+      if (firstNode && firstNode.nodeType === 3) firstNode.textContent = dict[key] + ' ';
+      else el.insertBefore(document.createTextNode(dict[key] + ' '), el.firstChild);
+    } else {
+      el.textContent = dict[key];
+    }
+  });
+
+  // Apply placeholder translations
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const key = el.getAttribute('data-i18n-ph');
+    if (dict[key]) el.placeholder = dict[key];
+  });
+
+  // RTL support for Urdu
+  const form = document.getElementById('mainForm');
+  if (form) {
+    form.style.direction = lang === 'ur' ? 'rtl' : 'ltr';
+    form.style.textAlign = lang === 'ur' ? 'right' : '';
+  }
+}
+
 // ── STATE ─────────────────────────────────────────────────
 let basePrice     = 1199;
 let finalPrice    = 1199;
@@ -716,6 +1052,23 @@ let UPI_IDS = {
   upi:     '9021958286@ybl'
 };
 
+// ── ADVANCE PAYMENT HELPERS ───────────────────────────────
+const ADV_PCT = 35;
+function getAdvanceAmt() { return Math.round(finalPrice * ADV_PCT / 100); }
+function getBalanceAmt() { return finalPrice - getAdvanceAmt(); }
+
+function updateAdvanceDisplay() {
+  const adv = getAdvanceAmt();
+  const bal = getBalanceAmt();
+  const fmt = n => n.toLocaleString('en-IN');
+  const set = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = fmt(v); };
+  set('advanceDisplay', adv);
+  set('balanceDisplay', bal);
+  set('advanceQrAmt',   adv);
+  set('advNoteAmt',     adv);
+  set('balNoteAmt',     bal);
+}
+
 // ── LOAD SETTINGS FROM FIRESTORE (Admin se price & UPI sync) ──
 async function loadSettings() {
   try {
@@ -731,6 +1084,7 @@ async function loadSettings() {
       document.getElementById('priceDisplay').textContent = price.toLocaleString('en-IN');
       document.querySelectorAll('.current-amount').forEach(el =>
         el.textContent = price.toLocaleString('en-IN'));
+      updateAdvanceDisplay(); // 35/65 split update
     }
 
     // UPI IDs update
@@ -744,6 +1098,7 @@ async function loadSettings() {
   }
 }
 loadSettings(); // Page load hote hi Firestore se settings fetch karo
+updateAdvanceDisplay(); // Default amounts show karo
 
 // ── INIT ──────────────────────────────────────────────────
 // Get template from URL
@@ -866,6 +1221,7 @@ async function applyCoupon() {
     document.getElementById('priceDisplay').textContent    = finalPrice.toLocaleString('en-IN');
     document.querySelectorAll('.current-amount').forEach(el => el.textContent = finalPrice.toLocaleString('en-IN'));
     document.getElementById('discountBadge').style.display = 'inline-block';
+    updateAdvanceDisplay(); // 35/65 split update after coupon
     document.getElementById('discountAmt').textContent     = discount;
     ok.classList.add('show');
     err.classList.remove('show');
@@ -884,9 +1240,9 @@ async function applyCoupon() {
 
 // ── UPI DEEP LINKS ─────────────────────────────────────────
 function openUPI(app) {
-  const amt  = finalPrice;
+  const amt  = getAdvanceAmt(); // sirf 35% advance pay karayenge
   const name = encodeURIComponent('AKANS Web Development');
-  const note = encodeURIComponent('Digital Wedding Card - ' + decodeURIComponent(templateName));
+  const note = encodeURIComponent('35% Advance - Wedding Card - ' + decodeURIComponent(templateName));
   const pa   = UPI_IDS[app];
 
   let url = '';
@@ -1024,8 +1380,14 @@ async function submitBooking() {
       location: document.getElementById('sangeetLocation').value.trim() || ''
     } : { active: false },
 
-    // Payment
-    amountPaid:    finalPrice,
+    // Payment — 35/65 split system
+    totalAmount:   finalPrice,
+    advanceAmount: getAdvanceAmt(),       // 35% — aaj liya
+    balanceAmount: getBalanceAmt(),       // 65% — baad mein lena
+    amountPaid:    getAdvanceAmt(),       // backward compatibility
+    advancePaid:   true,
+    balancePaid:   false,
+    paymentStage:  'advance',             // 'advance' → 'completed'
     couponCode:    couponApplied ? document.getElementById('couponInput').value.trim() : '',
     discount:      basePrice - finalPrice,
     transactionId: document.getElementById('transactionId').value.trim(),
@@ -1056,6 +1418,11 @@ async function submitBooking() {
     // Show success
     document.getElementById('mainForm').style.display = 'none';
     document.getElementById('successId').textContent = 'Order ID: ' + orderId;
+    // Show split amounts on success screen
+    const sa = document.getElementById('successAdvAmt');
+    const sb = document.getElementById('successBalAmt');
+    if(sa) sa.textContent = getAdvanceAmt().toLocaleString('en-IN');
+    if(sb) sb.textContent = getBalanceAmt().toLocaleString('en-IN');
     document.getElementById('successScreen').classList.add('show');
     window.scrollTo({top:0, behavior:'smooth'});
 
@@ -1096,6 +1463,25 @@ async function submitBooking() {
 <style>
 @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 #pwaInstallBanner.show{display:flex!important;}
+
+/* ── ADVANCE PAYMENT SPLIT ── */
+.payment-split{display:grid;grid-template-columns:1fr 1fr;gap:0.65rem;margin-top:0.9rem;}
+.split-box{border-radius:14px;padding:0.9rem 0.7rem;text-align:center;}
+.split-box.adv{background:linear-gradient(135deg,#eff6ff,#dbeafe);border:2px solid #93c5fd;}
+.split-box.bal{background:#f8fafc;border:2px dashed #cbd5e1;}
+.split-pct{font-size:0.62rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.2rem;}
+.split-box.adv .split-pct{color:#1d4ed8;}
+.split-box.bal .split-pct{color:#94a3b8;}
+.split-amt{font-family:'Playfair Display',serif;font-size:1.35rem;font-weight:900;line-height:1.1;margin-bottom:0.15rem;}
+.split-box.adv .split-amt{color:#1e40af;}
+.split-box.bal .split-amt{color:#94a3b8;}
+.split-tag{font-size:0.7rem;font-weight:700;line-height:1.3;}
+.split-box.adv .split-tag{color:#2563eb;}
+.split-box.bal .split-tag{color:#94a3b8;}
+.adv-note{background:linear-gradient(135deg,#eff6ff,#f0fdf4);border:1.5px solid #93c5fd;border-radius:13px;padding:0.9rem 1rem;margin-bottom:1rem;font-size:0.78rem;line-height:1.7;color:#374163;}
+.adv-note strong{color:#1d4ed8;display:block;margin-bottom:0.3rem;font-size:0.82rem;}
+.adv-step{display:flex;align-items:flex-start;gap:0.45rem;margin-top:0.25rem;}
+.adv-badge{display:inline-block;background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd;font-size:0.68rem;font-weight:800;padding:0.2rem 0.7rem;border-radius:20px;margin-top:0.5rem;}
 </style>
 
 <!-- PWA Service Worker Registration -->
