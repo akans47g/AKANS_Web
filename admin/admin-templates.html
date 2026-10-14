@@ -408,59 +408,58 @@ function _ghToast(msg, type) {
   t._tid = setTimeout(() => t.classList.remove('show'), 3500);
 }
 
-// ── MAIN SAVE: calls original saveTplChanges + saves img to Firestore ──
+// ── MAIN SAVE: original saveTplChanges + img field Firestore mein save karo ──
 async function saveWithImg() {
-  const btn      = document.getElementById('tplSaveBtn');
-  const imgVal   = (document.getElementById('tpl-edit-img-url')?.value || '').trim();
-  const tplName  = (document.getElementById('tpl-edit-name')?.value    || '').trim();
+  const imgVal  = (document.getElementById('tpl-edit-img-url')?.value||'').trim();
+  const tplName = (document.getElementById('tpl-edit-name')?.value   ||'').trim();
+  const btn     = document.getElementById('tplSaveBtn');
 
-  // Disable button while saving
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Saving...'; }
+  if (!tplName) { _ghToast('⚠️ Pehle template naam daalo','err'); return; }
 
-  // 1. Call original save (handles name, desc, link, badge, active, order)
-  try {
-    if (typeof window.saveTplChanges_orig === 'function') {
-      window.saveTplChanges_orig();
-    }
-  } catch(e) {
-    console.warn('[AKANS] original save error:', e);
+  // CRITICAL: editingTplId PEHLE capture karo — original save closeTplModal() call karta hai
+  // jo editingTplId = null kar deta hai
+  let docId = null;
+  try { docId = editingTplId; } catch(e) {}   // admin-templates.js global let
+  if (!docId) {
+    try {
+      const found = allTemplates.find(t => t.name === tplName);
+      if (found && !(found._id||'').startsWith('default-')) docId = found._id;
+    } catch(e) {}
+  }
+  const isNew = !docId;
+
+  // 1. Original save call karo (name/desc/link/badge/active/order)
+  const origFn = window.saveTplChanges_orig || window.saveTplChanges;
+  if (typeof origFn === 'function') {
+    try { origFn(); } catch(e) { console.warn('[AKANS]', e); }
   }
 
-  // 2. Save img field to Firestore (wait 1.8s for original save to create doc first)
+  // 2. img field save karo
   if (imgVal && window.db) {
-    await new Promise(r => setTimeout(r, 1800));
+    if (btn) { btn.disabled=true; btn.textContent='📷 Image...'; }
     try {
-      const snap = await window.db.collection('templates')
-        .where('name', '==', tplName).get();
-
-      if (snap.empty) {
-        // Fallback: save by iterating all templates and matching name
-        const allSnap = await window.db.collection('templates').get();
-        const ups = [];
-        allSnap.forEach(doc => {
-          if ((doc.data().name || '').trim() === tplName) {
-            ups.push(doc.ref.update({ img: imgVal }));
-          }
-        });
-        if (ups.length) {
-          await Promise.all(ups);
-          _ghToast('✅ Image save ho gayi: ' + imgVal, 'ok');
-        } else {
-          _ghToast('⚠️ Template mila nahi — pehle template save karo, fir image daalo', 'err');
-        }
+      if (!isNew && docId) {
+        // EDITING: doc ID pata hai → direct update, sirf thoda wait to avoid race
+        await new Promise(r=>setTimeout(r,400));
+        await window.db.collection('templates').doc(docId).update({ img: imgVal });
+        _ghToast('✅ Image save → '+imgVal,'ok');
       } else {
-        const ups = [];
-        snap.forEach(doc => ups.push(doc.ref.update({ img: imgVal })));
-        await Promise.all(ups);
-        _ghToast('✅ Image save ho gayi: ' + imgVal, 'ok');
+        // NEW: original async add() ke khatam hone ka wait karo
+        await new Promise(r=>setTimeout(r,2500));
+        const snap = await window.db.collection('templates').where('name','==',tplName).get();
+        if (snap.empty) {
+          _ghToast('⚠️ Template nahi mila. Dobara "Save Karo" dabao.','err');
+        } else {
+          const ups=[]; snap.forEach(d=>ups.push(d.ref.update({img:imgVal})));
+          await Promise.all(ups);
+          _ghToast('✅ Image save → '+imgVal,'ok');
+        }
       }
     } catch(e) {
-      console.error('[AKANS] img save error:', e);
-      _ghToast('❌ Image save nahi hui: ' + e.message, 'err');
+      _ghToast('❌ Error: '+e.message,'err');
     }
+    if (btn) { btn.disabled=false; btn.textContent='💾 Save Karo'; }
   }
-
-  if (btn) { btn.disabled = false; btn.textContent = '💾 Save Karo'; }
 }
 
 // ── PATCH openEditTemplate / editTemplate to populate img field ──
@@ -471,29 +470,31 @@ document.addEventListener('DOMContentLoaded', () => {
       window.saveTplChanges_orig = window.saveTplChanges;
     }
 
-    // Patch edit-open functions to fill img field
-    ['openEditTemplate','editTemplate'].forEach(fnName => {
-      const orig = window[fnName];
-      if (typeof orig === 'function') {
-        window[fnName] = function(tpl) {
-          orig.apply(this, arguments);
-          setTimeout(() => {
-            const imgVal = (typeof tpl === 'object' && tpl !== null) ? (tpl.img || '') : '';
-            _populateImgUrl(imgVal);
-          }, 100);
-        };
-      }
-    });
-
-    // Patch openAddTemplate to clear img field
-    if (typeof window.openAddTemplate === 'function') {
-      const origAdd = window.openAddTemplate;
-      window.openAddTemplate = function() {
-        origAdd.apply(this, arguments);
-        setTimeout(() => _populateImgUrl(''), 100);
+    // openEditTemplate ko patch karo
+    // IMPORTANT: ye function id (string) leta hai, object nahi!
+    // isliye allTemplates.find() se img field nikalte hain
+    const _origEdit = window.openEditTemplate;
+    if (typeof _origEdit === 'function') {
+      window.openEditTemplate = function(id) {
+        _origEdit.apply(this, arguments);
+        setTimeout(() => {
+          try {
+            const tpl = allTemplates.find(t => t._id === id);
+            _populateImgUrl(tpl ? (tpl.img || '') : '');
+          } catch(e) { _populateImgUrl(''); }
+        }, 130);
       };
     }
-  }, 700);
+
+    // openAddTemplate: img field clear karo
+    const _origAdd = window.openAddTemplate;
+    if (typeof _origAdd === 'function') {
+      window.openAddTemplate = function() {
+        _origAdd.apply(this, arguments);
+        setTimeout(() => _populateImgUrl(''), 130);
+      };
+    }
+  }, 800);
 });
 
 // ── STATS COUNTS ──────────────────────────────────────────────
