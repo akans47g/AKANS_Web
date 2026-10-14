@@ -738,8 +738,12 @@ db.collection('templates')
 
     snap.docs.forEach((doc, i) => {
       const t = doc.data();
-      const imgUrl = t.img
-        ? (t.img.startsWith('http') ? t.img : GITHUB_IMG_BASE + t.img)
+      // img (GitHub path) aur imageUrl (Firebase Storage) dono check karo
+      // admin-templates.js → imageUrl field save karta hai
+      // admin GitHub fix → img field save karta hai
+      const _rawImg = t.img || t.imageUrl || '';
+      const imgUrl  = _rawImg
+        ? (_rawImg.startsWith('http') ? _rawImg : GITHUB_IMG_BASE + _rawImg)
         : '';
       const badgeClass = t.badgeClass || 'badge-new';
       const badge      = t.badge      || 'New';
