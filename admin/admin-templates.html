@@ -347,7 +347,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
       </div>
 
       <!-- Save Button -->
-      <button class="modal-save-btn" id="tplSaveBtn" onclick="saveTplChanges()">
+      <button class="modal-save-btn" id="tplSaveBtn" onclick="saveWithImg()">
         💾 Save Karo
       </button>
 
@@ -386,7 +386,7 @@ function previewGithubImg(val) {
   if (hint) hint.style.display = 'none';
 }
 
-// Populate img-url field when editing existing template
+// Populate img-url field when editing/adding template
 function _populateImgUrl(imgVal) {
   const inp = document.getElementById('tpl-edit-img-url');
   if (!inp) return;
@@ -398,55 +398,102 @@ function _populateImgUrl(imgVal) {
   }
 }
 
-// Hook into saveTplChanges to also save img field
+// Show toast helper (works even before admin-all.js defines showToast)
+function _ghToast(msg, type) {
+  const t = document.getElementById('adminToast');
+  if (!t) return;
+  t.textContent = msg;
+  t.className = 'admin-toast show' + (type === 'err' ? ' error' : type === 'ok' ? ' success' : ' info');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ── MAIN SAVE: calls original saveTplChanges + saves img to Firestore ──
+async function saveWithImg() {
+  const btn      = document.getElementById('tplSaveBtn');
+  const imgVal   = (document.getElementById('tpl-edit-img-url')?.value || '').trim();
+  const tplName  = (document.getElementById('tpl-edit-name')?.value    || '').trim();
+
+  // Disable button while saving
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Saving...'; }
+
+  // 1. Call original save (handles name, desc, link, badge, active, order)
+  try {
+    if (typeof window.saveTplChanges_orig === 'function') {
+      window.saveTplChanges_orig();
+    }
+  } catch(e) {
+    console.warn('[AKANS] original save error:', e);
+  }
+
+  // 2. Save img field to Firestore (wait 1.8s for original save to create doc first)
+  if (imgVal && window.db) {
+    await new Promise(r => setTimeout(r, 1800));
+    try {
+      const snap = await window.db.collection('templates')
+        .where('name', '==', tplName).get();
+
+      if (snap.empty) {
+        // Fallback: save by iterating all templates and matching name
+        const allSnap = await window.db.collection('templates').get();
+        const ups = [];
+        allSnap.forEach(doc => {
+          if ((doc.data().name || '').trim() === tplName) {
+            ups.push(doc.ref.update({ img: imgVal }));
+          }
+        });
+        if (ups.length) {
+          await Promise.all(ups);
+          _ghToast('✅ Image save ho gayi: ' + imgVal, 'ok');
+        } else {
+          _ghToast('⚠️ Template mila nahi — pehle template save karo, fir image daalo', 'err');
+        }
+      } else {
+        const ups = [];
+        snap.forEach(doc => ups.push(doc.ref.update({ img: imgVal })));
+        await Promise.all(ups);
+        _ghToast('✅ Image save ho gayi: ' + imgVal, 'ok');
+      }
+    } catch(e) {
+      console.error('[AKANS] img save error:', e);
+      _ghToast('❌ Image save nahi hui: ' + e.message, 'err');
+    }
+  }
+
+  if (btn) { btn.disabled = false; btn.textContent = '💾 Save Karo'; }
+}
+
+// ── PATCH openEditTemplate / editTemplate to populate img field ──
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
-    const _origSaveT = window.saveTplChanges;
-    window.saveTplChanges = async function() {
-      const imgVal  = (document.getElementById('tpl-edit-img-url')?.value || '').trim();
-      const tplName = (document.getElementById('tpl-edit-name')?.value    || '').trim();
+    // Store orig saveTplChanges under a different name (so saveWithImg can call it)
+    if (typeof window.saveTplChanges === 'function') {
+      window.saveTplChanges_orig = window.saveTplChanges;
+    }
 
-      // Call the original save first
-      if (_origSaveT) _origSaveT.apply(this, arguments);
-
-      // Then update img in Firestore if URL given
-      if (imgVal && tplName && window.db) {
-        try {
-          const snap = await window.db.collection('templates')
-            .where('name','==', tplName).get();
-          const ups = [];
-          snap.forEach(doc => ups.push(doc.ref.update({ img: imgVal })));
-          await Promise.all(ups);
-          console.log('[AKANS] img field updated:', imgVal);
-        } catch(e) {
-          console.error('[AKANS] img save error:', e);
-        }
+    // Patch edit-open functions to fill img field
+    ['openEditTemplate','editTemplate'].forEach(fnName => {
+      const orig = window[fnName];
+      if (typeof orig === 'function') {
+        window[fnName] = function(tpl) {
+          orig.apply(this, arguments);
+          setTimeout(() => {
+            const imgVal = (typeof tpl === 'object' && tpl !== null) ? (tpl.img || '') : '';
+            _populateImgUrl(imgVal);
+          }, 100);
+        };
       }
-    };
+    });
 
-    // Patch openEditTemplate to populate img url field
-    const _origEdit = window.openEditTemplate || window.editTemplate;
-    if (_origEdit) {
-      const patchEdit = function(tpl) {
-        _origEdit.apply(this, arguments);
-        setTimeout(() => {
-          const imgVal = (typeof tpl === 'object' ? tpl?.img : '') || '';
-          _populateImgUrl(imgVal);
-        }, 80);
-      };
-      if (window.openEditTemplate) window.openEditTemplate = patchEdit;
-      if (window.editTemplate)     window.editTemplate     = patchEdit;
-    }
-
-    // Also patch openAddTemplate to clear img field
-    const _origAdd = window.openAddTemplate;
-    if (_origAdd) {
+    // Patch openAddTemplate to clear img field
+    if (typeof window.openAddTemplate === 'function') {
+      const origAdd = window.openAddTemplate;
       window.openAddTemplate = function() {
-        _origAdd.apply(this, arguments);
-        setTimeout(() => _populateImgUrl(''), 80);
+        origAdd.apply(this, arguments);
+        setTimeout(() => _populateImgUrl(''), 100);
       };
     }
-  }, 600);
+  }, 700);
 });
 
 // ── STATS COUNTS ──────────────────────────────────────────────
