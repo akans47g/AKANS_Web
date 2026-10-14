@@ -258,36 +258,41 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
     </div>
     <div class="modal-body">
 
-      <!-- Image Upload -->
-      <div class="modal-img-area" onclick="triggerModalImgUpload()">
-        <input type="file" id="tpl-modal-img-input" accept="image/*" style="display:none;"
-               onchange="handleImageUpload(this,null)"/>
-        <img id="tpl-modal-preview" src="" alt="Preview" class="modal-img-preview" style="display:none;"
-             onerror="this.style.display='none'"/>
-        <div class="modal-img-hint">
-          📷 <span>Click karke Firebase pe upload karo</span><br>
-          JPG, PNG · Max 5MB · 2:3 ratio recommended
-        </div>
-      </div>
-
-      <!-- GitHub Image Path -->
-      <div class="mf-row" style="margin-top:0.6rem;">
-        <label class="mf-label" style="display:flex;align-items:center;gap:0.4rem;">
-          🐙 GitHub Image Path
-          <span style="font-size:0.65rem;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;padding:0.1rem 0.4rem;border-radius:6px;font-weight:600;">Easy Way</span>
+      <!-- Template Image (GitHub only) -->
+      <div class="mf-row">
+        <label class="mf-label" style="display:flex;align-items:center;gap:0.5rem;">
+          📷 Template Image
+          <span style="font-size:0.63rem;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;padding:0.12rem 0.45rem;border-radius:6px;font-weight:700;">GitHub se</span>
         </label>
+
+        <!-- Preview box -->
+        <div style="background:var(--surface2);border:1.5px dashed var(--border);border-radius:12px;overflow:hidden;height:120px;display:flex;align-items:center;justify-content:center;margin-bottom:0.55rem;position:relative;">
+          <img id="tpl-modal-preview" src="" alt="Preview"
+               style="width:100%;height:100%;object-fit:cover;display:none;"
+               onerror="this.style.display='none';document.getElementById('tpl-no-img').style.display='flex'"/>
+          <div id="tpl-no-img" style="display:flex;flex-direction:column;align-items:center;gap:0.3rem;color:var(--fg3);">
+            <span style="font-size:1.8rem;">🖼️</span>
+            <span style="font-size:0.7rem;font-weight:600;">Image naam daalo neeche</span>
+          </div>
+        </div>
+
+        <!-- Input + Auto button -->
         <div style="display:flex;gap:0.5rem;">
           <input class="mf-input" type="text" id="tpl-edit-img-url"
-                 placeholder="t1.jpg  ya  https://raw.githubusercontent.com/..."
+                 placeholder="t01.jpg"
                  oninput="previewGithubImg(this.value)"
-                 style="flex:1;"/>
-          <button type="button" onclick="previewGithubImg(document.getElementById('tpl-edit-img-url').value)"
-                  style="padding:0.5rem 0.75rem;border-radius:9px;border:1.5px solid #bfdbfe;background:var(--accent-lt);color:var(--accent);font-size:0.8rem;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif;">
-            👁 Preview
+                 style="flex:1;font-family:monospace;letter-spacing:0.02em;"/>
+          <button type="button" onclick="autoFillImgName()"
+                  title="Order se naam auto-fill karo (jaise order 1 → t01.jpg)"
+                  style="padding:0.5rem 0.8rem;border-radius:9px;border:1.5px solid #bfdbfe;background:var(--accent-lt);color:var(--accent);font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif;">
+            🔢 Auto
           </button>
         </div>
-        <div style="font-size:0.7rem;color:var(--fg3);margin-top:0.28rem;line-height:1.5;">
-          GitHub me image upload karo → yahan sirf naam daalo: <strong style="color:var(--accent);">t1.jpg</strong>
+        <div style="font-size:0.7rem;color:var(--fg3);margin-top:0.28rem;line-height:1.55;background:#f8fafc;border-radius:8px;padding:0.45rem 0.6rem;border:1px solid var(--border);">
+          📌 GitHub repo root mein image upload karo:
+          <strong style="color:var(--accent);">t01.jpg</strong> → 1st template,
+          <strong style="color:var(--accent);">t02.jpg</strong> → 2nd template, aur aage bhi…<br>
+          Bas naam yahan daalo aur Save Karo!
         </div>
       </div>
 
@@ -357,7 +362,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
 
 <div class="admin-toast" id="adminToast"></div>
 
-<!-- Firebase (Storage bhi chahiye) -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -388,14 +393,25 @@ function previewGithubImg(val) {
 
 // Populate img-url field when editing/adding template
 function _populateImgUrl(imgVal) {
-  const inp = document.getElementById('tpl-edit-img-url');
+  const inp   = document.getElementById('tpl-edit-img-url');
+  const noImg = document.getElementById('tpl-no-img');
   if (!inp) return;
   inp.value = imgVal || '';
-  if (imgVal) previewGithubImg(imgVal);
-  else {
+  if (imgVal) {
+    previewGithubImg(imgVal);
+    if (noImg) noImg.style.display = 'none';
+  } else {
     const p = document.getElementById('tpl-modal-preview');
     if (p) p.style.display = 'none';
+    if (noImg) noImg.style.display = 'flex';
   }
+}
+
+// Order se auto naam: order 1 → t01.jpg, order 2 → t02.jpg, ...
+function autoFillImgName() {
+  const order = parseInt(document.getElementById('tpl-edit-order')?.value||'1', 10);
+  const name  = 't' + String(order).padStart(2,'0') + '.jpg';
+  _populateImgUrl(name);
 }
 
 // Show toast helper (works even before admin-all.js defines showToast)
@@ -471,8 +487,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // openEditTemplate ko patch karo
-    // IMPORTANT: ye function id (string) leta hai, object nahi!
-    // isliye allTemplates.find() se img field nikalte hain
+    // openEditTemplate: id (string) leta hai
+    // img field populate karo — agar t.img nahi hai to order se auto-suggest karo
     const _origEdit = window.openEditTemplate;
     if (typeof _origEdit === 'function') {
       window.openEditTemplate = function(id) {
@@ -480,18 +496,35 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
           try {
             const tpl = allTemplates.find(t => t._id === id);
-            _populateImgUrl(tpl ? (tpl.img || '') : '');
+            if (tpl) {
+              if (tpl.img) {
+                // Saved img hai → show karo
+                _populateImgUrl(tpl.img);
+              } else {
+                // img nahi hai → order se auto-suggest karo (t01.jpg etc.)
+                const suggestedName = 't' + String(tpl.order||1).padStart(2,'0') + '.jpg';
+                _populateImgUrl(suggestedName);
+              }
+            } else {
+              _populateImgUrl('');
+            }
           } catch(e) { _populateImgUrl(''); }
         }, 130);
       };
     }
 
-    // openAddTemplate: img field clear karo
+    // openAddTemplate: naye template ka order se naam suggest karo
     const _origAdd = window.openAddTemplate;
     if (typeof _origAdd === 'function') {
       window.openAddTemplate = function() {
         _origAdd.apply(this, arguments);
-        setTimeout(() => _populateImgUrl(''), 130);
+        setTimeout(() => {
+          try {
+            const nextOrder = allTemplates.length + 1;
+            const suggestedName = 't' + String(nextOrder).padStart(2,'0') + '.jpg';
+            _populateImgUrl(suggestedName);
+          } catch(e) { _populateImgUrl(''); }
+        }, 130);
       };
     }
   }, 800);
