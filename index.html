@@ -339,25 +339,86 @@ td.val-digital-instant { color: var(--blue); font-weight: 700; }
 .template-card {
   border-radius: var(--radius); overflow: hidden;
   border: 1px solid var(--border); background: var(--surface);
-  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease;
-  cursor: pointer; box-shadow: var(--shadow-sm);
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.4s ease;
+  cursor: pointer;
+  box-shadow: 0 0 0 1px rgba(124,58,237,0.12), 0 4px 20px rgba(37,99,235,0.08);
   text-decoration: none; color: inherit; display: block;
+  position: relative;
 }
 .template-card:hover {
-  transform: translateY(-7px) scale(1.02);
-  box-shadow: 0 16px 45px rgba(37,99,235,0.2);
-  border-color: rgba(37,99,235,0.35);
+  transform: translateY(-10px) scale(1.025);
+  box-shadow:
+    0 0 0 2px rgba(124,58,237,0.45),
+    0 24px 60px rgba(37,99,235,0.26),
+    0 10px 24px rgba(124,58,237,0.2),
+    0 4px 8px rgba(212,160,23,0.14);
+  border-color: transparent;
 }
-/* Shine sweep on hover */
+
+/* ✨ Animated gradient border (gold→purple→blue→gold) — shows on hover */
+.template-card::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: calc(var(--radius) + 2px);
+  background: linear-gradient(135deg,
+    #d4a017 0%, #f59e0b 18%, #7c3aed 45%, #2563eb 70%, #d4a017 100%);
+  background-size: 300% 300%;
+  animation: cardBorderGlow 4s ease infinite;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.template-card:hover::before { opacity: 1; }
+
+@keyframes cardBorderGlow {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ✨ Continuous shine sweep — auto-plays every ~5.5s, staggered per card */
+@keyframes cardShineSweep {
+  0%   { transform: translateX(-170%) skewX(-18deg); opacity: 0; }
+  6%   { opacity: 1; }
+  40%  { transform: translateX(210%) skewX(-18deg); opacity: 0.85; }
+  47%  { opacity: 0; }
+  100% { transform: translateX(210%) skewX(-18deg); opacity: 0; }
+}
+
 .template-card .template-img::after {
   content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%);
-  transform: translateX(-100%);
-  transition: transform 0.5s ease;
-  pointer-events: none; z-index: 3;
+  position: absolute; inset: 0; z-index: 4;
+  background: linear-gradient(
+    108deg,
+    transparent 36%,
+    rgba(255,255,255,0.28) 47%,
+    rgba(255,218,80,0.16) 51%,
+    rgba(255,255,255,0.28) 57%,
+    transparent 67%
+  );
+  pointer-events: none;
+  animation: cardShineSweep 5.5s ease-in-out infinite;
 }
-.template-card:hover .template-img::after { transform: translateX(100%); }
+
+/* Staggered shine delays — each card lights up at a different time */
+.template-card:nth-child(1) .template-img::after { animation-delay: 0.0s; }
+.template-card:nth-child(2) .template-img::after { animation-delay: 1.0s; }
+.template-card:nth-child(3) .template-img::after { animation-delay: 2.0s; }
+.template-card:nth-child(4) .template-img::after { animation-delay: 3.0s; }
+.template-card:nth-child(5) .template-img::after { animation-delay: 4.0s; }
+.template-card:nth-child(6) .template-img::after { animation-delay: 5.0s; }
+
+/* ✨ Image subtle zoom on hover */
+.template-card .template-img img { transition: transform 0.55s ease; }
+.template-card:hover .template-img img { transform: scale(1.07); }
+
+/* ✨ Badge pulse glow */
+@keyframes badgePulse {
+  0%,100% { box-shadow: 0 0 0 0 transparent; }
+  50%      { box-shadow: 0 0 8px 3px rgba(255,255,255,0.45); }
+}
+.badge { animation: badgePulse 3s ease-in-out infinite; }
 
 .template-img {
   width: 100%; aspect-ratio: 2/3;
@@ -738,13 +799,13 @@ db.collection('templates')
 
     snap.docs.forEach((doc, i) => {
       const t = doc.data();
-      // img (GitHub path) aur imageUrl (Firebase Storage) dono check karo
-      // admin-templates.js → imageUrl field save karta hai
-      // admin GitHub fix → img field save karta hai
-      const _rawImg = t.img || t.imageUrl || '';
-      const imgUrl  = _rawImg
-        ? (_rawImg.startsWith('http') ? _rawImg : GITHUB_IMG_BASE + _rawImg)
-        : '';
+      // Auto image: t01.jpg → 1st template, t02.jpg → 2nd, aur aage bhi
+      // agar admin panel mein img/imageUrl manually set hai to wo use hogi, warna auto
+      const _autoImg  = 't' + String(i + 1).padStart(2, '0') + '.jpg';
+      const _rawImg   = t.img || t.imageUrl || _autoImg;
+      const imgUrl    = _rawImg.startsWith('http')
+        ? _rawImg
+        : GITHUB_IMG_BASE + _rawImg;
       const badgeClass = t.badgeClass || 'badge-new';
       const badge      = t.badge      || 'New';
       const bgColor    = fallbackColors[i % fallbackColors.length];
