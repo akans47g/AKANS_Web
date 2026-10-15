@@ -4,390 +4,393 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Settings — AKANS Admin Panel</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-<link rel="manifest" href="../manifest.json"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="manifest" href="admin-manifest.json"/>
+<meta name="theme-color" content="#2563eb"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="AKANS Admin"/>
 <style>
+:root{
+  --bg:#f1f5f9;--surface:#ffffff;--surface2:#f8fafc;
+  --border:#e2e8f0;--fg:#0f172a;--fg2:#475569;--fg3:#94a3b8;
+  --accent:#2563eb;--accent-lt:#eff6ff;
+  --success:#16a34a;--warn:#d97706;--danger:#dc2626;
+  --nav-h:64px;--radius:12px;--shadow:0 1px 4px rgba(0,0,0,0.07);
+}
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'DM Sans',sans-serif;background:#f1f5f9;color:#1e293b;overflow-x:hidden;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflow-x:hidden;}
 
-/* ══ LAYOUT ══ */
-.admin-layout{display:flex;min-height:100vh;}
-.sidebar{width:240px;flex-shrink:0;background:#0f172a;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:200;overflow-y:auto;transition:transform 0.3s;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.1) transparent;}
-.sidebar::-webkit-scrollbar{width:4px;}
-.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px;}
-.sidebar-logo{display:flex;align-items:center;gap:0.7rem;padding:1.2rem 1.1rem 1rem;border-bottom:1px solid rgba(255,255,255,0.06);}
-.sb-logo-icon{width:38px;height:38px;border-radius:10px;flex-shrink:0;background:linear-gradient(135deg,#1e3a8a,#3730a3);border:1px solid rgba(99,153,255,0.25);display:flex;align-items:center;justify-content:center;font-size:1.2rem;}
-.sb-title{font-size:0.88rem;font-weight:800;color:#fff;}
-.sb-sub{font-size:0.65rem;color:rgba(255,255,255,0.35);letter-spacing:0.08em;text-transform:uppercase;margin-top:0.1rem;}
-.sidebar-nav{flex:1;padding:0.8rem 0.7rem;display:flex;flex-direction:column;gap:0.15rem;}
-.nav-item{display:flex;align-items:center;gap:0.7rem;padding:0.65rem 0.85rem;border-radius:10px;text-decoration:none;color:rgba(255,255,255,0.5);font-size:0.82rem;font-weight:600;transition:all 0.18s;position:relative;}
-.nav-item:hover{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.85);}
-.nav-item.active{background:linear-gradient(135deg,rgba(37,99,235,0.3),rgba(124,58,237,0.2));color:#fff;border:1px solid rgba(99,153,255,0.2);}
-.nav-icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0;}
-.nav-label{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.nav-badge{display:none;align-items:center;justify-content:center;background:#ef4444;color:#fff;border-radius:30px;font-size:0.58rem;font-weight:800;min-width:18px;height:18px;padding:0 4px;}
-.sidebar-user{display:flex;align-items:center;gap:0.6rem;padding:0.9rem 1rem;border-top:1px solid rgba(255,255,255,0.06);flex-shrink:0;}
-.sb-avatar{width:34px;height:34px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:0.85rem;}
-.sb-user-info{flex:1;min-width:0;}
-.sb-user-name{font-size:0.78rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.sb-user-email{font-size:0.63rem;color:rgba(255,255,255,0.3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.sb-logout{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.2);color:#f87171;border-radius:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.9rem;flex-shrink:0;transition:all 0.2s;}
-.sb-logout:hover{background:rgba(239,68,68,0.3);color:#fff;}
-.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:199;}
-.sidebar-overlay.show{display:block;}
+.admin-main{display:flex;flex-direction:column;min-height:100vh;}
 
-/* MAIN */
-.admin-main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
-.admin-header{background:#fff;border-bottom:1px solid #e2e8f0;padding:0.85rem 1.5rem;display:flex;align-items:center;gap:0.8rem;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
-.header-hamburger{display:none;background:none;border:none;cursor:pointer;font-size:1.3rem;color:#64748b;}
-.header-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:800;color:#1e293b;}
+/* HEADER */
+.admin-header{background:var(--surface);border-bottom:1px solid var(--border);padding:0.85rem 1.1rem;display:flex;align-items:center;gap:0.8rem;position:sticky;top:0;z-index:100;box-shadow:var(--shadow);}
+.header-title{font-size:1rem;font-weight:800;color:var(--fg);}
 .header-right{margin-left:auto;display:flex;align-items:center;gap:0.6rem;}
-.header-admin-name{display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;font-weight:700;}
-.header-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.72rem;font-weight:800;}
-.hdr-btn{display:flex;align-items:center;gap:0.4rem;padding:0.45rem 0.9rem;border-radius:9px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;border:1.5px solid;transition:all 0.2s;}
-.hdr-btn-reset{background:#fef2f2;color:#ef4444;border-color:#fecaca;}
-.hdr-btn-reset:hover{background:#ef4444;color:#fff;border-color:#ef4444;}
-.hdr-btn-reload{background:#eff6ff;color:#2563eb;border-color:#bfdbfe;}
-.hdr-btn-reload:hover{background:#2563eb;color:#fff;border-color:#2563eb;}
-.admin-content{padding:1.3rem 1.5rem;flex:1;}
+.header-admin-name{display:flex;align-items:center;gap:0.45rem;font-size:0.8rem;font-weight:700;color:var(--fg);}
+.header-av{width:30px;height:30px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.72rem;font-weight:800;}
+.hdr-btn{display:flex;align-items:center;gap:0.4rem;padding:0.45rem 0.9rem;border-radius:9px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;border:1.5px solid;transition:all 0.2s;}
+.hdr-btn-reset {background:#fef2f2;color:var(--danger);border-color:#fecaca;}
+.hdr-btn-reset:hover{background:var(--danger);color:#fff;}
+.hdr-btn-reload{background:var(--accent-lt);color:var(--accent);border-color:#bfdbfe;}
+.hdr-btn-reload:hover{background:var(--accent);color:#fff;}
+.install-btn{display:none;align-items:center;gap:0.4rem;padding:0.42rem 0.8rem;border-radius:9px;font-size:0.76rem;font-weight:700;background:var(--accent-lt);color:var(--accent);border:1.5px solid #bfdbfe;cursor:pointer;font-family:'Inter',sans-serif;}
+
+/* CONTENT */
+.admin-content{padding:1.1rem;flex:1;padding-bottom:calc(var(--nav-h) + 16px);}
+
+/* SITE URL BOX */
+.site-url-box{display:flex;align-items:center;gap:0.6rem;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0.65rem 0.95rem;margin-bottom:1rem;box-shadow:var(--shadow);}
+.site-url-label{font-size:0.68rem;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:0.08em;flex-shrink:0;}
+.site-url-val{font-size:0.8rem;font-weight:600;color:var(--accent);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.site-url-open{font-size:0.8rem;background:none;border:none;color:var(--accent);cursor:pointer;flex-shrink:0;text-decoration:none;font-weight:700;}
 
 /* SETTINGS LAYOUT */
-.settings-layout{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;}
+.settings-layout{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
 .settings-full{grid-column:1/-1;}
 
 /* SETTINGS CARD */
-.set-card{background:#fff;border:1.5px solid #e2e8f0;border-radius:18px;padding:1.4rem;box-shadow:0 1px 4px rgba(0,0,0,0.05);transition:border-color 0.3s;}
-.set-card-header{display:flex;align-items:center;gap:0.7rem;margin-bottom:1.2rem;padding-bottom:0.9rem;border-bottom:1px solid #f1f5f9;}
+.set-card{background:var(--surface);border:1.5px solid var(--border);border-radius:18px;padding:1.3rem;box-shadow:var(--shadow);transition:border-color 0.3s;}
+.set-card:hover{border-color:rgba(37,99,235,0.2);}
+.set-card-header{display:flex;align-items:center;gap:0.7rem;margin-bottom:1.1rem;padding-bottom:0.85rem;border-bottom:1px solid var(--border);}
 .set-card-icon{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
-.ic-blue  {background:#eff6ff;}
+.ic-blue  {background:var(--accent-lt);}
 .ic-green {background:#f0fdf4;}
 .ic-purple{background:#f5f3ff;}
 .ic-orange{background:#fffbeb;}
 .ic-pink  {background:#fdf2f8;}
-.ic-gray  {background:#f8fafc;}
-.set-card-title{font-family:'Playfair Display',serif;font-size:0.95rem;font-weight:800;color:#1e293b;}
-.set-card-sub{font-size:0.72rem;color:#94a3b8;margin-top:0.1rem;}
+.ic-gray  {background:var(--surface2);}
+.set-card-title{font-size:0.9rem;font-weight:800;color:var(--fg);}
+.set-card-sub{font-size:0.7rem;color:var(--fg3);margin-top:0.1rem;}
 
 /* FORM FIELDS */
 .sf-row{margin-bottom:0.85rem;}
 .sf-row:last-child{margin-bottom:0;}
-.sf-label{display:block;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;margin-bottom:0.38rem;}
+.sf-label{display:block;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--fg2);margin-bottom:0.35rem;}
 .sf-input-wrap{display:flex;align-items:center;gap:0.4rem;}
-.sf-input,.sf-textarea{width:100%;padding:0.65rem 0.9rem;border:1.5px solid #e2e8f0;border-radius:11px;font-size:0.86rem;font-family:'DM Sans',sans-serif;color:#1e293b;outline:none;background:#fff;transition:border-color 0.2s;}
-.sf-input:focus,.sf-textarea:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,0.08);}
+.sf-input,.sf-textarea{width:100%;padding:0.62rem 0.85rem;border:1.5px solid var(--border);border-radius:11px;font-size:0.84rem;font-family:'Inter',sans-serif;color:var(--fg);outline:none;background:var(--surface);transition:border-color 0.2s;}
+.sf-input:focus,.sf-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,0.08);}
 .sf-textarea{resize:vertical;min-height:70px;}
-.sf-hint{font-size:0.7rem;color:#94a3b8;margin-top:0.25rem;}
-.sf-copy-btn{flex-shrink:0;padding:0.62rem 0.7rem;border:1.5px solid #e2e8f0;border-radius:9px;background:#f8fafc;color:#64748b;cursor:pointer;font-size:0.82rem;transition:all 0.2s;}
-.sf-copy-btn:hover{background:#eff6ff;color:#2563eb;border-color:#bfdbfe;}
-.sf-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;}
+.sf-hint{font-size:0.68rem;color:var(--fg3);margin-top:0.22rem;}
+.sf-copy-btn{flex-shrink:0;padding:0.6rem 0.68rem;border:1.5px solid var(--border);border-radius:9px;background:var(--surface2);color:var(--fg2);cursor:pointer;font-size:0.8rem;transition:all 0.2s;}
+.sf-copy-btn:hover{background:var(--accent-lt);color:var(--accent);border-color:#bfdbfe;}
+.sf-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.65rem;}
 
 /* SAVE BUTTON */
-.set-save-btn{display:flex;align-items:center;justify-content:center;gap:0.4rem;width:100%;margin-top:1rem;padding:0.72rem;border-radius:12px;border:none;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;font-size:0.88rem;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;box-shadow:0 4px 14px rgba(37,99,235,0.3);transition:all 0.2s;}
-.set-save-btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(37,99,235,0.4);}
+.set-save-btn{display:flex;align-items:center;justify-content:center;gap:0.4rem;width:100%;margin-top:1rem;padding:0.7rem;border-radius:12px;border:none;background:var(--accent);color:#fff;font-size:0.86rem;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;box-shadow:0 4px 14px rgba(37,99,235,0.28);transition:all 0.2s;}
+.set-save-btn:hover{background:#1d4ed8;transform:translateY(-1px);box-shadow:0 6px 18px rgba(37,99,235,0.38);}
 .set-save-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
 
-/* QR CODE SECTION */
-.qr-section{display:flex;align-items:center;gap:1rem;margin-bottom:1rem;padding:0.9rem;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;}
-.qr-preview-img{width:80px;height:80px;object-fit:contain;border-radius:9px;border:1px solid #e2e8f0;background:#fff;}
+/* QR CODE */
+.qr-section{display:flex;align-items:center;gap:1rem;margin-bottom:1rem;padding:0.85rem;background:var(--surface2);border-radius:12px;border:1px solid var(--border);}
+.qr-preview-img{width:78px;height:78px;object-fit:contain;border-radius:9px;border:1px solid var(--border);background:var(--surface);}
 .qr-upload-area{flex:1;}
-.qr-upload-label{font-size:0.78rem;font-weight:700;color:#1e293b;margin-bottom:0.3rem;display:block;}
-.qr-upload-hint{font-size:0.72rem;color:#94a3b8;margin-bottom:0.5rem;}
-.qr-upload-btn{display:inline-flex;align-items:center;gap:0.4rem;padding:0.45rem 0.9rem;border-radius:9px;border:1.5px solid #bfdbfe;background:#eff6ff;color:#2563eb;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
-.qr-upload-btn:hover{background:#2563eb;color:#fff;border-color:#2563eb;}
+.qr-upload-label{font-size:0.77rem;font-weight:700;color:var(--fg);margin-bottom:0.28rem;display:block;}
+.qr-upload-hint{font-size:0.7rem;color:var(--fg3);margin-bottom:0.48rem;}
+.qr-upload-btn{display:inline-flex;align-items:center;gap:0.4rem;padding:0.42rem 0.85rem;border-radius:9px;border:1.5px solid #bfdbfe;background:var(--accent-lt);color:var(--accent);font-size:0.77rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;}
+.qr-upload-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
 
 /* PRICE BADGE */
-.price-preview{display:inline-flex;align-items:center;gap:0.4rem;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:0.45rem 0.9rem;margin-top:0.5rem;font-size:0.88rem;font-weight:800;color:#15803d;}
-
-/* SITE INFO */
-.site-url-box{display:flex;align-items:center;gap:0.6rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:0.6rem 0.9rem;margin-bottom:0.8rem;}
-.site-url-label{font-size:0.7rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;flex-shrink:0;}
-.site-url-val{font-size:0.8rem;font-weight:600;color:#2563eb;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.site-url-open{font-size:0.78rem;background:none;border:none;color:#2563eb;cursor:pointer;flex-shrink:0;text-decoration:none;}
+.price-preview{display:inline-flex;align-items:center;gap:0.4rem;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:0.42rem 0.85rem;margin-top:0.48rem;font-size:0.85rem;font-weight:800;color:#15803d;}
 
 /* DANGER ZONE */
 .danger-zone{background:#fef2f2;border:1.5px solid #fecaca;border-radius:16px;padding:1.2rem;}
-.danger-title{font-size:0.88rem;font-weight:800;color:#ef4444;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.5rem;}
-.danger-sub{font-size:0.78rem;color:#94a3b8;margin-bottom:1rem;line-height:1.6;}
-.danger-btn{display:inline-flex;align-items:center;gap:0.4rem;padding:0.55rem 1.1rem;border-radius:10px;border:1.5px solid #fecaca;background:#fff;color:#ef4444;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
-.danger-btn:hover{background:#ef4444;color:#fff;border-color:#ef4444;}
+.danger-title{font-size:0.86rem;font-weight:800;color:var(--danger);margin-bottom:0.45rem;display:flex;align-items:center;gap:0.5rem;}
+.danger-sub{font-size:0.76rem;color:var(--fg3);margin-bottom:0.9rem;line-height:1.6;}
+.danger-btn{display:inline-flex;align-items:center;gap:0.4rem;padding:0.52rem 1rem;border-radius:10px;border:1.5px solid #fecaca;background:var(--surface);color:var(--danger);font-size:0.8rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;}
+.danger-btn:hover{background:var(--danger);color:#fff;border-color:var(--danger);}
 
 /* ADMIN INFO */
-.admin-info-row{display:flex;align-items:center;justify-content:space-between;padding:0.7rem 0;border-bottom:1px solid #f1f5f9;}
-.admin-info-row:last-child{border-bottom:none;}
-.ai-label{font-size:0.75rem;font-weight:700;color:#64748b;}
-.ai-val{font-size:0.82rem;font-weight:600;color:#1e293b;}
-.ai-badge{font-size:0.68rem;font-weight:700;background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;padding:0.15rem 0.55rem;border-radius:20px;}
+.admin-info-row{display:flex;align-items:center;justify-content:space-between;padding:0.68rem 0;border-bottom:1px solid var(--border);}
+.admin-info-row:last-child{border-bottom:none;padding-bottom:0;}
+.ai-label{font-size:0.73rem;font-weight:700;color:var(--fg2);}
+.ai-val{font-size:0.8rem;font-weight:600;color:var(--fg);}
+.ai-badge{font-size:0.67rem;font-weight:700;background:#f0fdf4;color:var(--success);border:1px solid #bbf7d0;padding:0.15rem 0.52rem;border-radius:20px;}
 
 /* TOAST */
-.admin-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);font-size:0.83rem;font-weight:700;padding:0.7rem 1.5rem;border-radius:30px;opacity:0;white-space:nowrap;transition:opacity 0.25s,transform 0.25s;z-index:9999;pointer-events:none;font-family:'DM Sans',sans-serif;}
+.admin-toast{position:fixed;bottom:calc(var(--nav-h) + 12px);left:50%;transform:translateX(-50%) translateY(20px);font-size:0.82rem;font-weight:700;padding:0.65rem 1.4rem;border-radius:30px;opacity:0;white-space:nowrap;transition:opacity 0.25s,transform 0.25s;z-index:9999;pointer-events:none;font-family:'Inter',sans-serif;}
 .admin-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .admin-toast.success{background:#166534;color:#bbf7d0;border:1px solid #15803d;}
 .admin-toast.error  {background:#7f1d1d;color:#fca5a5;border:1px solid #b91c1c;}
 .admin-toast.warning{background:#78350f;color:#fde68a;border:1px solid #b45309;}
 .admin-toast.info   {background:#1e3a8a;color:#bfdbfe;border:1px solid #1d4ed8;}
 
-/* RESPONSIVE */
-@media(max-width:900px){ .settings-layout{grid-template-columns:1fr;} }
-@media(max-width:768px){
-  .sidebar{transform:translateX(-100%);}
-  .sidebar.open{transform:translateX(0);}
-  .admin-main{margin-left:0;}
-  .header-hamburger{display:flex!important;align-items:center;}
-  .admin-content{padding:1rem;}
-  .sf-grid{grid-template-columns:1fr;}
-}
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:stretch;z-index:200;box-shadow:0 -2px 12px rgba(0,0,0,0.08);}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.22rem;text-decoration:none;color:var(--fg3);border:none;background:none;cursor:pointer;font-family:'Inter',sans-serif;transition:color 0.18s;padding:0;}
+.bn-item:hover,.bn-item.active{color:var(--accent);}
+.bn-icon{font-size:1.25rem;line-height:1;}
+.bn-label{font-size:0.6rem;font-weight:600;letter-spacing:0.04em;}
+
+/* MORE MENU */
+.more-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300;display:none;}
+.more-overlay.open{display:block;}
+.more-menu{position:fixed;bottom:0;left:0;right:0;z-index:310;background:var(--surface);border-radius:20px 20px 0 0;padding:0.6rem 1.2rem 2rem;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);box-shadow:0 -8px 30px rgba(0,0,0,0.15);}
+.more-menu.open{transform:translateY(0);}
+.more-handle{width:40px;height:4px;background:var(--border);border-radius:4px;margin:0.5rem auto 1rem;}
+.more-title{font-size:0.72rem;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.85rem;}
+.more-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;}
+.mm-item{display:flex;flex-direction:column;align-items:center;gap:0.35rem;padding:0.75rem 0.5rem;border-radius:12px;background:var(--surface2);text-decoration:none;color:var(--fg2);border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.18s;}
+.mm-item:hover,.mm-item.mm-active{background:var(--accent-lt);color:var(--accent);}
+.mm-item.mm-logout{color:var(--danger);}
+.mm-item.mm-logout:hover{background:#fef2f2;}
+.mm-icon{font-size:1.4rem;}
+.mm-label{font-size:0.67rem;font-weight:600;text-align:center;}
+
+@media(max-width:900px){.settings-layout{grid-template-columns:1fr;}}
+@media(max-width:768px){.sf-grid{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
-<div class="admin-layout" id="settingsPage">
 
-  <div id="sidebarOverlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
-  <aside id="adminSidebar" class="sidebar"></aside>
+<main class="admin-main" id="settingsPage">
 
-  <main class="admin-main">
-
-    <!-- HEADER -->
-    <header class="admin-header">
-      <button class="header-hamburger" onclick="toggleSidebar()">☰</button>
-      <div class="header-title">⚙️ Settings</div>
-      <div class="header-right">
-        <button class="hdr-btn hdr-btn-reload" onclick="loadSettings()">🔄 Reload</button>
-        <button class="hdr-btn hdr-btn-reset"  onclick="resetAllSettings()">🔄 Reset All</button>
-        <div class="header-admin-name">
-          <div class="header-av">A</div>
-          <span id="adminHeaderName">Admin</span>
-        </div>
+  <!-- HEADER -->
+  <header class="admin-header">
+    <div class="header-title">⚙️ Settings</div>
+    <div class="header-right">
+      <button class="hdr-btn hdr-btn-reload" onclick="loadSettings()">🔄 Reload</button>
+      <button class="hdr-btn hdr-btn-reset"  onclick="resetAllSettings()">🔄 Reset All</button>
+      <button class="install-btn" id="installBtn" onclick="installAdminApp()">📲 Install</button>
+      <div class="header-admin-name">
+        <div class="header-av">A</div>
+        <span id="adminHeaderName">Admin</span>
       </div>
-    </header>
-
-    <div class="admin-content">
-
-      <!-- SITE URL INFO -->
-      <div class="site-url-box">
-        <span class="site-url-label">Live Site</span>
-        <span class="site-url-val" id="set-github-display">https://akans47g.github.io/AKANS_Web/</span>
-        <a href="https://akans47g.github.io/AKANS_Web/" target="_blank" class="site-url-open">🔗 Open</a>
-      </div>
-
-      <div class="settings-layout">
-
-        <!-- ── CONTACT SETTINGS ── -->
-        <div class="set-card" id="card-contact">
-          <div class="set-card-header">
-            <div class="set-card-icon ic-green">📱</div>
-            <div>
-              <div class="set-card-title">Contact Settings</div>
-              <div class="set-card-sub">WhatsApp, Telegram, Email</div>
-            </div>
-          </div>
-
-          <div class="sf-row">
-            <label class="sf-label">WhatsApp Number</label>
-            <div class="sf-input-wrap">
-              <input class="sf-input" type="tel" id="set-whatsapp" placeholder="9673840137" maxlength="10"/>
-              <button class="sf-copy-btn" onclick="copyField('set-whatsapp')">📋</button>
-              <button class="sf-copy-btn" onclick="testWhatsApp()" title="Test WhatsApp">💬</button>
-            </div>
-            <div class="sf-hint">Customers is number pe message karenge</div>
-          </div>
-
-          <div class="sf-row">
-            <label class="sf-label">Telegram ID</label>
-            <div class="sf-input-wrap">
-              <input class="sf-input" type="text" id="set-telegram" placeholder="AKANS_M7"/>
-              <button class="sf-copy-btn" onclick="copyField('set-telegram')">📋</button>
-            </div>
-          </div>
-
-          <div class="sf-row">
-            <label class="sf-label">Email Address</label>
-            <div class="sf-input-wrap">
-              <input class="sf-input" type="email" id="set-email" placeholder="akans47g@gmail.com"/>
-              <button class="sf-copy-btn" onclick="copyField('set-email')">📋</button>
-            </div>
-          </div>
-
-          <div class="sf-row">
-            <label class="sf-label">Support Hours</label>
-            <input class="sf-input" type="text" id="set-support-hrs" placeholder="Mon-Sat, 10AM - 8PM"/>
-          </div>
-
-          <button class="set-save-btn" id="btn-contact" onclick="saveContactSettings()">💾 Save</button>
-        </div>
-
-        <!-- ── PAYMENT SETTINGS ── -->
-        <div class="set-card" id="card-payment">
-          <div class="set-card-header">
-            <div class="set-card-icon ic-orange">💰</div>
-            <div>
-              <div class="set-card-title">Payment Settings</div>
-              <div class="set-card-sub">UPI IDs, Price, QR Code</div>
-            </div>
-          </div>
-
-          <!-- QR Code -->
-          <div class="qr-section">
-            <img src="../Qr.jpg" alt="QR Code" class="qr-preview-img" id="qr-preview"
-                 onerror="this.style.opacity='0.3'"/>
-            <div class="qr-upload-area">
-              <span class="qr-upload-label">Payment QR Code</span>
-              <div class="qr-upload-hint">JPG/PNG · Max 3MB</div>
-              <label class="qr-upload-btn" id="btn-qr-upload">
-                📷 Change QR
-                <input type="file" accept="image/*" style="display:none;" onchange="uploadQRCode(this)"/>
-              </label>
-            </div>
-          </div>
-
-          <div class="sf-row">
-            <label class="sf-label">Template Price (₹)</label>
-            <input class="sf-input" type="number" id="set-price" min="1" placeholder="1199"/>
-            <div class="price-preview">💰 Price: ₹<span id="price-live">1,199</span></div>
-          </div>
-
-          <div class="sf-grid">
-            <div class="sf-row">
-              <label class="sf-label">PhonePe UPI</label>
-              <div class="sf-input-wrap">
-                <input class="sf-input" type="text" id="set-phonepe" placeholder="9021958286@ybl"/>
-                <button class="sf-copy-btn" onclick="copyField('set-phonepe')">📋</button>
-              </div>
-            </div>
-            <div class="sf-row">
-              <label class="sf-label">GPay UPI</label>
-              <div class="sf-input-wrap">
-                <input class="sf-input" type="text" id="set-gpay" placeholder="name@okhdfcbank"/>
-                <button class="sf-copy-btn" onclick="copyField('set-gpay')">📋</button>
-              </div>
-            </div>
-            <div class="sf-row">
-              <label class="sf-label">Paytm UPI</label>
-              <div class="sf-input-wrap">
-                <input class="sf-input" type="text" id="set-paytm" placeholder="name@ptaxis"/>
-                <button class="sf-copy-btn" onclick="copyField('set-paytm')">📋</button>
-              </div>
-            </div>
-            <div class="sf-row">
-              <label class="sf-label">UPI Number</label>
-              <div class="sf-input-wrap">
-                <input class="sf-input" type="tel" id="set-upi-num" placeholder="9021958286" maxlength="10"/>
-                <button class="sf-copy-btn" onclick="copyField('set-upi-num')">📋</button>
-              </div>
-            </div>
-          </div>
-
-          <button class="set-save-btn" id="btn-payment" onclick="savePaymentSettings()">💾 Save</button>
-        </div>
-
-        <!-- ── SITE INFO ── -->
-        <div class="set-card" id="card-siteinfo">
-          <div class="set-card-header">
-            <div class="set-card-icon ic-blue">🌐</div>
-            <div>
-              <div class="set-card-title">Site Information</div>
-              <div class="set-card-sub">Name, tagline, about</div>
-            </div>
-          </div>
-
-          <div class="sf-row">
-            <label class="sf-label">Site Name</label>
-            <input class="sf-input" type="text" id="set-sitename" placeholder="AKANS Web Development Services"/>
-          </div>
-          <div class="sf-row">
-            <label class="sf-label">Tagline</label>
-            <input class="sf-input" type="text" id="set-tagline" placeholder="Premium Digital Wedding Cards"/>
-          </div>
-          <div class="sf-row">
-            <label class="sf-label">About Text</label>
-            <textarea class="sf-textarea" id="set-about" placeholder="About the service..."></textarea>
-          </div>
-          <div class="sf-row">
-            <label class="sf-label">GitHub Pages URL</label>
-            <input class="sf-input" type="url" id="set-github" placeholder="https://akans47g.github.io/AKANS_Web/"/>
-          </div>
-
-          <button class="set-save-btn" id="btn-siteinfo" onclick="saveSiteInfo()">💾 Save</button>
-        </div>
-
-        <!-- ── SOCIAL LINKS ── -->
-        <div class="set-card" id="card-social">
-          <div class="set-card-header">
-            <div class="set-card-icon ic-pink">📲</div>
-            <div>
-              <div class="set-card-title">Social Links</div>
-              <div class="set-card-sub">Instagram, Facebook, YouTube</div>
-            </div>
-          </div>
-
-          <div class="sf-row">
-            <label class="sf-label">Instagram URL</label>
-            <input class="sf-input" type="url" id="set-instagram" placeholder="https://instagram.com/..."/>
-          </div>
-          <div class="sf-row">
-            <label class="sf-label">Facebook URL</label>
-            <input class="sf-input" type="url" id="set-facebook" placeholder="https://facebook.com/..."/>
-          </div>
-          <div class="sf-row">
-            <label class="sf-label">YouTube URL</label>
-            <input class="sf-input" type="url" id="set-youtube" placeholder="https://youtube.com/..."/>
-          </div>
-
-          <button class="set-save-btn" id="btn-social" onclick="saveSocialLinks()">💾 Save</button>
-        </div>
-
-        <!-- ── ADMIN INFO ── -->
-        <div class="set-card settings-full" id="card-admininfo">
-          <div class="set-card-header">
-            <div class="set-card-icon ic-gray">🛡️</div>
-            <div>
-              <div class="set-card-title">Admin Account Info</div>
-              <div class="set-card-sub">Current session details</div>
-            </div>
-          </div>
-          <div class="admin-info-row">
-            <span class="ai-label">Admin Email</span>
-            <span class="ai-val" id="set-admin-email">akans47g@gmail.com</span>
-          </div>
-          <div class="admin-info-row">
-            <span class="ai-label">Session Status</span>
-            <span class="ai-badge">✅ Active — 24hr session</span>
-          </div>
-          <div class="admin-info-row">
-            <span class="ai-label">Session Started</span>
-            <span class="ai-val" id="session-time">—</span>
-          </div>
-          <div class="admin-info-row">
-            <span class="ai-label">Firebase Project</span>
-            <span class="ai-val">akans-website</span>
-          </div>
-          <div class="admin-info-row">
-            <span class="ai-label">Password Change</span>
-            <span class="ai-val">
-              <a href="https://myaccount.google.com/security" target="_blank"
-                 style="color:#2563eb;font-weight:700;text-decoration:none;font-size:0.82rem;">
-                🔑 Firebase Console se karein →
-              </a>
-            </span>
-          </div>
-        </div>
-
-        <!-- ── DANGER ZONE ── -->
-        <div class="settings-full">
-          <div class="danger-zone">
-            <div class="danger-title">⚠️ Danger Zone</div>
-            <div class="danger-sub">
-              Yeh actions permanent hain aur undo nahi ho sakte. Sirf tab use karein jab aap sure ho.
-            </div>
-            <div style="display:flex;gap:0.7rem;flex-wrap:wrap;">
-              <button class="danger-btn" onclick="resetAllSettings()">🔄 Reset All Settings to Default</button>
-              <button class="danger-btn" onclick="adminLogout()">⏏️ Logout Admin Session</button>
-            </div>
-          </div>
-        </div>
-
-      </div><!-- /settings-layout -->
     </div>
-  </main>
+  </header>
+
+  <div class="admin-content">
+
+    <!-- SITE URL INFO -->
+    <div class="site-url-box">
+      <span class="site-url-label">Live Site</span>
+      <span class="site-url-val" id="set-github-display">https://akans47g.github.io/AKANS_Web/</span>
+      <a href="https://akans47g.github.io/AKANS_Web/" target="_blank" class="site-url-open">🔗 Open</a>
+    </div>
+
+    <div class="settings-layout">
+
+      <!-- CONTACT SETTINGS -->
+      <div class="set-card" id="card-contact">
+        <div class="set-card-header">
+          <div class="set-card-icon ic-green">📱</div>
+          <div>
+            <div class="set-card-title">Contact Settings</div>
+            <div class="set-card-sub">WhatsApp, Telegram, Email</div>
+          </div>
+        </div>
+        <div class="sf-row">
+          <label class="sf-label">WhatsApp Number</label>
+          <div class="sf-input-wrap">
+            <input class="sf-input" type="tel" id="set-whatsapp" placeholder="9673840137" maxlength="10"/>
+            <button class="sf-copy-btn" onclick="copyField('set-whatsapp')">📋</button>
+            <button class="sf-copy-btn" onclick="testWhatsApp()" title="Test WhatsApp">💬</button>
+          </div>
+          <div class="sf-hint">Customers is number pe message karenge</div>
+        </div>
+        <div class="sf-row">
+          <label class="sf-label">Telegram ID</label>
+          <div class="sf-input-wrap">
+            <input class="sf-input" type="text" id="set-telegram" placeholder="AKANS_M7"/>
+            <button class="sf-copy-btn" onclick="copyField('set-telegram')">📋</button>
+          </div>
+        </div>
+        <div class="sf-row">
+          <label class="sf-label">Email Address</label>
+          <div class="sf-input-wrap">
+            <input class="sf-input" type="email" id="set-email" placeholder="akanswebdesign@gmail.com"/>
+            <button class="sf-copy-btn" onclick="copyField('set-email')">📋</button>
+          </div>
+        </div>
+        <button class="set-save-btn" onclick="saveContactSettings()">💾 Save Contact</button>
+      </div>
+
+      <!-- PRICING SETTINGS -->
+      <div class="set-card" id="card-pricing">
+        <div class="set-card-header">
+          <div class="set-card-icon ic-blue">💰</div>
+          <div>
+            <div class="set-card-title">Pricing Settings</div>
+            <div class="set-card-sub">Base price, GST, referral reward</div>
+          </div>
+        </div>
+        <div class="sf-grid">
+          <div class="sf-row">
+            <label class="sf-label">Base Price (₹)</label>
+            <input class="sf-input" type="number" id="set-base-price" placeholder="499" min="0"/>
+          </div>
+          <div class="sf-row">
+            <label class="sf-label">GST %</label>
+            <input class="sf-input" type="number" id="set-gst" placeholder="18" min="0" max="100"/>
+          </div>
+        </div>
+        <div id="price-preview-box"></div>
+        <div class="sf-row" style="margin-top:0.8rem;">
+          <label class="sf-label">Referral Reward (₹)</label>
+          <input class="sf-input" type="number" id="set-ref-reward" placeholder="50" min="0"/>
+          <div class="sf-hint">Successful referral pe milne wala reward</div>
+        </div>
+        <div class="sf-row">
+          <label class="sf-label">Min Withdrawal (₹)</label>
+          <input class="sf-input" type="number" id="set-min-withdraw" placeholder="200" min="0"/>
+        </div>
+        <button class="set-save-btn" onclick="savePricingSettings()">💾 Save Pricing</button>
+      </div>
+
+      <!-- PAYMENT / QR -->
+      <div class="set-card" id="card-payment">
+        <div class="set-card-header">
+          <div class="set-card-icon ic-purple">💳</div>
+          <div>
+            <div class="set-card-title">Payment Settings</div>
+            <div class="set-card-sub">UPI ID, QR Code</div>
+          </div>
+        </div>
+        <div class="sf-row">
+          <label class="sf-label">UPI ID</label>
+          <div class="sf-input-wrap">
+            <input class="sf-input" type="text" id="set-upi" placeholder="akans@paytm"/>
+            <button class="sf-copy-btn" onclick="copyField('set-upi')">📋</button>
+          </div>
+        </div>
+        <div class="sf-row">
+          <label class="sf-label">UPI Name</label>
+          <input class="sf-input" type="text" id="set-upi-name" placeholder="AKANS Web Design"/>
+        </div>
+        <div class="qr-section">
+          <img id="qr-preview-img" class="qr-preview-img" src="" alt="QR Code" onerror="this.style.display='none'"/>
+          <div class="qr-upload-area">
+            <span class="qr-upload-label">Payment QR Code</span>
+            <div class="qr-upload-hint">PNG ya JPG, max 2MB</div>
+            <label class="qr-upload-btn" for="qr-file-input">📷 Upload QR</label>
+            <input type="file" id="qr-file-input" accept="image/*" style="display:none;" onchange="handleQrUpload(event)"/>
+          </div>
+        </div>
+        <button class="set-save-btn" onclick="savePaymentSettings()">💾 Save Payment</button>
+      </div>
+
+      <!-- SITE CONTENT -->
+      <div class="set-card" id="card-content">
+        <div class="set-card-header">
+          <div class="set-card-icon ic-orange">📝</div>
+          <div>
+            <div class="set-card-title">Site Content</div>
+            <div class="set-card-sub">Headlines, tagline, about</div>
+          </div>
+        </div>
+        <div class="sf-row">
+          <label class="sf-label">Site Name</label>
+          <input class="sf-input" type="text" id="set-site-name" placeholder="AKANS Web Design"/>
+        </div>
+        <div class="sf-row">
+          <label class="sf-label">Tagline</label>
+          <input class="sf-input" type="text" id="set-tagline" placeholder="Your dream website, delivered"/>
+        </div>
+        <div class="sf-row">
+          <label class="sf-label">Hero Headline</label>
+          <input class="sf-input" type="text" id="set-hero-title" placeholder="Beautiful Wedding Websites"/>
+        </div>
+        <div class="sf-row">
+          <label class="sf-label">About Text</label>
+          <textarea class="sf-textarea" id="set-about" placeholder="Hamare baare mein..."></textarea>
+        </div>
+        <button class="set-save-btn" onclick="saveContentSettings()">💾 Save Content</button>
+      </div>
+
+      <!-- REFERRAL SETTINGS -->
+      <div class="set-card" id="card-referral">
+        <div class="set-card-header">
+          <div class="set-card-icon ic-pink">🔗</div>
+          <div>
+            <div class="set-card-title">Referral Settings</div>
+            <div class="set-card-sub">Program toggle, limits</div>
+          </div>
+        </div>
+        <div class="sf-row">
+          <label class="sf-label">Program Status</label>
+          <select class="sf-input" id="set-ref-enabled">
+            <option value="true">✅ Enabled</option>
+            <option value="false">❌ Disabled</option>
+          </select>
+        </div>
+        <div class="sf-row">
+          <label class="sf-label">Max Referrals per User</label>
+          <input class="sf-input" type="number" id="set-max-refs" placeholder="10" min="1"/>
+          <div class="sf-hint">0 = unlimited</div>
+        </div>
+        <div class="sf-row">
+          <label class="sf-label">Referral Code Length</label>
+          <input class="sf-input" type="number" id="set-ref-code-len" placeholder="6" min="4" max="12"/>
+        </div>
+        <button class="set-save-btn" onclick="saveReferralSettings()">💾 Save Referral</button>
+      </div>
+
+      <!-- ADMIN ACCOUNT INFO -->
+      <div class="set-card" id="card-admin">
+        <div class="set-card-header">
+          <div class="set-card-icon ic-gray">👤</div>
+          <div>
+            <div class="set-card-title">Admin Account</div>
+            <div class="set-card-sub">Current session info</div>
+          </div>
+        </div>
+        <div class="admin-info-row">
+          <span class="ai-label">Name</span>
+          <span class="ai-val" id="ai-name">—</span>
+        </div>
+        <div class="admin-info-row">
+          <span class="ai-label">Email</span>
+          <span class="ai-val" id="ai-email">—</span>
+        </div>
+        <div class="admin-info-row">
+          <span class="ai-label">Role</span>
+          <span class="ai-badge">👑 Admin</span>
+        </div>
+        <div class="admin-info-row">
+          <span class="ai-label">Last Login</span>
+          <span class="ai-val" id="ai-login">—</span>
+        </div>
+      </div>
+
+      <!-- DANGER ZONE -->
+      <div class="settings-full">
+        <div class="danger-zone">
+          <div class="danger-title">⚠️ Danger Zone</div>
+          <div class="danger-sub">Ye actions reversible nahi hain. Soch samajh ke karo.</div>
+          <div style="display:flex;gap:0.7rem;flex-wrap:wrap;">
+            <button class="danger-btn" onclick="clearAllCaches()">🗑️ Clear Caches</button>
+            <button class="danger-btn" onclick="confirmResetSettings()">🔄 Reset All Settings</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <a href="admin-dashboard.html" class="bn-item"><span class="bn-icon">🏠</span><span class="bn-label">Home</span></a>
+  <a href="admin-bookings.html" class="bn-item"><span class="bn-icon">📦</span><span class="bn-label">Bookings</span></a>
+  <a href="admin-templates.html" class="bn-item"><span class="bn-icon">🎨</span><span class="bn-label">Templates</span></a>
+  <a href="admin-reviews.html" class="bn-item"><span class="bn-icon">⭐</span><span class="bn-label">Reviews</span></a>
+  <button class="bn-item active" onclick="toggleMoreMenu()"><span class="bn-icon">⋯</span><span class="bn-label">More</span></button>
+</nav>
+
+<!-- MORE MENU -->
+<div class="more-overlay" id="moreOverlay" onclick="toggleMoreMenu()"></div>
+<div class="more-menu" id="moreMenu">
+  <div class="more-handle"></div>
+  <div class="more-title">More Pages</div>
+  <div class="more-grid">
+    <a href="admin-users.html" class="mm-item"><span class="mm-icon">👥</span><span class="mm-label">Users</span></a>
+    <a href="admin-orders.html" class="mm-item"><span class="mm-icon">🛒</span><span class="mm-label">Orders</span></a>
+    <a href="admin-coupons.html" class="mm-item"><span class="mm-icon">🎟️</span><span class="mm-label">Coupons</span></a>
+    <a href="admin-referrals.html" class="mm-item"><span class="mm-icon">🔗</span><span class="mm-label">Referrals</span></a>
+    <a href="admin-whatsapp.html" class="mm-item"><span class="mm-icon">💬</span><span class="mm-label">WhatsApp</span></a>
+    <a href="admin-settings.html" class="mm-item mm-active"><span class="mm-icon">⚙️</span><span class="mm-label">Settings</span></a>
+    <button class="mm-item mm-logout" onclick="adminLogout()"><span class="mm-icon">🚪</span><span class="mm-label">Logout</span></button>
+  </div>
 </div>
 
 <div class="admin-toast" id="adminToast"></div>
@@ -400,18 +403,40 @@ body{font-family:'DM Sans',sans-serif;background:#f1f5f9;color:#1e293b;overflow-
 <script src="admin-all.js"></script>
 <script src="admin-settings.js"></script>
 <script>
-// Header avatar + session time
+// Header avatar + admin info
 const sess = JSON.parse(localStorage.getItem('adminSession')||'{}');
 const av = document.querySelector('.header-av');
 if(av && sess.displayName) av.textContent = sess.displayName.charAt(0).toUpperCase();
-const stEl = document.getElementById('session-time');
-if(stEl && sess.timestamp) stEl.textContent = new Date(sess.timestamp).toLocaleString('en-IN');
+const aiName  = document.getElementById('ai-name');
+const aiEmail = document.getElementById('ai-email');
+const aiLogin = document.getElementById('ai-login');
+if(aiName  && sess.displayName) aiName.textContent  = sess.displayName;
+if(aiEmail && sess.email)       aiEmail.textContent = sess.email;
+if(aiLogin && sess.lastLogin)   aiLogin.textContent = new Date(sess.lastLogin).toLocaleString('en-IN');
 
-// Live price preview
-document.getElementById('set-price')?.addEventListener('input', function() {
-  const el = document.getElementById('price-live');
-  if(el) el.textContent = (parseFloat(this.value)||0).toLocaleString('en-IN');
+// More menu
+function toggleMoreMenu(){
+  const m=document.getElementById('moreMenu'),
+        o=document.getElementById('moreOverlay'),
+        open=m.classList.toggle('open');
+  o.classList.toggle('open',open);
+  document.body.style.overflow=open?'hidden':'';
+}
+
+// PWA
+let _dp=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();_dp=e;
+  const b=document.getElementById('installBtn');
+  if(b)b.style.display='flex';
 });
+function installAdminApp(){
+  if(!_dp)return;
+  _dp.prompt();
+  _dp.userChoice.then(()=>{_dp=null;const b=document.getElementById('installBtn');if(b)b.style.display='none';});
+}
+window.addEventListener('appinstalled',()=>{_dp=null;const b=document.getElementById('installBtn');if(b)b.style.display='none';});
+if('serviceWorker'in navigator)navigator.serviceWorker.register('../sw.js').catch(()=>{});
 </script>
 </body>
 </html>
