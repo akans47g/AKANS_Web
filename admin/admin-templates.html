@@ -60,10 +60,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
 .tpl-img-wrap{position:relative;aspect-ratio:2/3;overflow:hidden;background:var(--surface2);}
 .tpl-img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.3s;}
 .tpl-card:hover .tpl-img{transform:scale(1.03);}
-.tpl-img-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.25s;}
-.tpl-card:hover .tpl-img-overlay{opacity:1;}
-.tpl-img-btn{background:#fff;color:var(--fg);border:none;padding:0.5rem 1rem;border-radius:30px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;box-shadow:0 2px 8px rgba(0,0,0,0.2);transition:all 0.2s;}
-.tpl-img-btn:hover{background:var(--accent);color:#fff;}
+/* Image overlay (Firebase upload) — hide kar diya, kaam nahi karta */
+.tpl-img-overlay{display:none!important;}
+.tpl-img-btn{display:none!important;}
 .tpl-badge-pill{position:absolute;top:10px;left:10px;font-size:0.62rem;font-weight:700;padding:0.22rem 0.6rem;border-radius:20px;letter-spacing:0.04em;text-transform:uppercase;}
 .badge-new{background:#f59e0b;color:#fff;}
 .badge-hot{background:#ef4444;color:#fff;}
@@ -195,13 +194,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
 
     <!-- INFO BANNER -->
     <div class="info-banner">
-      <span class="info-banner-icon">💡</span>
+      <span class="info-banner-icon">🖼️</span>
       <div class="info-banner-text">
-        <strong>Template Images &amp; Links Manage Karo</strong>
+        <strong>GitHub se Images — Super Simple System!</strong>
         <span>
-          Yahan se template images upload karo (Firebase Storage), preview links set karo,
-          badges change karo aur templates ON/OFF kar sakte ho.
-          Images automatically site pe show hongi.
+          Sirf GitHub repo ke root mein image upload karo:<br>
+          <strong style="color:#1e40af;">t01.jpg</strong> → 1st template &nbsp;·&nbsp;
+          <strong style="color:#1e40af;">t02.jpg</strong> → 2nd template &nbsp;·&nbsp;
+          <strong style="color:#1e40af;">t03.jpg</strong> → 3rd template …<br>
+          Bas itna karo — website pe apne aap dikhegi! Kuch aur karne ki zarurat nahi.
         </span>
       </div>
     </div>
@@ -392,6 +393,14 @@ function previewGithubImg(val) {
 }
 
 // Populate img-url field when editing/adding template
+// Order number se t01.jpg, t02.jpg auto-fill
+function autoFillImgName() {
+  const order = parseInt(document.getElementById('tpl-edit-order')?.value || '1', 10) || 1;
+  const name  = 't' + String(order).padStart(2, '0') + '.jpg';
+  const inp   = document.getElementById('tpl-edit-img-url');
+  if (inp) { inp.value = name; previewGithubImg(name); }
+}
+
 function _populateImgUrl(imgVal) {
   const inp   = document.getElementById('tpl-edit-img-url');
   const noImg = document.getElementById('tpl-no-img');
