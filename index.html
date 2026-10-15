@@ -280,24 +280,36 @@ section { position: relative; z-index:1; padding: 5rem 1.5rem; max-width: 1100px
 
 /* ─── COMPARISON TABLE ─── */
 .compare-wrap {
-  overflow-x: auto;
+  overflow-x: hidden;
   border-radius: var(--radius);
   box-shadow: var(--shadow-md);
   border: 1px solid var(--border);
   background: var(--surface);
+  width: 100%;
 }
 table.compare {
-  width: 100%; border-collapse: collapse; min-width: 340px;
+  width: 100%; border-collapse: collapse;
+  table-layout: fixed;
+  min-width: unset;
 }
+/* Column widths via th — Feature gets most space */
+table.compare th:nth-child(1),
+table.compare td:nth-child(1) { width: 52%; }
+table.compare th:nth-child(2),
+table.compare td:nth-child(2) { width: 24%; }
+table.compare th:nth-child(3),
+table.compare td:nth-child(3) { width: 24%; }
+
 table.compare thead tr {
   background: linear-gradient(135deg, var(--blue-lt), var(--purple-lt));
 }
 table.compare th {
-  padding: 1rem 1.2rem; font-size: 0.82rem; font-weight: 700;
+  padding: 0.85rem 0.55rem; font-size: 0.76rem; font-weight: 700;
   letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-2);
   border-bottom: 2px solid var(--border); text-align: center;
+  word-wrap: break-word; overflow-wrap: break-word; white-space: nowrap;
 }
-table.compare th:first-child { text-align: left; }
+table.compare th:first-child { text-align: left; padding-left: 1rem; }
 table.compare th.col-digital { color: var(--blue); }
 
 table.compare tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
@@ -305,18 +317,47 @@ table.compare tbody tr:last-child { border-bottom: none; }
 table.compare tbody tr:hover { background: var(--bg); }
 
 table.compare td {
-  padding: 0.88rem 1.2rem; font-size: 0.88rem; color: var(--text-2);
+  padding: 0.78rem 0.5rem; font-size: 0.82rem; color: var(--text-2);
   text-align: center; vertical-align: middle;
+  word-wrap: break-word; overflow-wrap: break-word;
 }
-table.compare td:first-child { text-align: left; font-weight: 500; color: var(--text); }
+table.compare td:first-child {
+  text-align: left; font-weight: 500; color: var(--text);
+  padding-left: 0.85rem; line-height: 1.35;
+}
+/* sub-note inside a cell */
+.cell-note {
+  display: block; font-size: 0.68rem; color: var(--blue);
+  font-weight: 500; margin-top: 3px; letter-spacing: 0.01em;
+  opacity: 0.85; line-height: 1.3;
+}
+
+/* ── Mobile: compact table ── */
+@media (max-width: 480px) {
+  table.compare th { padding: 0.7rem 0.4rem; font-size: 0.7rem; }
+  table.compare td { padding: 0.65rem 0.4rem; font-size: 0.78rem; }
+  table.compare td:first-child { padding-left: 0.65rem; font-size: 0.78rem; }
+  .cell-note { font-size: 0.62rem; }
+  td.val-paper { font-size: 0.72rem; }
+  td.val-digital { font-size: 0.75rem; }
+  td.val-digital-instant { font-size: 0.78rem; }
+  .tick { font-size: 1rem; }
+  .cross { font-size: 0.88rem; }
+}
 
 /* cost & delivery special rows */
-td.val-paper { color: var(--text-3); font-size: 0.84rem; }
-td.val-digital { color: var(--blue); font-weight: 700; font-size: 0.88rem; }
-td.val-digital-instant { color: var(--blue); font-weight: 700; }
+td.val-paper { color: var(--text-3); font-size: 0.8rem; line-height: 1.4; }
+td.val-digital { color: var(--blue); font-weight: 700; font-size: 0.85rem; line-height: 1.4; }
+td.val-digital-instant { color: var(--blue); font-weight: 700; font-size: 0.88rem; }
 
-.tick { color: #16a34a; font-size: 1.1rem; font-weight: 700; }
+.tick { color: #16a34a; font-size: 1.15rem; font-weight: 700; }
 .cross { color: #ef4444; font-size: 1rem; }
+
+/* Digital column highlight bg */
+table.compare td:last-child,
+table.compare th:last-child {
+  background: rgba(37,99,235,0.04);
+}
 
 /* ─── FEATURES ─── */
 .features-list { display: flex; flex-direction: column; gap: 0.7rem; }
@@ -725,7 +766,7 @@ body { padding-bottom: 86px; }
           <td><span class="tick">✓</span></td>
         </tr>
         <tr>
-          <td>Editable After Sending</td>
+          <td>Editable After Sending<span class="cell-note">Name, Date, Location — Kabhi Bhi ✏️</span></td>
           <td><span class="cross">✕</span></td>
           <td><span class="tick">✓</span></td>
         </tr>
@@ -746,6 +787,16 @@ body { padding-bottom: 86px; }
         </tr>
         <tr>
           <td>Shareable via Link</td>
+          <td><span class="cross">✕</span></td>
+          <td><span class="tick">✓</span></td>
+        </tr>
+        <tr>
+          <td>Add to Home Screen<span class="cell-note">Phone pe App Jaisi Install 📲</span></td>
+          <td><span class="cross">✕</span></td>
+          <td><span class="tick">✓</span></td>
+        </tr>
+        <tr>
+          <td>Password Protected<span class="cell-note">Sirf Guests Dekh Sakte Hain 🔒</span></td>
           <td><span class="cross">✕</span></td>
           <td><span class="tick">✓</span></td>
         </tr>
