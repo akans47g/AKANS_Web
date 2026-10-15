@@ -1,0 +1,28 @@
+{
+  "name": "AKANS Admin Panel",
+  "short_name": "AKANS Admin",
+  "description": "AKANS Website Development Services — Admin Panel",
+  "start_url": "/AKANS_Web/admin/admin-dashboard.html",
+  "scope": "/AKANS_Web/admin/",
+  "display": "standalone",
+  "background_color": "#f1f5f9",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "lang": "hi",
+  "icons": [
+    {
+      "src": "/AKANS_Web/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/AKANS_Web/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "categories": ["business", "productivity"]
+}
