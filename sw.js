@@ -1,154 +1,183 @@
-// ── AKANS PWA Service Worker ──────────────────────────────
-// Version: bump this string to force cache refresh on update
-const CACHE_VERSION = 'akans-v1';
-const OFFLINE_URL   = '/AKANS_Web/offline.html';
+// ══════════════════════════════════════════════════════════════════
+// sw.js — AKANS Service Worker
+// PWA ke liye offline support aur caching
+// ══════════════════════════════════════════════════════════════════
 
-// Pages & assets to pre-cache on install
-const PRECACHE_URLS = [
-  '/AKANS_Web/',
-  '/AKANS_Web/index.html',
-  '/AKANS_Web/booking.html',
-  '/AKANS_Web/orders.html',
-  '/AKANS_Web/account.html',
-  '/AKANS_Web/review.html',
-  '/AKANS_Web/refer.html',
-  '/AKANS_Web/login.html',
-  '/AKANS_Web/offline.html',
-  '/AKANS_Web/manifest.json',
-  '/AKANS_Web/logo.jpg',
-  '/AKANS_Web/firebase-config.js'
+const CACHE_NAME    = 'akans-v1.0';
+const OFFLINE_URL   = '/AKANS_Web/offline.html';
+const BASE          = '/AKANS_Web/';
+
+// ── Cache karne wali files ────────────────────────────────────────
+const STATIC_ASSETS = [
+  BASE,
+  BASE + 'index.html',
+  BASE + 'login.html',
+  BASE + 'account.html',
+  BASE + 'booking.html',
+  BASE + 'orders.html',
+  BASE + 'review.html',
+  BASE + 'refer.html',
+  BASE + 'support.html',
+  BASE + 'privacy.html',
+  BASE + 'about.html',
+  BASE + 'social.html',
+  BASE + 'other.html',
+  BASE + 'admin/admin-login.html',
+  BASE + 'admin/admin-dashboard.html',
+  BASE + 'admin/admin-bookings.html',
+  BASE + 'admin/admin-templates.html',
+  BASE + 'admin/admin-reviews.html',
+  BASE + 'admin/admin-coupons.html',
+  BASE + 'admin/admin-users.html',
+  BASE + 'admin/admin-referrals.html',
+  BASE + 'admin/admin-settings.html',
+  BASE + 'admin/admin-whatsapp.html',
+  BASE + 'firebase-config.js',
+  BASE + 'admin/admin-all.js',
+  BASE + 'manifest.json',
+  BASE + 'admin-manifest.json',
+  BASE + 'offline.html',
+  BASE + 'logo.jpg',
+  BASE + 'Qr.jpg',
+  BASE + 'icons/icon-192.png',
+  BASE + 'icons/icon-512.png',
 ];
 
-// ── INSTALL: pre-cache all key pages ─────────────────────
+// ── INSTALL — pehli baar cache karo ───────────────────────────────
 self.addEventListener('install', event => {
-  console.log('[SW] Installing...');
+  console.log('[SW] Installing AKANS Service Worker...');
   event.waitUntil(
-    caches.open(CACHE_VERSION).then(cache => {
-      console.log('[SW] Pre-caching pages');
-      // Use { cache: 'reload' } so we get fresh copies at install time
+    caches.open(CACHE_NAME).then(cache => {
+      console.log('[SW] Caching static assets');
+      // Individual failures ignore karo (koi file missing ho toh bhi chale)
       return Promise.allSettled(
-        PRECACHE_URLS.map(url =>
-          cache.add(new Request(url, { cache: 'reload' }))
-            .catch(err => console.warn('[SW] Failed to cache:', url, err))
+        STATIC_ASSETS.map(url =>
+          cache.add(url).catch(err =>
+            console.warn('[SW] Could not cache:', url, err)
+          )
         )
       );
-    }).then(() => self.skipWaiting())
+    }).then(() => {
+      console.log('[SW] Install complete');
+      return self.skipWaiting();
+    })
   );
 });
 
-// ── ACTIVATE: delete old cache versions ──────────────────
+// ── ACTIVATE — purana cache saaf karo ─────────────────────────────
 self.addEventListener('activate', event => {
   console.log('[SW] Activating...');
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
         keys
-          .filter(key => key !== CACHE_VERSION)
+          .filter(key => key !== CACHE_NAME)
           .map(key => {
             console.log('[SW] Deleting old cache:', key);
             return caches.delete(key);
           })
       )
-    ).then(() => self.clients.claim())
+    ).then(() => {
+      console.log('[SW] Activated — taking control');
+      return self.clients.claim();
+    })
   );
 });
 
-// ── FETCH: Network-first for HTML, Cache-first for assets ─
+// ── FETCH — requests handle karo ──────────────────────────────────
 self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Only handle same-origin or GitHub Pages requests
-  if (!url.hostname.includes('github.io') &&
-      url.hostname !== self.location.hostname) return;
+  // Firebase requests aur external APIs ko bypass karo
+  if (
+    url.hostname.includes('firebase') ||
+    url.hostname.includes('googleapis') ||
+    url.hostname.includes('gstatic') ||
+    url.hostname.includes('google') ||
+    url.hostname.includes('fonts.') ||
+    request.method !== 'GET'
+  ) {
+    return; // Browser se normally fetch hone do
+  }
 
-  // Skip non-GET requests and Firebase/Google API calls
-  if (request.method !== 'GET') return;
-  if (url.hostname.includes('googleapis.com') ||
-      url.hostname.includes('firebaseapp.com') ||
-      url.hostname.includes('firestore.googleapis.com') ||
-      url.hostname.includes('identitytoolkit') ||
-      url.hostname.includes('gstatic.com')) return;
-
-  // HTML pages → Network first, fallback to cache, then offline page
-  if (request.headers.get('Accept')?.includes('text/html') ||
-      url.pathname.endsWith('.html') ||
-      url.pathname === '/AKANS_Web/' ||
-      url.pathname === '/AKANS_Web') {
-
+  // Navigation requests (HTML pages)
+  if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
         .then(response => {
-          // Clone and store fresh copy in cache
-          if (response.ok) {
-            const cloned = response.clone();
-            caches.open(CACHE_VERSION).then(cache => cache.put(request, cloned));
-          }
+          // Fresh response cache mein update karo
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
           return response;
         })
-        .catch(() =>
-          caches.match(request).then(cached =>
-            cached || caches.match(OFFLINE_URL)
-          )
-        )
+        .catch(() => {
+          // Offline — cache se do
+          return caches.match(request)
+            .then(cached => cached || caches.match(OFFLINE_URL));
+        })
     );
     return;
   }
 
-  // Static assets (images, JS, CSS, fonts) → Cache first, then network
+  // Static assets (JS, CSS, images)
   event.respondWith(
     caches.match(request).then(cached => {
-      if (cached) return cached;
-      return fetch(request).then(response => {
-        if (response.ok) {
-          const cloned = response.clone();
-          caches.open(CACHE_VERSION).then(cache => cache.put(request, cloned));
-        }
-        return response;
-      }).catch(() => {
-        // For images, return a transparent placeholder
-        if (request.destination === 'image') {
-          return new Response(
-            '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#eef1fb"/><text x="100" y="110" text-anchor="middle" font-size="14" fill="#8890b5">Offline</text></svg>',
-            { headers: { 'Content-Type': 'image/svg+xml' } }
-          );
-        }
-      });
+      if (cached) {
+        // Cache se do, background mein update bhi karo
+        fetch(request).then(response => {
+          if (response && response.ok) {
+            caches.open(CACHE_NAME).then(cache => cache.put(request, response));
+          }
+        }).catch(() => {});
+        return cached;
+      }
+      // Cache mein nahi → network se fetch karo
+      return fetch(request)
+        .then(response => {
+          if (response && response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(OFFLINE_URL));
     })
   );
 });
 
-// ── BACKGROUND SYNC: retry failed requests when back online ─
+// ── BACKGROUND SYNC (future use) ──────────────────────────────────
 self.addEventListener('sync', event => {
-  if (event.tag === 'sync-orders') {
-    console.log('[SW] Background sync: orders');
+  if (event.tag === 'sync-bookings') {
+    console.log('[SW] Background sync: bookings');
   }
 });
 
-// ── PUSH NOTIFICATIONS (future use) ──────────────────────
+// ── PUSH NOTIFICATIONS (future use) ───────────────────────────────
 self.addEventListener('push', event => {
-  if (!event.data) return;
-  const data = event.data.json();
-  self.registration.showNotification(data.title || 'AKANS', {
-    body: data.body || 'New update from AKANS!',
-    icon: '/AKANS_Web/logo.jpg',
-    badge: '/AKANS_Web/logo.jpg',
-    tag: 'akans-notification',
-    data: { url: data.url || '/AKANS_Web/' }
-  });
+  const data = event.data ? event.data.json() : {};
+  const title   = data.title   || 'AKANS Notification';
+  const options = {
+    body:    data.body    || 'Aapke liye ek notification hai',
+    icon:    BASE + 'icons/icon-192.png',
+    badge:   BASE + 'icons/icon-192.png',
+    vibrate: [200, 100, 200],
+    data:    { url: data.url || BASE },
+    actions: [
+      { action: 'view',    title: '👁️ Dekho' },
+      { action: 'dismiss', title: '✕ Band karo' }
+    ]
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
 });
 
+// ── NOTIFICATION CLICK ────────────────────────────────────────────
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-  const url = event.notification.data?.url || '/AKANS_Web/';
-  event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
-      for (const client of list) {
-        if (client.url.includes('/AKANS_Web/') && 'focus' in client) {
-          return client.focus();
-        }
-      }
-      return clients.openWindow(url);
-    })
-  );
+  if (event.action === 'view' || !event.action) {
+    const url = event.notification.data?.url || BASE;
+    event.waitUntil(clients.openWindow(url));
+  }
 });
+
+console.log('[SW] Service Worker loaded — AKANS v1.0');
