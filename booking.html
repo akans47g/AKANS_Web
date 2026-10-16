@@ -1081,7 +1081,8 @@ async function loadSettings() {
     if (price > 0) {
       basePrice  = price;
       finalPrice = price;
-      document.getElementById('priceDisplay').textContent = price.toLocaleString('en-IN');
+      document.getElementById('priceDisplay').textContent  = price.toLocaleString('en-IN');
+      document.getElementById('priceOriginal').textContent = '₹' + price.toLocaleString('en-IN');
       document.querySelectorAll('.current-amount').forEach(el =>
         el.textContent = price.toLocaleString('en-IN'));
       updateAdvanceDisplay(); // 35/65 split update
@@ -1217,6 +1218,7 @@ async function applyCoupon() {
     finalPrice    = basePrice - discount;
     couponApplied = true;
 
+    document.getElementById('priceOriginal').textContent   = '₹' + basePrice.toLocaleString('en-IN');
     document.getElementById('priceOriginal').style.display = 'block';
     document.getElementById('priceDisplay').textContent    = finalPrice.toLocaleString('en-IN');
     document.querySelectorAll('.current-amount').forEach(el => el.textContent = finalPrice.toLocaleString('en-IN'));
