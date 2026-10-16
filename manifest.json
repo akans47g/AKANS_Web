@@ -16,15 +16,15 @@
   ],
   "icons": [
     {
-      "src": "/AKANS_Web/icons/icon-192.png",
+      "src": "/AKANS_Web/logo.jpg",
       "sizes": "192x192",
-      "type": "image/png",
+      "type": "image/jpeg",
       "purpose": "any maskable"
     },
     {
-      "src": "/AKANS_Web/icons/icon-512.png",
+      "src": "/AKANS_Web/logo.jpg",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/jpeg",
       "purpose": "any maskable"
     }
   ],
