@@ -67,6 +67,33 @@ body{background:var(--bg);color:var(--fg);min-height:100vh;padding-bottom:calc(v
 .today-count{font-size:1.6rem;font-weight:900;letter-spacing:-0.02em;}
 .today-label{font-size:0.72rem;font-weight:600;opacity:0.65;white-space:nowrap;}
 
+/* ── PENDING ALERT STRIP ── */
+.pending-alert{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  background:linear-gradient(135deg,#fffbeb,#fef9c3);
+  border:1.5px solid #fde68a;border-radius:var(--radius);
+  margin-bottom:1.25rem;overflow:hidden;box-shadow:var(--shadow);
+}
+.pa-item{
+  display:flex;flex-direction:column;align-items:center;
+  padding:0.9rem 0.5rem;cursor:pointer;transition:background 0.15s;
+  gap:0.18rem;text-decoration:none;border-right:1px solid #fde68a;
+  position:relative;
+}
+.pa-item:last-child{border-right:none;}
+.pa-item:hover{background:rgba(253,230,138,0.45);}
+.pa-icon{font-size:1.2rem;}
+.pa-count{font-size:1.4rem;font-weight:900;color:#92400e;line-height:1.1;}
+.pa-label{font-size:0.62rem;font-weight:700;color:#a16207;text-transform:uppercase;letter-spacing:0.05em;}
+.pa-dot{
+  position:absolute;top:8px;right:10px;
+  width:8px;height:8px;border-radius:50%;background:#ef4444;
+  animation:pulseRed 2s infinite;
+}
+.pa-zero .pa-dot{display:none;}
+.pa-zero .pa-count{color:#b45309;}
+@keyframes pulseRed{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.5)}50%{box-shadow:0 0 0 5px rgba(239,68,68,0)}}
+
 /* ── SECTION HEAD ── */
 .sec-head{display:flex;align-items:center;justify-content:space-between;margin:1.25rem 0 0.75rem;}
 .sec-title{font-size:0.8rem;font-weight:800;color:var(--fg2);text-transform:uppercase;letter-spacing:0.06em;}
@@ -99,33 +126,50 @@ body{background:var(--bg);color:var(--fg);min-height:100vh;padding-bottom:calc(v
 .sc-red{border-top-color:#dc2626;}
 .sc-cyan{border-top-color:#0891b2;}
 
+/* ── REVENUE MINI BREAKDOWN ── */
+.rev-mini{
+  margin-top:0.55rem;border-top:1px solid var(--border);
+  padding-top:0.5rem;display:flex;flex-direction:column;gap:0.22rem;
+}
+.rev-mini-row{display:flex;align-items:center;justify-content:space-between;}
+.rev-mini-lbl{font-size:0.64rem;color:var(--fg3);font-weight:600;}
+.rev-mini-val{font-size:0.72rem;color:var(--fg);font-weight:800;}
+
 /* ── CHARTS ROW ── */
 .charts-row{display:grid;grid-template-columns:1.6fr 1fr;gap:0.85rem;margin-bottom:0.5rem;}
 .chart-card{
   background:var(--surface);border:1px solid var(--border);
   border-radius:var(--radius);padding:1.1rem;
 }
-.chart-title{font-size:0.78rem;font-weight:800;color:var(--fg2);margin-bottom:0.75rem;}
+.chart-title-row{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:0.7rem;flex-wrap:wrap;gap:0.4rem;
+}
+.chart-title{font-size:0.78rem;font-weight:800;color:var(--fg2);}
 .chart-wrap{height:220px;position:relative;}
+
+/* ── REVENUE CHART TABS ── */
+.rev-tabs{display:flex;gap:0.3rem;}
+.rev-tab{
+  padding:0.22rem 0.55rem;border-radius:8px;font-size:0.67rem;font-weight:700;
+  border:1.5px solid var(--border);background:transparent;color:var(--fg3);
+  cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.18s;
+}
+.rev-tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.rev-tab:hover:not(.active){border-color:var(--accent);color:var(--accent);}
 
 /* ── TABLE CARD ── */
 .table-card{
   background:var(--surface);border:1px solid var(--border);
   border-radius:var(--radius);overflow:hidden;margin-bottom:0.5rem;
 }
-.table-header{
-  padding:0.85rem 1rem;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-}
-.table-title{font-size:0.8rem;font-weight:800;color:var(--fg);}
-.table-link{font-size:0.75rem;font-weight:700;color:var(--accent);text-decoration:none;}
 .admin-table{width:100%;border-collapse:collapse;font-size:0.8rem;}
 .admin-table th{
   background:var(--surface2);color:var(--fg2);font-size:0.7rem;
   font-weight:800;text-transform:uppercase;letter-spacing:0.05em;
   padding:0.65rem 0.85rem;text-align:left;border-bottom:1px solid var(--border);
 }
-.admin-table td{padding:0.75rem 0.85rem;border-bottom:1px solid var(--border);color:var(--fg);}
+.admin-table td{padding:0.7rem 0.85rem;border-bottom:1px solid var(--border);color:var(--fg);vertical-align:middle;}
 .admin-table tr:last-child td{border-bottom:none;}
 .admin-table tr:hover td{background:var(--surface2);}
 .td-couple{font-weight:700;}
@@ -136,50 +180,51 @@ body{background:var(--bg);color:var(--fg);min-height:100vh;padding-bottom:calc(v
 }
 .status-pill.active{background:#dcfce7;color:#166534;}
 .status-pill.pending{background:#fef9c3;color:#854d0e;}
-.status-pill.delivered{background:#dbeafe;color:#1d4ed8;}
 .status-pill.expired{background:#fee2e2;color:#991b1b;}
 .empty-row{text-align:center;color:var(--fg3);padding:2rem!important;font-size:0.82rem;}
+
+/* ── STATUS SELECT (inline change) ── */
+.status-select{
+  font-size:0.68rem;font-weight:700;padding:0.22rem 0.38rem;
+  border-radius:8px;border:1.5px solid var(--border);
+  background:var(--surface);color:var(--fg);
+  font-family:'Inter',sans-serif;cursor:pointer;
+  outline:none;max-width:120px;
+}
+.status-select:focus{border-color:var(--accent);}
+.status-select:disabled{opacity:0.5;cursor:not-allowed;}
+
+/* ── WA BUTTON IN TABLE ── */
+.td-wa{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:8px;
+  background:#dcfce7;color:#16a34a;text-decoration:none;
+  font-size:0.9rem;transition:background 0.15s;
+}
+.td-wa:hover{background:#bbf7d0;}
+.td-no-wa{color:var(--fg3);font-size:0.75rem;}
 
 /* ── BOTTOM ROW ── */
 .bottom-row{display:grid;grid-template-columns:1fr 1fr;gap:0.85rem;}
 
 /* ── USERS CARD ── */
-.users-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);overflow:hidden;
-}
-.users-card-header{
-  padding:0.85rem 1rem;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-}
+.users-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.users-card-header{padding:0.85rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
 .users-card-body{padding:0.5rem 0;}
 .user-row{display:flex;align-items:center;gap:0.65rem;padding:0.5rem 1rem;}
 .user-row:hover{background:var(--surface2);}
-.user-av{
-  width:32px;height:32px;border-radius:50%;
-  background:var(--accent);color:#fff;
-  display:flex;align-items:center;justify-content:center;
-  font-size:0.75rem;font-weight:800;flex-shrink:0;
-}
+.user-av{width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;flex-shrink:0;}
 .user-info{flex:1;min-width:0;}
 .user-name{font-size:0.83rem;font-weight:700;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .user-email{font-size:0.7rem;color:var(--fg3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .user-date{font-size:0.68rem;color:var(--fg3);flex-shrink:0;}
 .empty-small{text-align:center;color:var(--fg3);font-size:0.82rem;padding:1.5rem;}
 
-/* ── QUICK ACTIONS CARD ── */
-.qa-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:1.2rem;
-}
+/* ── QUICK ACTIONS ── */
+.qa-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;}
 .qa-title{font-size:0.82rem;font-weight:800;color:var(--fg2);margin-bottom:1rem;}
 .qa-grid{display:flex;flex-direction:column;gap:0.6rem;}
-.qa-btn{
-  display:flex;align-items:center;gap:0.75rem;
-  padding:0.8rem 1rem;border-radius:var(--radius);border:1.5px solid var(--border);
-  background:var(--surface);cursor:pointer;text-decoration:none;
-  font-family:'Inter',sans-serif;transition:all 0.2s;color:var(--fg);
-}
+.qa-btn{display:flex;align-items:center;gap:0.75rem;padding:0.8rem 1rem;border-radius:var(--radius);border:1.5px solid var(--border);background:var(--surface);cursor:pointer;text-decoration:none;font-family:'Inter',sans-serif;transition:all 0.2s;color:var(--fg);}
 .qa-btn:hover{border-color:rgba(37,99,235,0.3);background:var(--accent-lt);transform:translateX(3px);}
 .qa-icon{font-size:1.1rem;width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .qa-text strong{display:block;font-size:0.83rem;font-weight:700;}
@@ -189,18 +234,12 @@ body{background:var(--bg);color:var(--fg);min-height:100vh;padding-bottom:calc(v
 
 /* ── BOTTOM NAV ── */
 .bottom-nav{
-  position:fixed;bottom:0;left:0;right:0;
-  height:var(--nav-h);background:var(--surface);
-  border-top:1px solid var(--border);
-  display:flex;align-items:stretch;
-  z-index:200;box-shadow:0 -2px 12px rgba(0,0,0,0.06);
+  position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);
+  background:var(--surface);border-top:1px solid var(--border);
+  display:flex;align-items:stretch;z-index:200;
+  box-shadow:0 -2px 12px rgba(0,0,0,0.06);
 }
-.bn-item{
-  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:3px;text-decoration:none;border:none;background:transparent;cursor:pointer;
-  color:var(--fg3);transition:color 0.15s,opacity 0.15s;padding:0;font-family:'Inter',sans-serif;
-  position:relative;opacity:0.5;
-}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;border:none;background:transparent;cursor:pointer;color:var(--fg3);transition:color 0.15s,opacity 0.15s;padding:0;font-family:'Inter',sans-serif;position:relative;opacity:0.5;}
 .bn-item.active{color:var(--accent);opacity:1;}
 .bn-item.active::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:22px;height:3px;background:var(--accent);border-radius:0 0 4px 4px;}
 .bn-item:hover{color:var(--fg2);opacity:0.8;}
@@ -208,27 +247,13 @@ body{background:var(--bg);color:var(--fg);min-height:100vh;padding-bottom:calc(v
 .bn-label{font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;}
 
 /* ── MORE MENU ── */
-.more-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300;
-  opacity:0;pointer-events:none;transition:opacity 0.25s;
-}
+.more-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300;opacity:0;pointer-events:none;transition:opacity 0.25s;}
 .more-overlay.open{opacity:1;pointer-events:all;}
-.more-menu{
-  position:fixed;bottom:calc(var(--nav-h) - 1px);left:0;right:0;
-  background:var(--surface);border-top:1px solid var(--border);
-  border-radius:20px 20px 0 0;padding:0.75rem 0.5rem;z-index:301;
-  transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
-  box-shadow:0 -4px 24px rgba(0,0,0,0.12);
-}
+.more-menu{position:fixed;bottom:calc(var(--nav-h) - 1px);left:0;right:0;background:var(--surface);border-top:1px solid var(--border);border-radius:20px 20px 0 0;padding:0.75rem 0.5rem;z-index:301;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 -4px 24px rgba(0,0,0,0.12);}
 .more-menu.open{transform:translateY(0);}
 .mm-handle{width:40px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 0.75rem;}
 .mm-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem;padding:0 0.25rem;}
-.mm-item{
-  display:flex;flex-direction:column;align-items:center;gap:0.35rem;
-  padding:0.75rem 0.5rem;border-radius:var(--radius);text-decoration:none;
-  color:var(--fg2);transition:background 0.15s,color 0.15s;cursor:pointer;
-  border:none;background:transparent;font-family:'Inter',sans-serif;
-}
+.mm-item{display:flex;flex-direction:column;align-items:center;gap:0.35rem;padding:0.75rem 0.5rem;border-radius:var(--radius);text-decoration:none;color:var(--fg2);transition:background 0.15s,color 0.15s;cursor:pointer;border:none;background:transparent;font-family:'Inter',sans-serif;}
 .mm-item:hover,.mm-item.mm-active{background:var(--accent-lt);color:var(--accent);}
 .mm-icon{font-size:1.4rem;}
 .mm-label{font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;}
@@ -236,73 +261,63 @@ body{background:var(--bg);color:var(--fg);min-height:100vh;padding-bottom:calc(v
 .mm-logout:hover{background:#fff0f0;color:var(--danger);}
 
 /* ── ADMIN TOAST ── */
-.admin-toast{
-  position:fixed;bottom:calc(var(--nav-h) + 12px);left:50%;
-  transform:translateX(-50%) translateY(20px);
-  font-size:0.83rem;font-weight:700;padding:0.7rem 1.5rem;border-radius:30px;
-  opacity:0;white-space:nowrap;transition:opacity 0.25s,transform 0.25s;z-index:9999;
-  pointer-events:none;font-family:'Inter',sans-serif;
-}
+.admin-toast{position:fixed;bottom:calc(var(--nav-h) + 12px);left:50%;transform:translateX(-50%) translateY(20px);font-size:0.83rem;font-weight:700;padding:0.7rem 1.5rem;border-radius:30px;opacity:0;white-space:nowrap;transition:opacity 0.25s,transform 0.25s;z-index:9999;pointer-events:none;font-family:'Inter',sans-serif;}
 .admin-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .admin-toast.success{background:#166534;color:#bbf7d0;border:1px solid #15803d;}
-.admin-toast.error  {background:#7f1d1d;color:#fca5a5;border:1px solid #b91c1c;}
+.admin-toast.error{background:#7f1d1d;color:#fca5a5;border:1px solid #b91c1c;}
 .admin-toast.warning{background:#78350f;color:#fde68a;border:1px solid #b45309;}
-.admin-toast.info   {background:#1e3a8a;color:#bfdbfe;border:1px solid #1d4ed8;}
+.admin-toast.info{background:#1e3a8a;color:#bfdbfe;border:1px solid #1d4ed8;}
 
-/* ── INSIGHT TILES ── */
-.insight-strip{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;
-  margin-bottom:0.5rem;
-}
-.insight-tile{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:0.85rem 1rem;
-  position:relative;overflow:hidden;
-}
-.insight-tile::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:3px;
-}
+/* ── INSIGHT TILES (5 columns) ── */
+.insight-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:0.75rem;margin-bottom:0.5rem;}
+.insight-tile{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:0.85rem 1rem;position:relative;overflow:hidden;}
+.insight-tile::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
 .it-revenue::before{background:linear-gradient(90deg,#2563eb,#7c3aed);}
 .it-aov::before{background:linear-gradient(90deg,#16a34a,#059669);}
 .it-rate::before{background:linear-gradient(90deg,#d97706,#ea580c);}
 .it-rating::before{background:linear-gradient(90deg,#7c3aed,#ec4899);}
+.it-coupon::before{background:linear-gradient(90deg,#f59e0b,#ef4444);}
 .it-icon{font-size:1.1rem;margin-bottom:0.3rem;}
-.it-value{font-size:1.2rem;font-weight:900;color:var(--fg);letter-spacing:-0.02em;}
-.it-label{font-size:0.68rem;font-weight:700;color:var(--fg3);text-transform:uppercase;
-  letter-spacing:0.05em;margin-top:0.15rem;}
-.it-change{font-size:0.68rem;font-weight:600;margin-top:0.2rem;}
+.it-value{font-size:1.1rem;font-weight:900;color:var(--fg);letter-spacing:-0.02em;}
+.it-label{font-size:0.65rem;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:0.05em;margin-top:0.15rem;}
+.it-change{font-size:0.66rem;font-weight:600;margin-top:0.2rem;}
 .it-change.up{color:var(--success);}
 .it-change.down{color:var(--danger);}
 .it-change.neutral{color:var(--fg3);}
 
 /* ── ANALYTICS GRID ── */
-.analytics-grid{
-  display:grid;grid-template-columns:1fr 1fr;gap:0.85rem;
-  margin-bottom:0.5rem;
-}
-.ac-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:1.1rem;
-}
-.ac-head{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:0.75rem;
-}
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.85rem;margin-bottom:0.5rem;}
+.ac-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem;}
+.ac-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;}
 .ac-title{font-size:0.78rem;font-weight:800;color:var(--fg2);}
-.ac-badge{
-  font-size:0.65rem;font-weight:700;padding:0.18rem 0.5rem;
-  border-radius:20px;background:var(--accent-lt);color:var(--accent);
-}
+.ac-badge{font-size:0.65rem;font-weight:700;padding:0.18rem 0.5rem;border-radius:20px;background:var(--accent-lt);color:var(--accent);}
 .ac-wrap{height:180px;position:relative;}
-.ac-empty{display:flex;align-items:center;justify-content:center;
-  height:100%;font-size:0.82rem;color:var(--fg3);}
+.ac-empty{display:flex;align-items:center;justify-content:center;height:100%;font-size:0.82rem;color:var(--fg3);}
+
+/* ── TOP TEMPLATES RANKING ── */
+.tmpl-rank-item{display:flex;align-items:center;gap:0.65rem;padding:0.58rem 0.85rem;border-bottom:1px solid var(--border);}
+.tmpl-rank-item:last-child{border-bottom:none;}
+.tmpl-medal{font-size:1rem;flex-shrink:0;width:22px;text-align:center;}
+.tmpl-bar-wrap{flex:1;min-width:0;}
+.tmpl-name{font-size:0.77rem;font-weight:700;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:0.22rem;}
+.tmpl-bar-bg{height:5px;border-radius:3px;background:var(--border);overflow:hidden;}
+.tmpl-bar-fill{height:100%;border-radius:3px;transition:width 0.7s cubic-bezier(0.34,1.56,0.64,1);}
+.tmpl-bar-1{background:linear-gradient(90deg,#f59e0b,#d97706);}
+.tmpl-bar-2{background:linear-gradient(90deg,#64748b,#475569);}
+.tmpl-bar-3{background:linear-gradient(90deg,#f97316,#ea580c);}
+.tmpl-bar-4{background:linear-gradient(90deg,#2563eb,#7c3aed);}
+.tmpl-bar-5{background:linear-gradient(90deg,#16a34a,#059669);}
+.tmpl-count{font-size:0.78rem;font-weight:900;color:var(--accent);flex-shrink:0;}
+
+/* ── PAYMENT STAGE LEGEND ── */
+.stage-legend{display:flex;flex-direction:column;gap:0.35rem;padding:0.75rem;border-top:1px solid var(--border);}
+.stage-leg-row{display:flex;align-items:center;justify-content:space-between;}
+.stage-leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.stage-leg-label{font-size:0.72rem;color:var(--fg2);font-weight:600;flex:1;margin-left:0.5rem;}
+.stage-leg-val{font-size:0.72rem;font-weight:800;color:var(--fg);}
 
 /* ── GOAL CARD ── */
-.goal-card{
-  background:linear-gradient(135deg,#1e3a8a,#2563eb);
-  border-radius:var(--radius);padding:1.1rem 1.25rem;
-  color:#fff;margin-bottom:0.5rem;
-}
+.goal-card{background:linear-gradient(135deg,#1e3a8a,#2563eb);border-radius:var(--radius);padding:1.1rem 1.25rem;color:#fff;margin-bottom:0.5rem;}
 .goal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.65rem;}
 .goal-title{font-size:0.82rem;font-weight:800;opacity:0.9;}
 .goal-month{font-size:0.72rem;opacity:0.65;}
@@ -311,77 +326,48 @@ body{background:var(--bg);color:var(--fg);min-height:100vh;padding-bottom:calc(v
 .goal-sep{opacity:0.5;font-size:1rem;}
 .goal-target{font-size:1rem;font-weight:700;opacity:0.65;}
 .goal-bar-bg{height:8px;border-radius:4px;background:rgba(255,255,255,0.2);overflow:hidden;}
-.goal-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#60a5fa,#a78bfa);
-  transition:width 0.8s cubic-bezier(0.34,1.56,0.64,1);}
+.goal-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#60a5fa,#a78bfa);transition:width 0.8s cubic-bezier(0.34,1.56,0.64,1);}
 .goal-footer{display:flex;align-items:center;justify-content:space-between;margin-top:0.5rem;}
 .goal-pct{font-size:0.75rem;font-weight:700;opacity:0.85;}
-.goal-edit{font-size:0.7rem;font-weight:700;opacity:0.6;cursor:pointer;
-  background:rgba(255,255,255,0.15);border:none;color:#fff;
-  padding:0.2rem 0.6rem;border-radius:6px;font-family:'Inter',sans-serif;}
+.goal-edit{font-size:0.7rem;font-weight:700;opacity:0.6;cursor:pointer;background:rgba(255,255,255,0.15);border:none;color:#fff;padding:0.2rem 0.6rem;border-radius:6px;font-family:'Inter',sans-serif;}
 .goal-edit:hover{opacity:1;background:rgba(255,255,255,0.25);}
 
 /* ── BALANCE TRACKER ── */
-.bal-tracker{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);overflow:hidden;margin-bottom:0.5rem;
-}
-.bal-tracker-head{
-  padding:0.85rem 1rem;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-}
+.bal-tracker{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:0.5rem;}
+.bal-tracker-head{padding:0.85rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
 .bal-tracker-title{font-size:0.82rem;font-weight:800;color:var(--fg);}
-.bal-total-pill{
-  font-size:0.72rem;font-weight:700;padding:0.22rem 0.6rem;
-  border-radius:20px;background:#fef9c3;color:#854d0e;
-  border:1px solid #fde68a;
-}
-.bal-row{
-  display:flex;align-items:center;gap:0.75rem;
-  padding:0.7rem 1rem;border-bottom:1px solid var(--border);
-  transition:background 0.15s;
-}
+.bal-total-pill{font-size:0.72rem;font-weight:700;padding:0.22rem 0.6rem;border-radius:20px;background:#fef9c3;color:#854d0e;border:1px solid #fde68a;}
+.bal-row{display:flex;align-items:center;gap:0.75rem;padding:0.7rem 1rem;border-bottom:1px solid var(--border);transition:background 0.15s;}
 .bal-row:last-child{border-bottom:none;}
 .bal-row:hover{background:var(--surface2);}
-.bal-av{
-  width:34px;height:34px;border-radius:50%;flex-shrink:0;
-  background:linear-gradient(135deg,#fde68a,#f59e0b);
-  display:flex;align-items:center;justify-content:center;
-  font-size:0.8rem;font-weight:800;color:#78350f;
-}
+.bal-av{width:34px;height:34px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#fde68a,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:800;color:#78350f;}
 .bal-info{flex:1;min-width:0;}
-.bal-name{font-size:0.83rem;font-weight:700;color:var(--fg);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bal-name{font-size:0.83rem;font-weight:700;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .bal-meta{font-size:0.7rem;color:var(--fg3);}
-.bal-amt{font-size:0.88rem;font-weight:800;color:var(--warn);white-space:nowrap;margin-right:0.5rem;}
-.bal-wa{
-  display:flex;align-items:center;justify-content:center;
-  width:32px;height:32px;border-radius:8px;
-  background:#dcfce7;color:#16a34a;text-decoration:none;
-  font-size:1rem;flex-shrink:0;transition:background 0.15s;
-}
+.bal-amt{font-size:0.88rem;font-weight:800;color:var(--warn);white-space:nowrap;margin-right:0.25rem;}
+.bal-wa{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:#dcfce7;color:#16a34a;text-decoration:none;font-size:1rem;flex-shrink:0;transition:background 0.15s;}
 .bal-wa:hover{background:#bbf7d0;}
 
+/* ── MARK PAID BUTTON ── */
+.mark-paid-btn{
+  display:inline-flex;align-items:center;gap:0.25rem;
+  font-size:0.67rem;font-weight:700;padding:0.24rem 0.58rem;
+  border-radius:8px;border:1.5px solid #86efac;
+  background:#dcfce7;color:#166534;cursor:pointer;
+  font-family:'Inter',sans-serif;transition:all 0.15s;
+  white-space:nowrap;flex-shrink:0;
+}
+.mark-paid-btn:hover{background:#bbf7d0;transform:scale(1.03);}
+.mark-paid-btn:disabled{opacity:0.45;cursor:not-allowed;transform:none;}
+
 /* ── ACTIVITY FEED ── */
-.activity-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);overflow:hidden;margin-bottom:0.5rem;
-}
-.activity-head{
-  padding:0.85rem 1rem;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-}
+.activity-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:0.5rem;}
+.activity-head{padding:0.85rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:0.5rem;}
 .activity-title{font-size:0.82rem;font-weight:800;color:var(--fg);}
 .activity-list{padding:0.25rem 0;}
-.act-item{
-  display:flex;align-items:flex-start;gap:0.65rem;
-  padding:0.65rem 1rem;border-bottom:1px solid var(--border);
-}
+.act-item{display:flex;align-items:flex-start;gap:0.65rem;padding:0.65rem 1rem;border-bottom:1px solid var(--border);}
 .act-item:last-child{border-bottom:none;}
-.act-dot{
-  width:28px;height:28px;border-radius:50%;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;font-size:0.85rem;
-  margin-top:0.1rem;
-}
+.act-dot{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.85rem;margin-top:0.1rem;}
 .act-dot.booking{background:#dbeafe;}
 .act-dot.payment{background:#dcfce7;}
 .act-dot.review{background:#f5f3ff;}
@@ -390,18 +376,25 @@ body{background:var(--bg);color:var(--fg);min-height:100vh;padding-bottom:calc(v
 .act-text strong{font-weight:700;}
 .act-time{font-size:0.68rem;color:var(--fg3);margin-top:0.15rem;}
 
+/* ── LIVE BADGE ── */
+.live-badge{display:inline-flex;align-items:center;gap:0.3rem;font-size:0.67rem;font-weight:700;color:var(--success);background:#dcfce7;padding:0.18rem 0.55rem;border-radius:20px;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--success);animation:pulseLive 2s infinite;}
+@keyframes pulseLive{0%,100%{opacity:1}50%{opacity:0.3}}
+.refresh-info{font-size:0.65rem;color:var(--fg3);font-weight:600;}
+
 /* ── RESPONSIVE ── */
 @media(max-width:700px){
   .stats-grid{grid-template-columns:1fr 1fr;}
   .charts-row{grid-template-columns:1fr;}
   .bottom-row{grid-template-columns:1fr;}
-  .insight-strip{grid-template-columns:1fr 1fr;}
+  .insight-strip{grid-template-columns:1fr 1fr 1fr;}
   .analytics-grid{grid-template-columns:1fr;}
 }
 @media(max-width:480px){
   .stats-grid{grid-template-columns:1fr 1fr;}
   .today-strip{flex-wrap:wrap;}
   .insight-strip{grid-template-columns:1fr 1fr;}
+  .pending-alert .pa-item{padding:0.75rem 0.3rem;}
 }
 </style>
 </head>
@@ -448,10 +441,32 @@ body{background:var(--bg);color:var(--fg);min-height:100vh;padding-bottom:calc(v
     <span class="today-label">today</span>
   </div>
 
+  <!-- ★ PENDING ACTIONS ALERT STRIP (NEW) -->
+  <div class="pending-alert">
+    <a href="admin-bookings.html?filter=pending" class="pa-item" id="alert-item-bookings">
+      <div class="pa-dot"></div>
+      <span class="pa-icon">📦</span>
+      <span class="pa-count" id="alert-bookings">—</span>
+      <span class="pa-label">Pending Bookings</span>
+    </a>
+    <a href="admin-reviews.html?filter=pending" class="pa-item" id="alert-item-reviews">
+      <div class="pa-dot"></div>
+      <span class="pa-icon">⭐</span>
+      <span class="pa-count" id="alert-reviews">—</span>
+      <span class="pa-label">Pending Reviews</span>
+    </a>
+    <a href="admin-referrals.html?filter=withdraw" class="pa-item" id="alert-item-withdrawals">
+      <div class="pa-dot"></div>
+      <span class="pa-icon">💸</span>
+      <span class="pa-count" id="alert-withdrawals">—</span>
+      <span class="pa-label">Withdrawals</span>
+    </a>
+  </div>
+
   <!-- STATS GRID -->
   <div class="sec-head">
     <span class="sec-title">Overview Stats</span>
-    <span class="header-date" id="lastRefresh">Refreshing...</span>
+    <span class="header-date" id="lastRefresh">Loading...</span>
   </div>
   <div class="stats-grid">
 
@@ -463,11 +478,26 @@ body{background:var(--bg);color:var(--fg);min-height:100vh;padding-bottom:calc(v
       <a href="admin-bookings.html" class="stat-action">View all →</a>
     </div>
 
+    <!-- ★ ENHANCED: Total Revenue with 7D/Month/Year breakdown -->
     <div class="stat-card sc-green loading">
       <div class="stat-card-icon">💰</div>
       <div class="stat-label">Total Revenue</div>
       <div class="stat-value" id="stat-revenue">—</div>
-      <div class="stat-change neutral">Collected</div>
+      <div class="stat-change neutral" id="rev-trend-label">Collected</div>
+      <div class="rev-mini">
+        <div class="rev-mini-row">
+          <span class="rev-mini-lbl">7 Days</span>
+          <span class="rev-mini-val" id="rev-7d">—</span>
+        </div>
+        <div class="rev-mini-row">
+          <span class="rev-mini-lbl">This Month</span>
+          <span class="rev-mini-val" id="rev-month">—</span>
+        </div>
+        <div class="rev-mini-row">
+          <span class="rev-mini-lbl">This Year</span>
+          <span class="rev-mini-val" id="rev-year">—</span>
+        </div>
+      </div>
     </div>
 
     <div class="stat-card sc-orange loading" onclick="goTo('admin-bookings.html?filter=pending')" style="cursor:pointer;">
@@ -502,28 +532,37 @@ body{background:var(--bg);color:var(--fg);min-height:100vh;padding-bottom:calc(v
       <a href="admin-referrals.html" class="stat-action">Process →</a>
     </div>
 
-  </div><!-- /stats-grid -->
+  </div>
 
-  <!-- CHARTS -->
+  <!-- ★ CHARTS with TAB SWITCHING (7 Days / This Month / This Year) -->
   <div class="sec-head">
     <span class="sec-title">Analytics</span>
   </div>
   <div class="charts-row">
     <div class="chart-card">
-      <div class="chart-title">📈 Revenue — Last 7 Days</div>
+      <div class="chart-title-row">
+        <span class="chart-title">📈 Revenue</span>
+        <div class="rev-tabs">
+          <button class="rev-tab active" onclick="switchRevTab('7d',this)">7 Days</button>
+          <button class="rev-tab" onclick="switchRevTab('month',this)">This Month</button>
+          <button class="rev-tab" onclick="switchRevTab('year',this)">This Year</button>
+        </div>
+      </div>
       <div class="chart-wrap">
         <canvas id="revenueChart"></canvas>
       </div>
     </div>
     <div class="chart-card">
-      <div class="chart-title">🎨 Bookings by Template</div>
+      <div class="chart-title-row">
+        <span class="chart-title">🎨 Bookings by Template</span>
+      </div>
       <div class="chart-wrap">
         <canvas id="templateChart"></canvas>
       </div>
     </div>
   </div>
 
-  <!-- INSIGHT TILES -->
+  <!-- ★ INSIGHT TILES — 5 columns (added Coupons tile) -->
   <div class="sec-head">
     <span class="sec-title">Key Insights</span>
   </div>
@@ -552,40 +591,45 @@ body{background:var(--bg);color:var(--fg);min-height:100vh;padding-bottom:calc(v
       <div class="it-label">Avg Customer Rating</div>
       <div class="it-change neutral" id="it-rating-change">Based on reviews</div>
     </div>
+    <!-- ★ NEW: Coupon stats -->
+    <div class="insight-tile it-coupon">
+      <div class="it-icon">🎟️</div>
+      <div class="it-value" id="it-coupons">—</div>
+      <div class="it-label">Coupons Used</div>
+      <div class="it-change neutral" id="it-coupon-change">Total discount</div>
+    </div>
   </div>
 
-  <!-- ANALYTICS CHARTS -->
+  <!-- ★ ADVANCED ANALYTICS (6 cards — added Top Templates + Payment Stage) -->
   <div class="sec-head">
     <span class="sec-title">Advanced Analytics</span>
   </div>
   <div class="analytics-grid">
+
     <div class="ac-card">
       <div class="ac-head">
         <span class="ac-title">📅 Monthly Revenue (6 Months)</span>
         <span class="ac-badge" id="monthly-total-badge">—</span>
       </div>
-      <div class="ac-wrap">
-        <canvas id="monthlyRevenueChart"></canvas>
-      </div>
+      <div class="ac-wrap"><canvas id="monthlyRevenueChart"></canvas></div>
     </div>
+
     <div class="ac-card">
       <div class="ac-head">
         <span class="ac-title">🔵 Booking Status Breakdown</span>
         <span class="ac-badge" id="status-total-badge">—</span>
       </div>
-      <div class="ac-wrap">
-        <canvas id="statusDonutChart"></canvas>
-      </div>
+      <div class="ac-wrap"><canvas id="statusDonutChart"></canvas></div>
     </div>
+
     <div class="ac-card">
       <div class="ac-head">
         <span class="ac-title">💸 Revenue Split (Advance vs Balance)</span>
         <span class="ac-badge" id="split-total-badge">—</span>
       </div>
-      <div class="ac-wrap">
-        <canvas id="revenueSplitChart"></canvas>
-      </div>
+      <div class="ac-wrap"><canvas id="revenueSplitChart"></canvas></div>
     </div>
+
     <div class="ac-card">
       <div class="ac-head">
         <span class="ac-title">🗓️ Upcoming Weddings (30 Days)</span>
@@ -595,6 +639,46 @@ body{background:var(--bg);color:var(--fg);min-height:100vh;padding-bottom:calc(v
         <div class="ac-empty">⏳ Loading...</div>
       </div>
     </div>
+
+    <!-- ★ NEW: Top Templates Ranking -->
+    <div class="ac-card">
+      <div class="ac-head">
+        <span class="ac-title">🏆 Top Templates by Bookings</span>
+        <span class="ac-badge" id="top-tmpl-badge">—</span>
+      </div>
+      <div id="topTemplatesList" style="overflow-y:auto;max-height:210px;">
+        <div class="ac-empty">⏳ Loading...</div>
+      </div>
+    </div>
+
+    <!-- ★ NEW: Payment Stage Tracker -->
+    <div class="ac-card">
+      <div class="ac-head">
+        <span class="ac-title">💳 Payment Stage Tracker</span>
+        <span class="ac-badge" id="stage-total-badge">—</span>
+      </div>
+      <div class="ac-wrap" style="height:130px;">
+        <canvas id="paymentStageChart"></canvas>
+      </div>
+      <div class="stage-legend">
+        <div class="stage-leg-row">
+          <div class="stage-leg-dot" style="background:#2563eb"></div>
+          <span class="stage-leg-label">Advance Only (35% paid)</span>
+          <span class="stage-leg-val" id="stage-adv">—</span>
+        </div>
+        <div class="stage-leg-row">
+          <div class="stage-leg-dot" style="background:#22c55e"></div>
+          <span class="stage-leg-label">Fully Paid (100%)</span>
+          <span class="stage-leg-val" id="stage-full">—</span>
+        </div>
+        <div class="stage-leg-row">
+          <div class="stage-leg-dot" style="background:#ef4444"></div>
+          <span class="stage-leg-label">Cancelled</span>
+          <span class="stage-leg-val" id="stage-cancel">—</span>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- MONTHLY GOAL -->
@@ -617,7 +701,7 @@ body{background:var(--bg);color:var(--fg);min-height:100vh;padding-bottom:calc(v
     </div>
   </div>
 
-  <!-- BALANCE TRACKER -->
+  <!-- ★ BALANCE TRACKER with Mark Paid button -->
   <div class="sec-head">
     <span class="sec-title">⚠️ Balance Pending Tracker</span>
     <span class="sec-link" id="bal-pending-count">Loading...</span>
@@ -632,10 +716,13 @@ body{background:var(--bg);color:var(--fg);min-height:100vh;padding-bottom:calc(v
     </div>
   </div>
 
-  <!-- ACTIVITY FEED -->
+  <!-- ★ ACTIVITY FEED — Auto-refresh every 60s + Live badge -->
   <div class="sec-head">
     <span class="sec-title">🔴 Live Activity Feed</span>
-    <span class="sec-link" style="color:var(--success);">● Live</span>
+    <div style="display:flex;align-items:center;gap:0.5rem;">
+      <span class="live-badge"><span class="live-dot"></span>Live</span>
+      <span class="refresh-info" id="refreshTimer">60s</span>
+    </div>
   </div>
   <div class="activity-card">
     <div class="activity-list" id="activityFeed">
@@ -643,7 +730,7 @@ body{background:var(--bg);color:var(--fg);min-height:100vh;padding-bottom:calc(v
     </div>
   </div>
 
-  <!-- RECENT BOOKINGS -->
+  <!-- ★ RECENT BOOKINGS — inline Status change + WhatsApp button -->
   <div class="sec-head">
     <span class="sec-title">Recent Bookings</span>
     <a href="admin-bookings.html" class="sec-link">Sab dekho →</a>
@@ -656,7 +743,7 @@ body{background:var(--bg);color:var(--fg);min-height:100vh;padding-bottom:calc(v
             <th>Couple</th>
             <th>Template</th>
             <th>Amount</th>
-            <th>Status</th>
+            <th>Change Status</th>
             <th>WhatsApp</th>
             <th>Date</th>
           </tr>
@@ -674,7 +761,6 @@ body{background:var(--bg);color:var(--fg);min-height:100vh;padding-bottom:calc(v
   </div>
   <div class="bottom-row">
 
-    <!-- Recent Users -->
     <div class="users-card">
       <div class="users-card-header">
         <span style="font-size:0.82rem;font-weight:800;color:var(--fg2);">👥 Recent Users</span>
@@ -685,7 +771,6 @@ body{background:var(--bg);color:var(--fg);min-height:100vh;padding-bottom:calc(v
       </div>
     </div>
 
-    <!-- Quick Actions -->
     <div class="qa-card">
       <div class="qa-title">⚡ Quick Actions</div>
       <div class="qa-grid">
@@ -722,7 +807,7 @@ body{background:var(--bg);color:var(--fg);min-height:100vh;padding-bottom:calc(v
       </div>
     </div>
 
-  </div><!-- /bottom-row -->
+  </div>
 
 </div><!-- /admin-content -->
 
@@ -747,381 +832,390 @@ body{background:var(--bg);color:var(--fg);min-height:100vh;padding-bottom:calc(v
 <script src="../firebase-config.js"></script>
 <script src="admin-all.js"></script>
 <script src="admin-dashboard.js"></script>
+
+<!-- PWA + Menu helpers -->
 <script>
 function toggleMoreMenu(){
-  const m=document.getElementById('moreMenu'),
-        o=document.getElementById('moreOverlay'),
-        open=m.classList.toggle('open');
-  o.classList.toggle('open',open);
-  document.body.style.overflow=open?'hidden':'';
+  const m=document.getElementById('moreMenu'),o=document.getElementById('moreOverlay'),open=m.classList.toggle('open');
+  o.classList.toggle('open',open);document.body.style.overflow=open?'hidden':'';
 }
 let _dp=null;
-window.addEventListener('beforeinstallprompt',e=>{
-  e.preventDefault();_dp=e;
-  const b=document.getElementById('installBtn');
-  if(b)b.style.display='flex';
-});
-function installAdminApp(){
-  if(!_dp)return;
-  _dp.prompt();
-  _dp.userChoice.then(()=>{
-    _dp=null;
-    const b=document.getElementById('installBtn');
-    if(b)b.style.display='none';
-  });
-}
-window.addEventListener('appinstalled',()=>{
-  _dp=null;
-  const b=document.getElementById('installBtn');
-  if(b)b.style.display='none';
-});
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();_dp=e;const b=document.getElementById('installBtn');if(b)b.style.display='flex';});
+function installAdminApp(){if(!_dp)return;_dp.prompt();_dp.userChoice.then(()=>{_dp=null;const b=document.getElementById('installBtn');if(b)b.style.display='none';});}
+window.addEventListener('appinstalled',()=>{_dp=null;const b=document.getElementById('installBtn');if(b)b.style.display='none';});
 if('serviceWorker'in navigator)navigator.serviceWorker.register('../sw.js').catch(()=>{});
 </script>
 
-<!-- ── ANALYTICS & INSIGHTS JS ── -->
+<!-- ══════════════════════════════════════════════════════
+     ★ ENHANCED ANALYTICS JS — All new features inside
+     ══════════════════════════════════════════════════════ -->
 <script>
 (function(){
   /* ── helpers ── */
-  const fmt = n => '₹'+Number(n).toLocaleString('en-IN');
-  const fmtK = n => n>=1000 ? '₹'+(n/1000).toFixed(1)+'K' : '₹'+n;
-  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const now = new Date();
-  const THIS_M = now.getMonth(), THIS_Y = now.getFullYear();
+  const fmt  = n => '₹'+Number(n).toLocaleString('en-IN');
+  const fmtK = n => n>=100000 ? '₹'+(n/100000).toFixed(1)+'L'
+                  : n>=1000   ? '₹'+(n/1000).toFixed(1)+'K'
+                  : '₹'+n;
+  const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const DN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const NOW = new Date();
+  const TM = NOW.getMonth(), TY = NOW.getFullYear();
 
-  /* ── wait for Firebase ── */
-  function waitForDb(cb, tries=0){
-    if(window.db){ cb(); }
-    else if(tries < 30){ setTimeout(()=>waitForDb(cb,tries+1),300); }
-  }
+  function setEl(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+  function waitForDb(cb,t=0){if(window.db)cb();else if(t<40)setTimeout(()=>waitForDb(cb,t+1),300);}
 
-  /* ── GOAL target from localStorage ── */
-  let goalTarget = parseInt(localStorage.getItem('akans_goal_target')||'50000',10);
-  function editGoalTarget(){
-    const v = prompt('Monthly revenue target set karo (₹):',goalTarget);
-    if(v && !isNaN(parseInt(v))){
-      goalTarget = parseInt(v);
-      localStorage.setItem('akans_goal_target', goalTarget);
-      updateGoalUI(window._analyticsMonthRevenue||0);
+  /* ── Revenue data stores ── */
+  let _dayMap={}, _monMap={}, _allDocs=[], _tab='7d';
+
+  /* ── Chart instances (our analytics charts) ── */
+  let mlyChart, donChart, sptChart, stgChart;
+
+  const CD={responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e293b',titleColor:'#f8fafc',bodyColor:'#cbd5e1',padding:10}}};
+
+  /* ── Init analytics charts ── */
+  function initCharts(){
+    const mc=document.getElementById('monthlyRevenueChart');
+    const dc=document.getElementById('statusDonutChart');
+    const sc=document.getElementById('revenueSplitChart');
+    const stc=document.getElementById('paymentStageChart');
+    if(!mc||!dc||!sc)return;
+
+    mlyChart=new Chart(mc.getContext('2d'),{type:'bar',
+      data:{labels:[],datasets:[{label:'Rev',data:[],backgroundColor:'rgba(37,99,235,0.15)',borderColor:'#2563eb',borderWidth:2,borderRadius:6,borderSkipped:false}]},
+      options:{...CD,scales:{x:{grid:{display:false},ticks:{color:'#94a3b8',font:{size:11}}},y:{grid:{color:'#f1f5f9'},ticks:{color:'#94a3b8',font:{size:11},callback:v=>fmtK(v)}}}}});
+
+    donChart=new Chart(dc.getContext('2d'),{type:'doughnut',
+      data:{labels:['Confirmed','Pending','Cancelled'],datasets:[{data:[0,0,0],backgroundColor:['#22c55e','#f59e0b','#ef4444'],borderWidth:0,hoverOffset:8}]},
+      options:{...CD,plugins:{...CD.plugins,legend:{display:true,position:'bottom',labels:{color:'#475569',font:{size:11},padding:12}}},cutout:'65%'}});
+
+    sptChart=new Chart(sc.getContext('2d'),{type:'bar',
+      data:{labels:['Advance Collected','Balance Collected','Balance Pending'],datasets:[{data:[0,0,0],backgroundColor:['#2563eb','#16a34a','#f59e0b'],borderRadius:6,borderSkipped:false}]},
+      options:{...CD,indexAxis:'y',scales:{x:{grid:{color:'#f1f5f9'},ticks:{color:'#94a3b8',font:{size:11},callback:v=>fmtK(v)}},y:{grid:{display:false},ticks:{color:'#475569',font:{size:11}}}}}});
+
+    if(stc){
+      stgChart=new Chart(stc.getContext('2d'),{type:'doughnut',
+        data:{labels:['Advance Only','Fully Paid','Cancelled'],datasets:[{data:[0,0,0],backgroundColor:['#2563eb','#22c55e','#ef4444'],borderWidth:0,hoverOffset:8}]},
+        options:{...CD,plugins:{...CD.plugins,legend:{display:false}},cutout:'60%'}});
     }
   }
-  window.editGoalTarget = editGoalTarget;
 
-  function updateGoalUI(monthRev){
-    window._analyticsMonthRevenue = monthRev;
-    const pct = Math.min(100, Math.round(monthRev/goalTarget*100));
-    document.getElementById('goal-current').textContent = fmt(monthRev);
-    document.getElementById('goal-target-display').textContent = fmt(goalTarget);
-    document.getElementById('goal-pct').textContent = pct+'% achieved';
-    document.getElementById('goal-bar').style.width = pct+'%';
-    const d = new Date();
-    document.getElementById('goal-month-label').textContent =
-      monthNames[d.getMonth()]+' '+d.getFullYear();
-  }
-
-  /* ── CHART defaults ── */
-  const chartDefaults = {
-    responsive:true, maintainAspectRatio:false,
-    plugins:{ legend:{ display:false }, tooltip:{ backgroundColor:'#1e293b', titleColor:'#f8fafc', bodyColor:'#cbd5e1', padding:10 }},
+  /* ── Revenue chart tab switching ── */
+  window.switchRevTab=function(tab,btn){
+    _tab=tab;
+    document.querySelectorAll('.rev-tab').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    drawRevChart(tab);
   };
 
-  /* ── init charts (empty) ── */
-  let monthlyChart, donutChart, splitChart;
+  function drawRevChart(tab){
+    const cv=document.getElementById('revenueChart');
+    if(!cv)return;
+    const ex=Chart.getChart(cv);
+    if(ex)ex.destroy();
 
-  function initCharts(){
-    const mCtx = document.getElementById('monthlyRevenueChart');
-    const dCtx = document.getElementById('statusDonutChart');
-    const sCtx = document.getElementById('revenueSplitChart');
-    if(!mCtx||!dCtx||!sCtx) return;
+    let labels=[],data=[];
+    const n=new Date();
 
-    /* Monthly Revenue Bar */
-    monthlyChart = new Chart(mCtx.getContext('2d'), {
-      type:'bar',
-      data:{ labels:[], datasets:[{
-        label:'Revenue', data:[],
-        backgroundColor:'rgba(37,99,235,0.15)',
-        borderColor:'#2563eb', borderWidth:2,
-        borderRadius:6, borderSkipped:false,
-      }]},
-      options:{...chartDefaults,
-        scales:{
-          x:{ grid:{display:false}, ticks:{color:'#94a3b8',font:{size:11}} },
-          y:{ grid:{color:'#f1f5f9'}, ticks:{color:'#94a3b8',font:{size:11},
-            callback:v=>fmtK(v) }},
-        }
+    if(tab==='7d'){
+      for(let i=6;i>=0;i--){
+        const d=new Date(n);d.setDate(d.getDate()-i);d.setHours(0,0,0,0);
+        labels.push(i===0?'Today':DN[d.getDay()]);
+        data.push(_dayMap[d.toDateString()]||0);
       }
-    });
-
-    /* Status Donut */
-    donutChart = new Chart(dCtx.getContext('2d'), {
-      type:'doughnut',
-      data:{ labels:['Confirmed','Pending','Cancelled'],
-        datasets:[{ data:[0,0,0],
-          backgroundColor:['#22c55e','#f59e0b','#ef4444'],
-          borderWidth:0, hoverOffset:8
-        }]
-      },
-      options:{...chartDefaults,
-        plugins:{...chartDefaults.plugins,
-          legend:{ display:true, position:'bottom',
-            labels:{ color:'#475569', font:{size:11}, padding:12 }
-          }
-        },
-        cutout:'65%'
+    } else if(tab==='month'){
+      const dim=new Date(n.getFullYear(),n.getMonth()+1,0).getDate();
+      for(let i=1;i<=dim;i++){
+        const d=new Date(n.getFullYear(),n.getMonth(),i);
+        labels.push(i+'');data.push(_dayMap[d.toDateString()]||0);
       }
-    });
+    } else {
+      for(let m=0;m<12;m++){labels.push(MN[m]);data.push(_monMap[m+'_'+n.getFullYear()]||0);}
+    }
 
-    /* Revenue Split Horizontal Bar */
-    splitChart = new Chart(sCtx.getContext('2d'), {
-      type:'bar',
-      data:{ labels:['Advance Collected','Balance Collected','Balance Pending'],
-        datasets:[{
-          data:[0,0,0],
-          backgroundColor:['#2563eb','#16a34a','#f59e0b'],
-          borderRadius:6, borderSkipped:false,
-        }]
-      },
-      options:{...chartDefaults,
-        indexAxis:'y',
-        scales:{
-          x:{ grid:{color:'#f1f5f9'}, ticks:{color:'#94a3b8',font:{size:11},
-            callback:v=>fmtK(v) }},
-          y:{ grid:{display:false}, ticks:{color:'#475569',font:{size:11}} }
-        }
-      }
+    const col=tab==='year'?'#7c3aed':tab==='month'?'#16a34a':'#2563eb';
+    const bg=tab==='year'?'rgba(124,58,237,0.18)':tab==='month'?'rgba(22,163,74,0.1)':'rgba(37,99,235,0.1)';
+
+    new Chart(cv.getContext('2d'),{
+      type:tab==='year'?'bar':'line',
+      data:{labels,datasets:[{label:'Revenue',data,borderColor:col,backgroundColor:bg,fill:tab!=='year',tension:0.35,pointBackgroundColor:col,pointRadius:data.length>20?2:4,borderWidth:2,borderRadius:tab==='year'?6:undefined,borderSkipped:tab==='year'?false:undefined}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e293b',titleColor:'#f8fafc',bodyColor:'#cbd5e1',padding:10,callbacks:{label:ctx=>'₹'+ctx.raw.toLocaleString('en-IN')}}},
+        scales:{x:{grid:{display:false},ticks:{color:'#94a3b8',font:{size:10},maxTicksLimit:data.length>20?12:undefined}},y:{grid:{color:'#f1f5f9'},ticks:{color:'#94a3b8',font:{size:10},callback:v=>fmtK(v)},beginAtZero:true}}}
     });
   }
 
-  /* ── FETCH BOOKINGS & POPULATE ALL ── */
+  /* ── Update booking status inline ── */
+  window.updateBookingStatus=async function(id,status,sel){
+    sel.disabled=true;
+    try{
+      await window.db.collection('bookings').doc(id).update({status,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+      if(window.showAdminToast)showAdminToast('✅ Status updated!','success');
+    }catch(e){if(window.showAdminToast)showAdminToast('❌ Update failed','error');}
+    sel.disabled=false;
+  };
+
+  /* ── Mark balance paid ── */
+  window.markBalancePaid=async function(id,btn){
+    if(!confirm('Is customer ka balance paid mark karein?'))return;
+    btn.disabled=true;btn.textContent='⏳...';
+    try{
+      await window.db.collection('bookings').doc(id).update({balancePaid:true,paymentStage:'completed',balancePaidAt:firebase.firestore.FieldValue.serverTimestamp()});
+      if(window.showAdminToast)showAdminToast('✅ Balance paid mark ho gaya!','success');
+      setTimeout(loadAnalytics,600);
+    }catch(e){
+      btn.textContent='✓ Paid';btn.disabled=false;
+      if(window.showAdminToast)showAdminToast('❌ '+e.message,'error');
+    }
+  };
+
+  /* ── GOAL UI ── */
+  let goalTarget=parseInt(localStorage.getItem('akans_goal_target')||'50000',10);
+  function updateGoalUI(rev){
+    window._analyticsMonthRevenue=rev;
+    const pct=Math.min(100,Math.round(rev/goalTarget*100));
+    setEl('goal-current',fmt(rev));setEl('goal-target-display',fmt(goalTarget));
+    setEl('goal-pct',pct+'% achieved');
+    const gb=document.getElementById('goal-bar');if(gb)gb.style.width=pct+'%';
+    setEl('goal-month-label',MN[new Date().getMonth()]+' '+new Date().getFullYear());
+  }
+  window.editGoalTarget=function(){
+    const v=prompt('Monthly revenue target set karo (₹):',goalTarget);
+    if(v&&!isNaN(parseInt(v))){goalTarget=parseInt(v);localStorage.setItem('akans_goal_target',goalTarget);updateGoalUI(window._analyticsMonthRevenue||0);}
+  };
+
+  /* ── TIME AGO ── */
+  function ago(d){
+    const s=Math.floor((Date.now()-d.getTime())/1000);
+    if(s<60)return s+'s ago';if(s<3600)return Math.floor(s/60)+'m ago';
+    if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago';
+  }
+
+  /* ══════════════════════════════════
+         MAIN LOAD
+     ══════════════════════════════════ */
   function loadAnalytics(){
     window.db.collection('bookings').get().then(snap=>{
-      const docs = snap.docs.map(d=>({id:d.id,...d.data()}));
+      const docs=snap.docs.map(d=>({id:d.id,...d.data()}));
+      _allDocs=docs;
 
-      /* --- 1. Monthly revenue (last 6 months) --- */
-      const mRevMap = {};
-      let monthRevThis = 0;
-      for(let i=5;i>=0;i--){
-        const d=new Date(THIS_Y,THIS_M-i,1);
-        mRevMap[d.getMonth()+'_'+d.getFullYear()] = 0;
-      }
+      /* Build revenue maps */
+      _dayMap={};_monMap={};
+      let r7=0,rM=0,rY=0,mRev=0;
+      const d7=new Date();d7.setDate(d7.getDate()-7);d7.setHours(0,0,0,0);
+      const d14=new Date();d14.setDate(d14.getDate()-14);d14.setHours(0,0,0,0);
+      let rLW=0;
+
       docs.forEach(b=>{
-        const ts = b.createdAt?.toDate ? b.createdAt.toDate() : null;
-        if(!ts) return;
-        const key = ts.getMonth()+'_'+ts.getFullYear();
-        if(key in mRevMap){
-          const rev = (b.advancePaid?Number(b.advanceAmount||0):0)
-                    + (b.balancePaid?Number(b.balanceAmount||0):0);
-          mRevMap[key] = (mRevMap[key]||0) + rev;
-        }
-        if(ts.getMonth()===THIS_M && ts.getFullYear()===THIS_Y){
-          const rev = (b.advancePaid?Number(b.advanceAmount||0):0)
-                    + (b.balancePaid?Number(b.balanceAmount||0):0);
-          monthRevThis += rev;
-        }
+        const ts=b.createdAt?.toDate?b.createdAt.toDate():null;
+        if(!ts)return;
+        const rev=(b.advancePaid?Number(b.advanceAmount||0):0)+(b.balancePaid?Number(b.balanceAmount||0):0);
+        const dk=new Date(ts.getFullYear(),ts.getMonth(),ts.getDate()).toDateString();
+        _dayMap[dk]=(_dayMap[dk]||0)+rev;
+        const mk=ts.getMonth()+'_'+ts.getFullYear();
+        _monMap[mk]=(_monMap[mk]||0)+rev;
+        if(ts>=d7)r7+=rev;
+        if(ts>=d14&&ts<d7)rLW+=rev;
+        if(ts.getMonth()===TM&&ts.getFullYear()===TY){rM+=rev;mRev+=rev;}
+        if(ts.getFullYear()===TY)rY+=rev;
       });
-      const mLabels=[], mData=[];
-      for(let i=5;i>=0;i--){
-        const d=new Date(THIS_Y,THIS_M-i,1);
-        mLabels.push(monthNames[d.getMonth()]);
-        mData.push(mRevMap[d.getMonth()+'_'+d.getFullYear()]||0);
-      }
-      if(monthlyChart){
-        monthlyChart.data.labels=mLabels;
-        monthlyChart.data.datasets[0].data=mData;
-        monthlyChart.update();
-      }
-      const mTotal = mData.reduce((a,b)=>a+b,0);
-      const badge = document.getElementById('monthly-total-badge');
-      if(badge) badge.textContent = fmt(mTotal)+' (6M)';
 
-      /* --- insight tile: this month revenue --- */
-      const itRev = document.getElementById('it-revenue');
-      if(itRev) itRev.textContent = fmtK(monthRevThis);
-      const itRevC = document.getElementById('it-revenue-change');
-      if(itRevC){
-        const lastM = mData[mData.length-2]||0;
-        if(lastM>0){
-          const diff = Math.round((monthRevThis-lastM)/lastM*100);
-          itRevC.textContent = (diff>=0?'↑ +':'↓ ')+Math.abs(diff)+'% vs last month';
-          itRevC.className = 'it-change '+(diff>=0?'up':'down');
-        } else { itRevC.textContent='First month data'; }
-      }
+      /* Revenue mini */
+      setEl('rev-7d',fmtK(r7));setEl('rev-month',fmtK(rM));setEl('rev-year',fmtK(rY));
 
-      /* --- 2. Status donut --- */
-      let confirmed=0, pending=0, cancelled=0;
-      docs.forEach(b=>{
-        const s=(b.status||'').toLowerCase();
-        if(s==='confirmed'||s==='completed') confirmed++;
-        else if(s==='cancelled'||s==='rejected') cancelled++;
-        else pending++;
-      });
-      if(donutChart){
-        donutChart.data.datasets[0].data=[confirmed,pending,cancelled];
-        donutChart.update();
-      }
-      const sBadge = document.getElementById('status-total-badge');
-      if(sBadge) sBadge.textContent = docs.length+' total';
+      /* Revenue trend */
+      const tEl=document.getElementById('rev-trend-label');
+      if(tEl&&rLW>0){const d=Math.round((r7-rLW)/rLW*100);tEl.textContent=(d>=0?'↑ +':'↓ ')+Math.abs(d)+'% vs last week';tEl.className='stat-change '+(d>=0?'up':'down');}
 
-      /* --- insight: confirmation rate --- */
-      const total=docs.length||1;
-      const rate = Math.round(confirmed/total*100);
-      const itRate = document.getElementById('it-confirm-rate');
-      if(itRate) itRate.textContent = rate+'%';
-      const itRateC = document.getElementById('it-rate-change');
-      if(itRateC) itRateC.textContent = confirmed+' of '+docs.length+' confirmed';
-      if(itRateC) itRateC.className='it-change '+(rate>=70?'up':rate>=40?'neutral':'down');
+      /* Revenue chart — override admin-dashboard.js after short delay */
+      setTimeout(()=>drawRevChart(_tab),900);
 
-      /* --- insight: AOV --- */
-      const totalRev = docs.reduce((a,b)=>a+(Number(b.totalAmount)||0),0);
-      const aov = docs.length ? Math.round(totalRev/docs.length) : 0;
-      const itAov = document.getElementById('it-aov');
-      if(itAov) itAov.textContent = fmtK(aov);
+      /* Pending alert strip — bookings */
+      const pbc=docs.filter(b=>!['confirmed','completed','cancelled','rejected'].includes((b.status||'pending').toLowerCase())).length;
+      setEl('alert-bookings',pbc);
+      document.getElementById('alert-item-bookings')?.classList.toggle('pa-zero',pbc===0);
 
-      /* --- 3. Revenue split --- */
-      let advCollected=0, balCollected=0, balPending=0;
-      docs.forEach(b=>{
-        if(b.advancePaid) advCollected+=Number(b.advanceAmount||0);
-        if(b.balancePaid) balCollected+=Number(b.balanceAmount||0);
-        else balPending+=Number(b.balanceAmount||0);
-      });
-      if(splitChart){
-        splitChart.data.datasets[0].data=[advCollected,balCollected,balPending];
-        splitChart.update();
-      }
-      const spBadge = document.getElementById('split-total-badge');
-      if(spBadge) spBadge.textContent = fmt(advCollected+balCollected)+' collected';
+      /* Pending reviews */
+      window.db.collection('reviews').where('approved','==',false).get()
+        .then(rs=>{setEl('alert-reviews',rs.size);document.getElementById('alert-item-reviews')?.classList.toggle('pa-zero',rs.size===0);}).catch(()=>setEl('alert-reviews','0'));
 
-      /* --- 4. Monthly goal update --- */
-      updateGoalUI(monthRevThis);
+      /* Pending withdrawals */
+      window.db.collection('referrals').where('withdrawalStatus','==','pending').get()
+        .then(ws=>{setEl('alert-withdrawals',ws.size);document.getElementById('alert-item-withdrawals')?.classList.toggle('pa-zero',ws.size===0);}).catch(()=>setEl('alert-withdrawals','0'));
 
-      /* --- 5. Balance tracker --- */
-      const unpaid = docs.filter(b=>!b.balancePaid && Number(b.balanceAmount||0)>0)
-        .sort((a,b)=>Number(b.balanceAmount||0)-Number(a.balanceAmount||0));
-      const totalPending = unpaid.reduce((a,b)=>a+Number(b.balanceAmount||0),0);
-      const balPill = document.getElementById('bal-total-pill');
-      if(balPill) balPill.textContent = fmt(totalPending)+' pending';
-      const balCount = document.getElementById('bal-pending-count');
-      if(balCount) balCount.textContent = unpaid.length+' customers';
+      /* Monthly revenue chart (6M) */
+      const mMap={};
+      for(let i=5;i>=0;i--){const d=new Date(TY,TM-i,1);mMap[d.getMonth()+'_'+d.getFullYear()]=0;}
+      docs.forEach(b=>{const ts=b.createdAt?.toDate?b.createdAt.toDate():null;if(!ts)return;const k=ts.getMonth()+'_'+ts.getFullYear();if(k in mMap){const r=(b.advancePaid?Number(b.advanceAmount||0):0)+(b.balancePaid?Number(b.balanceAmount||0):0);mMap[k]=(mMap[k]||0)+r;}});
+      const mL=[],mD=[];
+      for(let i=5;i>=0;i--){const d=new Date(TY,TM-i,1);mL.push(MN[d.getMonth()]);mD.push(mMap[d.getMonth()+'_'+d.getFullYear()]||0);}
+      if(mlyChart){mlyChart.data.labels=mL;mlyChart.data.datasets[0].data=mD;mlyChart.update();}
+      setEl('monthly-total-badge',fmt(mD.reduce((a,v)=>a+v,0))+' (6M)');
 
-      const balList = document.getElementById('balanceList');
-      if(balList){
-        if(unpaid.length===0){
-          balList.innerHTML='<div class="bal-row"><div class="ac-empty">🎉 Sab payments clear!</div></div>';
-        } else {
-          balList.innerHTML = unpaid.slice(0,8).map(b=>{
-            const initials = ((b.groomName||b.coupleName||'?')[0]||'?').toUpperCase();
-            const phone = b.phone||b.whatsapp||'';
-            const waLink = phone ? `https://wa.me/91${phone.replace(/\D/g,'')}?text=Hello%20${encodeURIComponent(b.groomName||'Customer')}%2C%20wedding%20balance%20amount%20%E2%82%B9${Number(b.balanceAmount||0).toLocaleString('en-IN')}%20pay%20karna%20hai.` : '';
-            return `<div class="bal-row">
-              <div class="bal-av">${initials}</div>
-              <div class="bal-info">
-                <div class="bal-name">${b.groomName||b.coupleName||'—'} &amp; ${b.brideName||''}</div>
-                <div class="bal-meta">${b.weddingDate||'Date TBD'} · ${b.template||'—'}</div>
-              </div>
-              <span class="bal-amt">${fmt(b.balanceAmount||0)}</span>
-              ${waLink?`<a href="${waLink}" target="_blank" class="bal-wa">💬</a>`:''}
-            </div>`;
-          }).join('');
-        }
-      }
+      /* Insight: this month */
+      setEl('it-revenue',fmtK(mRev));
+      const irc=document.getElementById('it-revenue-change');
+      if(irc){const lm=mD[mD.length-2]||0;if(lm>0){const d=Math.round((mRev-lm)/lm*100);irc.textContent=(d>=0?'↑ +':'↓ ')+Math.abs(d)+'% vs last month';irc.className='it-change '+(d>=0?'up':'down');}else irc.textContent='First month data';}
 
-      /* --- 6. Upcoming weddings (30 days) --- */
-      const today = new Date(); today.setHours(0,0,0,0);
-      const plus30 = new Date(today); plus30.setDate(plus30.getDate()+30);
-      const upcoming = docs.filter(b=>{
-        if(!b.weddingDate) return false;
-        const d = new Date(b.weddingDate);
-        return d>=today && d<=plus30;
-      }).sort((a,b)=>new Date(a.weddingDate)-new Date(b.weddingDate));
+      /* Status donut */
+      let cfm=0,pnd=0,cnc=0;
+      docs.forEach(b=>{const s=(b.status||'').toLowerCase();if(s==='confirmed'||s==='completed')cfm++;else if(s==='cancelled'||s==='rejected')cnc++;else pnd++;});
+      if(donChart){donChart.data.datasets[0].data=[cfm,pnd,cnc];donChart.update();}
+      setEl('status-total-badge',docs.length+' total');
 
-      const upList = document.getElementById('upcoming-list');
-      const upBadge = document.getElementById('upcoming-badge');
-      if(upBadge) upBadge.textContent = upcoming.length+' weddings';
-      if(upList){
-        if(upcoming.length===0){
-          upList.innerHTML='<div class="ac-empty">No upcoming weddings</div>';
-        } else {
-          upList.innerHTML = upcoming.map(b=>{
-            const d = new Date(b.weddingDate);
-            const diff = Math.round((d-today)/(1000*60*60*24));
-            const urgency = diff<=3?'color:#dc2626;font-weight:800':diff<=7?'color:#d97706;font-weight:700':'color:#16a34a;font-weight:600';
-            return `<div style="display:flex;align-items:center;gap:0.6rem;padding:0.55rem 0.85rem;border-bottom:1px solid var(--border);">
-              <div style="width:36px;height:36px;border-radius:8px;background:#eff6ff;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;">
-                <span style="font-size:0.62rem;font-weight:700;color:#2563eb;text-transform:uppercase;">${monthNames[d.getMonth()]}</span>
-                <span style="font-size:0.9rem;font-weight:900;color:#1e40af;line-height:1;">${d.getDate()}</span>
-              </div>
-              <div style="flex:1;min-width:0;">
-                <div style="font-size:0.8rem;font-weight:700;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${b.groomName||'—'} &amp; ${b.brideName||'—'}</div>
-                <div style="font-size:0.7rem;color:var(--fg3);">${b.venueName||'Venue TBD'}</div>
-              </div>
-              <span style="font-size:0.72rem;${urgency}">${diff===0?'Today!':diff===1?'Tomorrow':diff+'d'}</span>
-            </div>`;
-          }).join('');
-        }
-      }
+      /* Insight: confirmation rate */
+      const tot=docs.length||1;const rate=Math.round(cfm/tot*100);
+      setEl('it-confirm-rate',rate+'%');
+      const irC=document.getElementById('it-rate-change');
+      if(irC){irC.textContent=cfm+' of '+docs.length+' confirmed';irC.className='it-change '+(rate>=70?'up':rate>=40?'neutral':'down');}
 
-      /* --- 7. Activity Feed --- */
-      const recentDocs = [...docs]
-        .filter(b=>b.createdAt)
-        .sort((a,b)=>(b.createdAt?.toDate?.()?.getTime()||0)-(a.createdAt?.toDate?.()?.getTime()||0))
-        .slice(0,10);
+      /* Insight: AOV */
+      const tRev=docs.reduce((a,b)=>a+(Number(b.totalAmount)||0),0);
+      setEl('it-aov',fmtK(docs.length?Math.round(tRev/docs.length):0));
 
-      const feed = document.getElementById('activityFeed');
-      if(feed && recentDocs.length>0){
-        feed.innerHTML = recentDocs.map(b=>{
-          const ts = b.createdAt?.toDate?.();
-          const timeAgo = ts ? getTimeAgo(ts) : '—';
-          const events = [];
-          events.push({
-            type:'booking', icon:'📦',
-            text:`<strong>${b.groomName||'Customer'}</strong> ne booking ki — <strong>${b.template||'Template'}</strong>`,
-            time: timeAgo
-          });
-          if(b.advancePaid) events.push({
-            type:'payment', icon:'💰',
-            text:`<strong>${b.groomName||'Customer'}</strong> ne advance ₹${Number(b.advanceAmount||0).toLocaleString('en-IN')} pay kiya`,
-            time: timeAgo
-          });
-          return events;
-        }).flat().slice(0,8).map(ev=>`
-          <div class="act-item">
-            <div class="act-dot ${ev.type}">${ev.icon}</div>
-            <div class="act-body">
-              <div class="act-text">${ev.text}</div>
-              <div class="act-time">${ev.time}</div>
+      /* Insight: coupon stats */
+      const cu=docs.filter(b=>b.couponCode&&String(b.couponCode).trim()!=='').length;
+      const td=docs.reduce((a,b)=>a+Number(b.discount||0),0);
+      setEl('it-coupons',cu);
+      const icc=document.getElementById('it-coupon-change');
+      if(icc){icc.textContent='₹'+td.toLocaleString('en-IN')+' saved total';icc.className='it-change neutral';}
+
+      /* Revenue split */
+      let aC=0,bC=0,bP=0;
+      docs.forEach(b=>{if(b.advancePaid)aC+=Number(b.advanceAmount||0);if(b.balancePaid)bC+=Number(b.balanceAmount||0);else bP+=Number(b.balanceAmount||0);});
+      if(sptChart){sptChart.data.datasets[0].data=[aC,bC,bP];sptChart.update();}
+      setEl('split-total-badge',fmt(aC+bC)+' collected');
+
+      /* Payment stage */
+      const sA=docs.filter(b=>b.advancePaid&&!b.balancePaid&&(b.status||'').toLowerCase()!=='cancelled').length;
+      const sF=docs.filter(b=>b.advancePaid&&b.balancePaid).length;
+      const sC=docs.filter(b=>(b.status||'').toLowerCase()==='cancelled').length;
+      if(stgChart){stgChart.data.datasets[0].data=[sA,sF,sC];stgChart.update();}
+      setEl('stage-total-badge',docs.length+' orders');
+      setEl('stage-adv',sA+' bookings');setEl('stage-full',sF+' bookings');setEl('stage-cancel',sC+' bookings');
+
+      /* Top templates */
+      const tMap={};docs.forEach(b=>{const t=b.template||'Unknown';tMap[t]=(tMap[t]||0)+1;});
+      const sorted=Object.entries(tMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+      const maxC=sorted[0]?.[1]||1;
+      setEl('top-tmpl-badge',Object.keys(tMap).length+' templates');
+      const tl=document.getElementById('topTemplatesList');
+      if(tl){
+        if(!sorted.length){tl.innerHTML='<div class="ac-empty">No bookings yet</div>';}
+        else{
+          const medals=['🥇','🥈','🥉','4️⃣','5️⃣'];
+          tl.innerHTML=sorted.map(([n,c],i)=>`<div class="tmpl-rank-item">
+            <div class="tmpl-medal">${medals[i]||i+1}</div>
+            <div class="tmpl-bar-wrap">
+              <div class="tmpl-name">${n}</div>
+              <div class="tmpl-bar-bg"><div class="tmpl-bar-fill tmpl-bar-${i+1}" style="width:${Math.round(c/maxC*100)}%"></div></div>
             </div>
+            <div class="tmpl-count">${c}</div>
           </div>`).join('');
+        }
       }
 
-      /* --- 8. Avg rating from reviews (if exists) --- */
+      /* Goal */
+      updateGoalUI(mRev);
+
+      /* Balance tracker with Mark Paid */
+      const unpaid=docs.filter(b=>!b.balancePaid&&Number(b.balanceAmount||0)>0).sort((a,b)=>Number(b.balanceAmount||0)-Number(a.balanceAmount||0));
+      const tP=unpaid.reduce((a,b)=>a+Number(b.balanceAmount||0),0);
+      setEl('bal-total-pill',fmt(tP)+' pending');setEl('bal-pending-count',unpaid.length+' customers');
+      const bl=document.getElementById('balanceList');
+      if(bl){
+        if(!unpaid.length){bl.innerHTML='<div class="bal-row"><div class="ac-empty">🎉 Sab payments clear!</div></div>';}
+        else{bl.innerHTML=unpaid.slice(0,8).map(b=>{
+          const ini=((b.groomName||b.coupleName||'?')[0]||'?').toUpperCase();
+          const ph=b.phone||b.whatsapp||'';
+          const wa=ph?`https://wa.me/91${ph.replace(/\D/g,'')}?text=Hello%20${encodeURIComponent(b.groomName||'Customer')}%2C%20balance%20%E2%82%B9${Number(b.balanceAmount||0).toLocaleString('en-IN')}%20pay%20karna%20hai.%20%F0%9F%99%8F`:'';
+          return`<div class="bal-row">
+            <div class="bal-av">${ini}</div>
+            <div class="bal-info">
+              <div class="bal-name">${b.groomName||b.coupleName||'—'} &amp; ${b.brideName||''}</div>
+              <div class="bal-meta">${b.weddingDate||'Date TBD'} · ${b.template||'—'}</div>
+            </div>
+            <span class="bal-amt">${fmt(b.balanceAmount||0)}</span>
+            ${wa?`<a href="${wa}" target="_blank" class="bal-wa">💬</a>`:''}
+            <button class="mark-paid-btn" onclick="markBalancePaid('${b.id}',this)">✓ Paid</button>
+          </div>`;}).join('');}
+      }
+
+      /* Upcoming weddings */
+      const td0=new Date();td0.setHours(0,0,0,0);const p30=new Date(td0);p30.setDate(p30.getDate()+30);
+      const up=docs.filter(b=>{if(!b.weddingDate)return false;const d=new Date(b.weddingDate);return d>=td0&&d<=p30;}).sort((a,b)=>new Date(a.weddingDate)-new Date(b.weddingDate));
+      setEl('upcoming-badge',up.length+' weddings');
+      const ul=document.getElementById('upcoming-list');
+      if(ul){if(!up.length){ul.innerHTML='<div class="ac-empty">No upcoming weddings</div>';}
+        else{ul.innerHTML=up.map(b=>{const d=new Date(b.weddingDate);const diff=Math.round((d-td0)/(864e5));const ug=diff<=3?'color:#dc2626;font-weight:800':diff<=7?'color:#d97706;font-weight:700':'color:#16a34a;font-weight:600';
+          return`<div style="display:flex;align-items:center;gap:0.6rem;padding:0.55rem 0.85rem;border-bottom:1px solid var(--border);">
+            <div style="width:36px;height:36px;border-radius:8px;background:#eff6ff;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;">
+              <span style="font-size:0.62rem;font-weight:700;color:#2563eb;text-transform:uppercase;">${MN[d.getMonth()]}</span>
+              <span style="font-size:0.9rem;font-weight:900;color:#1e40af;line-height:1;">${d.getDate()}</span>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:0.8rem;font-weight:700;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${b.groomName||'—'} &amp; ${b.brideName||'—'}</div>
+              <div style="font-size:0.7rem;color:var(--fg3);">${b.venueName||'Venue TBD'}</div>
+            </div>
+            <span style="font-size:0.72rem;${ug}">${diff===0?'Today!':diff===1?'Tomorrow':diff+'d'}</span>
+          </div>`;}).join('');}
+      }
+
+      /* Activity feed */
+      const feed=document.getElementById('activityFeed');
+      const rd=[...docs].filter(b=>b.createdAt).sort((a,b)=>(b.createdAt?.toDate?.()?.getTime()||0)-(a.createdAt?.toDate?.()?.getTime()||0)).slice(0,10);
+      if(feed&&rd.length){
+        feed.innerHTML=rd.map(b=>{const ts=b.createdAt?.toDate?.();const t=ts?ago(ts):'—';const ev=[];
+          ev.push({tp:'booking',ic:'📦',tx:`<strong>${b.groomName||'Customer'}</strong> ne booking ki — <strong>${b.template||'Template'}</strong>`,tm:t});
+          if(b.advancePaid)ev.push({tp:'payment',ic:'💰',tx:`<strong>${b.groomName||'Customer'}</strong> ne advance ₹${Number(b.advanceAmount||0).toLocaleString('en-IN')} pay kiya`,tm:t});
+          return ev;}).flat().slice(0,10).map(e=>`<div class="act-item"><div class="act-dot ${e.tp}">${e.ic}</div><div class="act-body"><div class="act-text">${e.tx}</div><div class="act-time">${e.tm}</div></div></div>`).join('');
+      }
+
+      /* Enhanced recent bookings table (WA + Status change) — override admin-dashboard.js */
+      setTimeout(()=>{
+        const tb=document.getElementById('recentBookingsTbody');if(!tb)return;
+        const recent=[...docs].filter(b=>b.createdAt).sort((a,b)=>(b.createdAt?.toDate?.()?.getTime()||0)-(a.createdAt?.toDate?.()?.getTime()||0)).slice(0,8);
+        if(!recent.length){tb.innerHTML='<tr><td colspan="6" class="empty-row">Koi bookings nahi abhi</td></tr>';return;}
+        tb.innerHTML=recent.map(b=>{
+          const ph=b.whatsapp||b.phone||'';
+          const wa=ph?`https://wa.me/91${ph.replace(/\D/g,'')}?text=Hello%20${encodeURIComponent(b.groomName||'Customer')}%21%20AKANS%20Web%20Development%20se%20baat%20kar%20rahe%20hain%20%F0%9F%99%8F`:null;
+          const dt=b.createdAt?.toDate?b.createdAt.toDate().toLocaleDateString('en-IN',{day:'numeric',month:'short'}):'—';
+          const st=(b.status||'pending').toLowerCase();
+          const opts=[['pending','⏳ Pending'],['confirmed','✅ Confirmed'],['completed','🎉 Completed'],['cancelled','❌ Cancelled']].map(([v,l])=>`<option value="${v}"${st===v?' selected':''}>${l}</option>`).join('');
+          return`<tr>
+            <td class="td-couple">${b.groomName||'—'}<br><small style="font-weight:500;color:var(--fg3);font-size:0.7rem;">${b.brideName||'—'}</small></td>
+            <td style="max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.77rem;">${b.template||'—'}</td>
+            <td class="td-amount">₹${Number(b.totalAmount||0).toLocaleString('en-IN')}</td>
+            <td><select class="status-select" onchange="updateBookingStatus('${b.id}',this.value,this)">${opts}</select></td>
+            <td>${wa?`<a href="${wa}" target="_blank" class="td-wa">💬</a>`:'<span class="td-no-wa">—</span>'}</td>
+            <td style="font-size:0.75rem;color:var(--fg3);">${dt}</td>
+          </tr>`;}).join('');
+      },1200);
+
+      /* Avg rating */
       window.db.collection('reviews').where('approved','==',true).get()
-        .then(rSnap=>{
-          const ratings = rSnap.docs.map(d=>Number(d.data().rating||0)).filter(r=>r>0);
-          if(ratings.length){
-            const avg = (ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1);
-            const itR = document.getElementById('it-avg-rating');
-            if(itR) itR.textContent = avg+' ⭐';
-            const itRC = document.getElementById('it-rating-change');
-            if(itRC){ itRC.textContent = ratings.length+' approved reviews'; itRC.className='it-change up'; }
-          }
-        }).catch(()=>{});
+        .then(rs=>{const rts=rs.docs.map(d=>Number(d.data().rating||0)).filter(r=>r>0);if(rts.length){const avg=(rts.reduce((a,b)=>a+b,0)/rts.length).toFixed(1);setEl('it-avg-rating',avg+' ⭐');const irc=document.getElementById('it-rating-change');if(irc){irc.textContent=rts.length+' approved reviews';irc.className='it-change up';}}}).catch(()=>{});
 
-    }).catch(err=>{
-      console.error('Analytics load error:',err);
-    });
+      /* Update timestamp */
+      setEl('lastRefresh','Updated '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}));
+
+    }).catch(e=>console.error('Analytics error:',e));
   }
 
-  function getTimeAgo(date){
-    const diff = Math.floor((Date.now()-date.getTime())/1000);
-    if(diff<60) return diff+'s ago';
-    if(diff<3600) return Math.floor(diff/60)+'m ago';
-    if(diff<86400) return Math.floor(diff/3600)+'h ago';
-    return Math.floor(diff/86400)+'d ago';
+  /* ── Auto-refresh countdown ── */
+  function startCountdown(){
+    let sec=60;
+    setInterval(()=>{
+      sec--;
+      setEl('refreshTimer',sec+'s');
+      if(sec<=0){sec=60;loadAnalytics();}
+    },1000);
   }
 
-  /* ── BOOT ── */
+  /* ── Boot ── */
   document.addEventListener('DOMContentLoaded',()=>{
     initCharts();
-    waitForDb(loadAnalytics);
+    waitForDb(()=>{loadAnalytics();startCountdown();});
   });
 
 })();
