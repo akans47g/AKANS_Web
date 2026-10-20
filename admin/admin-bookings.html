@@ -163,23 +163,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
 
 /* BOTTOM NAV */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:stretch;z-index:200;box-shadow:0 -2px 12px rgba(0,0,0,0.08);}
-.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.22rem;text-decoration:none;color:var(--fg3);border:none;background:none;cursor:pointer;font-family:'Inter',sans-serif;transition:color 0.18s,opacity 0.18s;padding:0;position:relative;opacity:0.5;}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.22rem;text-decoration:none;color:var(--fg3);border:none;background:none;cursor:pointer;font-family:'Inter',sans-serif;transition:color 0.18s;padding:0;position:relative;opacity:0.5;}
 .bn-item.active{color:var(--accent);opacity:1;}
 .bn-item.active::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:22px;height:3px;background:var(--accent);border-radius:0 0 4px 4px;}
 .bn-item:hover{color:var(--fg2);opacity:0.8;}
 .bn-icon{font-size:1.25rem;line-height:1;}
 .bn-label{font-size:0.6rem;font-weight:600;letter-spacing:0.04em;}
-
-/* PAYMENT SPLIT BADGES */
-.pay-split{display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.5rem;}
-.pay-adv{font-size:0.69rem;font-weight:700;color:#1d4ed8;background:#dbeafe;border:1px solid #93c5fd;padding:0.18rem 0.55rem;border-radius:20px;}
-.pay-bal-ok{font-size:0.69rem;font-weight:700;color:var(--success);background:#f0fdf4;border:1px solid #86efac;padding:0.18rem 0.55rem;border-radius:20px;}
-.pay-bal-due{font-size:0.69rem;font-weight:700;color:var(--warn);background:#fffbeb;border:1px solid #fde68a;padding:0.18rem 0.55rem;border-radius:20px;}
-.bal-due-strip{background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1.5px solid #fde68a;border-radius:8px;padding:0.4rem 0.65rem;font-size:0.74rem;font-weight:700;color:#92400e;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.4rem;}
-.mab-bal{display:flex;align-items:center;justify-content:center;padding:0.68rem 0.95rem;border-radius:10px;border:1.5px solid #fde68a;background:#fffbeb;color:#92400e;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;white-space:nowrap;}
-.mab-bal:hover{background:#d97706;color:#fff;border-color:#d97706;}
-.rev-adv{font-size:0.72rem;color:rgba(255,255,255,0.5);margin-left:0.4rem;}
-.rev-bal-due{font-size:0.78rem;font-weight:700;color:#fbbf24;margin-left:auto;}
 
 /* MORE MENU */
 .more-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300;display:none;}
@@ -234,15 +223,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
   <!-- REVENUE STRIP -->
   <div class="revenue-strip">
     <div>
-      <div class="rev-label">Collected Revenue</div>
+      <div class="rev-label">Total Revenue</div>
       <span class="rev-amount" id="total-revenue">₹—</span>
-      <span class="rev-adv" id="rev-adv-label"></span>
     </div>
-    <div style="margin-left:auto;text-align:right;">
-      <div style="font-size:0.62rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.07em;">Balance Pending</div>
-      <div class="rev-bal-due" id="rev-bal-due">₹—</div>
-    </div>
-    <div class="rev-count" id="showing-count" style="margin-left:0.8rem;">Loading...</div>
+    <div class="rev-count" id="showing-count">Loading...</div>
   </div>
 
   <!-- STATS STRIP -->
@@ -295,9 +279,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
     </button>
     <button class="b-tab" data-filter="cancelled" onclick="switchFilter('cancelled')">
       ❌ Cancelled <span class="b-tab-count" id="tab-count-cancelled">—</span>
-    </button>
-    <button class="b-tab" data-filter="balance_due" onclick="switchFilter('balance_due')" style="border-color:#fde68a;color:#92400e;">
-      💰 Balance Due <span class="b-tab-count" id="tab-count-balance_due">—</span>
     </button>
   </div>
 
@@ -357,93 +338,19 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <script src="../firebase-config.js"></script>
 <script src="admin-all.js"></script>
-<script src="admin-bookings.js"></script>
+<!-- admin-bookings.js REMOVED — sab code admin-all.js mein hai -->
 
 <script>
-// ── TAB COUNT + PAYMENT SPLIT OVERRIDE ───────────────────────
+// Tab count sync
 const origUpdateStats = typeof updateBookingStats === 'function' ? updateBookingStats : null;
 function updateBookingStats() {
   if(origUpdateStats) origUpdateStats.call(this);
-
-  // Standard tab counts
   ['all','pending','inprogress','completed','cancelled'].forEach(k => {
     const count = allBookings.filter(b => k==='all' || (b.status||'pending')===k).length;
     const el = document.getElementById('tab-count-' + k);
     if(el) el.textContent = count;
   });
-
-  // Balance Due tab count (advance paid, balance not yet paid)
-  const balDueCount = allBookings.filter(b => b.advancePaid && !b.balancePaid && (b.status||'pending') !== 'cancelled').length;
-  const bdEl = document.getElementById('tab-count-balance_due');
-  if(bdEl) bdEl.textContent = balDueCount;
-
-  // Revenue strip — advance collected + balance pending
-  const advCollected = allBookings.reduce((s,b) => s + (b.advanceAmount || b.amountPaid || 0), 0);
-  const balCollected = allBookings.reduce((s,b) => s + (b.balancePaid ? (b.balanceAmount || 0) : 0), 0);
-  const balPending   = allBookings.reduce((s,b) => s + (!b.balancePaid && (b.status||'pending') !== 'cancelled' ? (b.balanceAmount || 0) : 0), 0);
-  const totalRev = advCollected + balCollected;
-  const fmt = n => '₹' + n.toLocaleString('en-IN');
-
-  const revEl  = document.getElementById('total-revenue');
-  const balEl  = document.getElementById('rev-bal-due');
-  const advLbl = document.getElementById('rev-adv-label');
-  if(revEl)  revEl.textContent  = fmt(totalRev);
-  if(balEl)  balEl.textContent  = fmt(balPending);
-  if(advLbl) advLbl.textContent = '(Adv: ' + fmt(advCollected) + ')';
 }
-
-// ── BALANCE DUE FILTER HOOK ───────────────────────────────
-const origSwitchFilter = typeof switchFilter === 'function' ? switchFilter : null;
-function switchFilter(filter) {
-  if(filter === 'balance_due') {
-    // Custom filter — show bookings where balance is pending
-    document.querySelectorAll('.b-tab').forEach(t => t.classList.remove('active'));
-    document.querySelector('[data-filter="balance_due"]')?.classList.add('active');
-    const grid = document.getElementById('bookingsGrid');
-    if(!grid) return;
-    const dueBkgs = (typeof allBookings !== 'undefined' ? allBookings : [])
-      .filter(b => b.advancePaid && !b.balancePaid && (b.status||'pending') !== 'cancelled');
-    if(dueBkgs.length === 0) {
-      grid.innerHTML = '<div class="b-empty"><div class="b-empty-icon">🎉</div><div class="b-empty-title">Koi balance pending nahi!</div><div class="b-empty-sub">Sab payments complete hain.</div></div>';
-    } else {
-      // Trigger render via renderBookings if available
-      if(typeof renderBookings === 'function') renderBookings(dueBkgs);
-    }
-    return;
-  }
-  if(origSwitchFilter) origSwitchFilter(filter);
-}
-
-// ── PAYMENT SPLIT CARD ENHANCER ───────────────────────────
-// Runs after each card render to inject payment split badges
-function enhanceBookingCards() {
-  const grid = document.getElementById('bookingsGrid');
-  if(!grid || typeof allBookings === 'undefined') return;
-  grid.querySelectorAll('.b-card').forEach(card => {
-    if(card.dataset.enhanced) return; // already done
-    const orderId = card.querySelector('.b-order-id')?.textContent;
-    if(!orderId) return;
-    // Find matching booking by orderId (stored in b-order-id element)
-    const bkg = allBookings.find(b => orderId.includes(b.id?.slice(-6)?.toUpperCase() || '____'));
-    if(!bkg) return;
-    card.dataset.enhanced = '1';
-    if(!bkg.advanceAmount && !bkg.balanceAmount) return; // old booking without split
-    const payRow = card.querySelector('.b-payment-row');
-    if(!payRow) return;
-    // Add split badges
-    const adv = (bkg.advanceAmount || bkg.amountPaid || 0).toLocaleString('en-IN');
-    const bal = (bkg.balanceAmount || 0).toLocaleString('en-IN');
-    const splitHtml = '<div class="pay-split">' +
-      '<span class="pay-adv">💳 Adv ₹' + adv + ' ✅</span>' +
-      (bkg.balancePaid
-        ? '<span class="pay-bal-ok">✅ Bal ₹' + bal + '</span>'
-        : '<span class="pay-bal-due">⏳ Bal ₹' + bal + ' Due</span>') +
-      '</div>';
-    payRow.insertAdjacentHTML('afterend', splitHtml);
-  });
-}
-// Poll for new cards every 1.5s
-setInterval(enhanceBookingCards, 1500);
 
 // More menu
 function toggleMoreMenu() {
