@@ -114,31 +114,6 @@ function setStatCard(id, value) {
 
 function goTo(url) { window.location.href = url; }
 
-// ── WAIT FOR AUTH THEN INIT ────────────────────────────────────────
-// Ye function Firebase Auth restore hone ka wait karta hai
-// Bina iske Firestore "Missing permissions" deta hai
-function initWithAuth(fn) {
-  // Case 1: Firebase Auth already restored (synchronous) — seedha fn() chalao
-  if (auth.currentUser) { fn(); return; }
-
-  // Case 2: Async wait karo — Firebase indexedDB se session restore karta hai
-  const unsub = auth.onAuthStateChanged(user => {
-    unsub(); // Ek baar fire hone ke baad unsubscribe
-    if (user) {
-      // ✅ Firebase Auth session valid — fn() chalao (Firestore writes kaam karengi)
-      fn();
-    } else {
-      // ❌ Firebase Auth null hai (session expire hua ya cleared)
-      // LocalStorage session hoga toh bhi kaam nahi karega — Firestore auth ko dekhta hai
-      // ISLIYE: localStorage clear karo aur login page pe bhejo
-      localStorage.removeItem('adminSession');
-      auth.signOut().catch(() => {});
-      window.location.replace('admin-login.html');
-    }
-  });
-}
-
-
 // ── ADMIN NAV ─────────────────────────────────────────────────────
 const ADMIN_NAV = [
   { id:'dashboard',  icon:'📊', label:'Dashboard',            url:'admin-dashboard.html'  },
@@ -210,11 +185,22 @@ function startBookingsListener() {
   if (unsubBookings) unsubBookings();
   const grid = document.getElementById('bookingsGrid');
   if (grid) grid.innerHTML = `<div class="b-loading"><div class="b-loading-spinner"></div><div>Loading...</div></div>`;
-  unsubBookings = db.collection('bookings').orderBy('createdAt','desc')
+  // orderBy hata diya — client-side sort (no Firestore index needed)
+  unsubBookings = db.collection('bookings')
     .onSnapshot(snap => {
-      allBookings = snap.docs.map(d => ({ _id:d.id, ...d.data() }));
+      allBookings = snap.docs.map(d => ({ _id:d.id, ...d.data() }))
+        .sort((a, b) => {
+          const ad = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
+          const bd = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
+          return bd - ad;
+        });
       updateBookingStats(); applyFilterAndSearch();
-    }, err => showAdminToast('⚠️ ' + err.message, 'error'));
+    }, err => {
+      console.error('Bookings load error:', err);
+      showAdminToast('⚠️ ' + err.message, 'error');
+      const g = document.getElementById('bookingsGrid');
+      if (g) g.innerHTML = `<div class="b-empty"><div class="b-empty-icon">⚠️</div><div class="b-empty-title">Load failed: ${err.message}</div></div>`;
+    });
 }
 
 function updateBookingStats() {
@@ -373,7 +359,7 @@ function exportBookingsCSV() {
 }
 
 window.addEventListener('beforeunload',()=>{if(unsubBookings)unsubBookings();});
-document.addEventListener('DOMContentLoaded',()=>{ if(document.getElementById('bookingsPage')) initWithAuth(initBookings); });
+document.addEventListener('DOMContentLoaded',()=>{if(document.getElementById('bookingsPage'))initBookings();});
 
 // ╔══════════════════════════════════════════════════════════════╗
 // ║         SECTION 4 — admin-templates.html                    ║
@@ -474,4 +460,4 @@ async function saveTplChanges() {
 async function toggleTemplateActive(id,newActive){try{await db.collection('templates').doc(id).update({active:newActive});showAdminToast(newActive?'✅ Active':'⭕ Inactive','success');await loadTemplates();}catch(e){showAdminToast('❌ '+e.message,'error');}}
 async function deleteTemplate(id,name){if(!confirm(`"${name}" delete karna chahte ho?`))return;try{await db.collection('templates').doc(id).delete();showAdminToast('🗑️ Deleted','success');await loadTemplates();}catch(e){showAdminToast('❌ '+e.message,'error');}}
 
-document.addEventListener('DOMContentLoaded',()=>{ if(document.getElementById('templatesPage')) initWithAuth(initTemplates); });
+document.addEventListener('DOMContentLoaded',()=>{if(document.getElementById('templatesPage'))initTemplates();});
