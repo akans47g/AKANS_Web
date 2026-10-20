@@ -485,48 +485,52 @@ async function adminLogin() {
   }
 }
 
-// ── GOOGLE ADMIN LOGIN ─────────────────────────────────────────────
+// ── GOOGLE ADMIN LOGIN (popup — mobile ke liye better) ─────────────
 async function adminGoogleLogin() {
+  const btn = document.getElementById('googleAdminBtn');
   setLoading('googleAdminBtn', true, '');
   try {
     const provider = new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({ login_hint: ADMIN_EMAIL });
-    await auth.signInWithRedirect(provider);
+    provider.setCustomParameters({ login_hint: ADMIN_EMAIL, prompt: 'select_account' });
+    const result = await auth.signInWithPopup(provider);
+    const user = result.user;
+
+    if (user.email !== ADMIN_EMAIL) {
+      await auth.signOut();
+      showAdminToast('❌ Ye Gmail admin nahi hai! ' + ADMIN_EMAIL + ' use karo', 'error');
+      setLoading('googleAdminBtn', false, '<div class="google-logo"></div> Continue with Google');
+      return;
+    }
+
+    // Users doc background me update karo (login block na ho)
+    db.collection('users').doc(user.uid).set({
+      uid: user.uid, email: user.email,
+      displayName: user.displayName || 'Admin',
+      photoURL: user.photoURL || '',
+      role: 'admin',
+      lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true }).catch(() => {});
+
+    db.collection('adminLogs').add({
+      action: 'google_login', adminEmail: user.email,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(() => {});
+
+    saveAdminSession(user);
+    showAdminToast('✅ Google login successful!', 'success');
+    setTimeout(() => window.location.replace('admin-dashboard.html'), 800);
+
   } catch(e) {
-    showAdminToast('❌ ' + e.message, 'error');
+    if (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') {
+      showAdminToast('ℹ️ Login cancel ho gaya', 'warning');
+    } else if (e.code === 'auth/popup-blocked') {
+      showAdminToast('⚠️ Popup block hua — browser me allow karo', 'error');
+    } else {
+      showAdminToast('❌ ' + (e.message || 'Google login failed'), 'error');
+    }
     setLoading('googleAdminBtn', false, '<div class="google-logo"></div> Continue with Google');
   }
 }
-
-// ── HANDLE REDIRECT ────────────────────────────────────────────────
-auth.getRedirectResult().then(async result => {
-  if (!result || !result.user) return;
-  const user = result.user;
-  if (user.email !== ADMIN_EMAIL) {
-    await auth.signOut();
-    showAdminToast('❌ Ye Gmail admin nahi hai! akans47g@gmail.com use karo', 'error');
-    return;
-  }
-  try {
-    // Email ADMIN_EMAIL verify ho gayi → direct login
-    // Users doc create/update karo
-    await db.collection('users').doc(user.uid).set({
-      uid:         user.uid,
-      email:       user.email,
-      displayName: user.displayName || 'Admin',
-      photoURL:    user.photoURL || '',
-      role:        'admin',
-      lastLogin:   firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
-    saveAdminSession(user);
-    db.collection('adminLogs').add({ action:'google_login', adminEmail:user.email, timestamp:firebase.firestore.FieldValue.serverTimestamp() }).catch(()=>{});
-    showAdminToast('✅ Google login successful!', 'success');
-    setTimeout(() => window.location.replace('admin-dashboard.html'), 800);
-  } catch(e) {
-    await auth.signOut();
-    showAdminToast('❌ ' + e.message, 'error');
-  }
-}).catch(e => { if (e.code !== 'auth/no-current-user') console.error(e.code); });
 
 
 
