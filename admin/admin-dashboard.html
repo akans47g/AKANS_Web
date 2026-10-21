@@ -355,11 +355,10 @@ body{background:var(--bg);color:var(--fg);min-height:100vh;padding-bottom:calc(v
             <a href="admin-bookings.html" class="stat-action">View all →</a>
           </div>
           <div class="stat-card sc-green loading">
-            <div class="stat-card-icon">💰</div><div class="stat-label">Total Revenue</div>
+            <div class="stat-card-icon">💰</div><div class="stat-label">7-Day Revenue</div>
             <div class="stat-value" id="stat-revenue">—</div>
-            <div class="stat-change neutral" id="rev-trend-label">Collected</div>
+            <div class="stat-change neutral" id="rev-trend-label">Last 7 days</div>
             <div class="rev-mini">
-              <div class="rev-mini-row"><span class="rev-mini-lbl">7 Days</span><span class="rev-mini-val" id="rev-7d">—</span></div>
               <div class="rev-mini-row"><span class="rev-mini-lbl">This Month</span><span class="rev-mini-val" id="rev-month">—</span></div>
               <div class="rev-mini-row"><span class="rev-mini-lbl">This Year</span><span class="rev-mini-val" id="rev-year">—</span></div>
             </div>
@@ -686,7 +685,12 @@ const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec
 const DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const NOW=new Date(), TM=NOW.getMonth(), TY=NOW.getFullYear();
 function setEl(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
-function waitForDb(cb,t=0){if(window.db)cb();else if(t<50)setTimeout(()=>waitForDb(cb,t+1),300);}
+function waitForDb(cb,t=0){
+  const _db=window.db||(typeof db!=='undefined'?db:null);
+  if(_db){if(!window.db)window.db=_db;cb();}
+  else if(t<50)setTimeout(()=>waitForDb(cb,t+1),300);
+  else console.error('[waitForDb] db not available after 15s');
+}
 
 /* ── State ── */
 let _dayMap={},_monMap={},_allDocs=[],_tab='7d';
@@ -700,7 +704,8 @@ let _realtimeInit=false,_prevCount=0;
 
 function startRealtime(){
   waitForDb(()=>{
-    window.db.collection('bookings').onSnapshot(snap=>{
+    const _db=window.db||(typeof db!=='undefined'?db:null);
+    _db.collection('bookings').onSnapshot(snap=>{
       const docs=snap.docs.map(d=>({id:d.id,...d.data()}));
       if(_realtimeInit && docs.length>_prevCount){
         snap.docChanges().forEach(ch=>{
@@ -948,7 +953,7 @@ function processAnalytics(docs){
     const d=b.createdAt?b.createdAt.toDate?b.createdAt.toDate():new Date(b.createdAt):null;
     if(!d)return;
     const dk=d.toDateString();
-    const rev=(b.advanceAmount||0)+(b.balancePaid?b.balanceAmount||0:0);
+    const rev=b.amountPaid||((b.advanceAmount||0)+(b.balancePaid?b.balanceAmount||0:0));
     _dayMap[dk]=(_dayMap[dk]||0)+rev;
     const mk=d.getMonth()+'_'+d.getFullYear();
     _monMap[mk]=(_monMap[mk]||0)+rev;
@@ -974,8 +979,8 @@ function processAnalytics(docs){
   const cancelled=docs.filter(b=>(b.status||'').toLowerCase()==='cancelled');
 
   setEl('stat-total-bookings',docs.length);
-  setEl('stat-revenue',fmtK(totalRev));
-  setEl('rev-7d',fmtK(rev7));setEl('rev-month',fmtK(mRev));setEl('rev-year',fmtK(yRev));
+  setEl('stat-revenue',fmtK(rev7));   /* Primary = 7-day revenue */
+  setEl('rev-month',fmtK(mRev));setEl('rev-year',fmtK(yRev));
   setEl('rev-trend-label',mRev>prevMRev&&prevMRev>0?'▲ Better than last month':prevMRev>0?'▼ Below last month':'Collected');
   setEl('stat-pending',pending.length);setEl('pendingNote',pending.length>0?`${pending.length} need action`:'All clear ✓');
   setEl('alert-bookings',pending.length);setEl('alert-withdrawals','—');
@@ -1153,8 +1158,9 @@ function processAnalytics(docs){
 
 /* Fallback polling */
 function loadAnalyticsFallback(){
-  if(!window.db)return;
-  window.db.collection('bookings').get().then(snap=>{
+  const _db=window.db||(typeof db!=='undefined'?db:null);
+  if(!_db)return;
+  _db.collection('bookings').get().then(snap=>{
     _allDocs=snap.docs.map(d=>({id:d.id,...d.data()}));
     processAnalytics(_allDocs);
   });
@@ -1253,10 +1259,17 @@ function initDrag(){
 /* Users panel */
 function loadUsers(){
   waitForDb(()=>{
-    window.db.collection('users').orderBy('createdAt','desc').limit(6).get().then(snap=>{
+    const _db=window.db||(typeof db!=='undefined'?db:null);
+    _db.collection('users').limit(20).get().then(snap=>{
       const el=document.getElementById('usersList');if(!el)return;
       if(!snap.docs.length){el.innerHTML='<div class="empty-small">No users yet</div>';return;}
-      el.innerHTML=snap.docs.map(d=>{
+      /* Sort client-side — no orderBy to avoid missing index */
+      const sorted=snap.docs.slice().sort((a,b)=>{
+        const ad=a.data().createdAt?.toDate?a.data().createdAt.toDate():new Date(a.data().createdAt||0);
+        const bd=b.data().createdAt?.toDate?b.data().createdAt.toDate():new Date(b.data().createdAt||0);
+        return bd-ad;
+      }).slice(0,6);
+      el.innerHTML=sorted.map(d=>{
         const u=d.data();
         const dt=u.createdAt?u.createdAt.toDate?u.createdAt.toDate():new Date(u.createdAt):null;
         const init=(u.displayName||u.email||'U')[0].toUpperCase();
@@ -1264,7 +1277,7 @@ function loadUsers(){
       }).join('');
     }).catch(()=>{});
     /* Pending reviews */
-    window.db.collection('reviews').where('approved','==',false).get().then(snap=>{setEl('stat-reviews',snap.size);setEl('alert-reviews',snap.size);const el=document.getElementById('alert-item-reviews');if(el)el.classList.toggle('pa-zero',snap.size===0);}).catch(()=>{});
+    _db.collection('reviews').where('approved','==',false).get().then(snap=>{setEl('stat-reviews',snap.size);setEl('alert-reviews',snap.size);const el=document.getElementById('alert-item-reviews');if(el)el.classList.toggle('pa-zero',snap.size===0);}).catch(()=>{});
   });
 }
 
