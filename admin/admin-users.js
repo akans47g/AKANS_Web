@@ -32,15 +32,21 @@ function startUsersListener() {
   setUsersLoading(true);
 
   unsubUsers = db.collection('users')
-    .orderBy('createdAt', 'desc')
     .onSnapshot(snap => {
-      allUsers = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
+      // No orderBy — Firestore index nahi hai; client-side sort karte hain
+      allUsers = snap.docs
+        .map(d => ({ _id: d.id, ...d.data() }))
+        .sort((a, b) => {
+          const ad = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
+          const bd = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
+          return bd - ad;
+        });
       updateUserStats();
       applyUserFilter();
       setUsersLoading(false);
     }, err => {
       console.error('[Users]', err);
-      showAdminToast('⚠️ Users load error', 'error');
+      showAdminToast('⚠️ Users load error: ' + err.message, 'error');
       setUsersLoading(false);
     });
 }
