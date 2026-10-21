@@ -315,55 +315,158 @@ async function openBookingDetail(id) {
 
 function renderModalContent(b) {
   const S={pending:'Pending',inprogress:'In Progress',completed:'Completed',cancelled:'Cancelled'};
+  const SC={pending:'#f59e0b',inprogress:'#3b82f6',completed:'#16a34a',cancelled:'#ef4444'};
+  const SBG={pending:'#fffbeb',inprogress:'#eff6ff',completed:'#f0fdf4',cancelled:'#fef2f2'};
+  const sid=b.status||'pending';
+
+  // Payment breakdown helper
+  const advance  = b.advanceAmount || b.amountPaid || 0;
+  const total    = b.totalAmount   || (advance ? Math.round(advance/0.35) : 0);
+  const balance  = b.balanceAmount || (total - advance) || 0;
+  const balPaid  = b.balancePaid === true;
+  const pct      = total>0 ? Math.round(advance/total*100) : 35;
+
+  // Date formatter
+  const fmtDate = v => {
+    if(!v) return '—';
+    const d = v.toDate ? v.toDate() : new Date(v);
+    return isNaN(d) ? v : d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+  };
+
+  // Event row builder
+  const evtRow = (icon,label,enabled,date,time,venue) => {
+    if(!enabled && !date) return '';
+    return `<div class="detail-event">
+      <span>${icon}</span><strong>${label}</strong>
+      ${date?`<span>📅 ${fmtDate(date)}</span>`:''}
+      ${time?`<span>🕐 ${time}</span>`:''}
+      ${venue?`<span style="color:var(--fg3);font-size:0.75rem;">📍 ${venue}</span>`:''}
+    </div>`;
+  };
+
   document.getElementById('modalContent').innerHTML = `<div class="modal-body-scroll">
-    <div class="detail-header"><div><div class="detail-order-id">#AK${b._id.slice(-6).toUpperCase()}</div><div class="detail-template">🎨 ${b.template||'—'}</div></div><span class="status-pill">${S[b.status||'pending']||'Pending'}</span></div>
+
+    <!-- Header -->
+    <div class="detail-header">
+      <div>
+        <div class="detail-order-id">#AK${b._id.slice(-6).toUpperCase()}</div>
+        <div class="detail-template">🎨 ${b.template||'—'}</div>
+      </div>
+      <span class="status-pill" style="color:${SC[sid]};background:${SBG[sid]};">${S[sid]||'Pending'}</span>
+    </div>
+
+    <!-- Couple Details -->
     <div class="detail-section"><div class="detail-sec-title">💑 Couple Details</div>
       <div class="detail-grid">
         <div class="detail-item"><span class="di-label">Dulhe Ka Naam</span><span class="di-val">${b.groomName||'—'}</span></div>
-        <div class="detail-item"><span class="di-label">Dulhe Ke Walid</span><span class="di-val">${b.groomFather||'—'}</span></div>
+        <div class="detail-item"><span class="di-label">Dulhe Ke Walid</span><span class="di-val">${b.groomFather||b.fatherOfGroom||'—'}</span></div>
         <div class="detail-item"><span class="di-label">Dulhan Ka Naam</span><span class="di-val">${b.brideName||'—'}</span></div>
-        <div class="detail-item"><span class="di-label">Dulhan Ke Walid</span><span class="di-val">${b.brideFather||'—'}</span></div>
-      </div></div>
-    <div class="detail-section"><div class="detail-sec-title">💰 Payment</div>
-      <div class="detail-grid">
-        <div class="detail-item"><span class="di-label">Amount</span><span class="di-val strong-green">₹${(b.amountPaid||0).toLocaleString('en-IN')}</span></div>
-        <div class="detail-item"><span class="di-label">Transaction ID</span><span class="di-val mono">${b.transactionId||'—'}</span></div>
-        <div class="detail-item"><span class="di-label">WhatsApp</span><span class="di-val">📱 ${b.whatsapp||'—'}</span></div>
-        <div class="detail-item"><span class="di-label">Payment</span><span class="di-val">${b.paymentVerified?'✅ Verified':'⏳ Pending'}</span></div>
+        <div class="detail-item"><span class="di-label">Dulhan Ke Walid</span><span class="di-val">${b.brideFather||b.fatherOfBride||'—'}</span></div>
+        ${b.whatsapp?`<div class="detail-item"><span class="di-label">WhatsApp</span><span class="di-val">📱 ${b.whatsapp}</span></div>`:''}
+        ${b.phone?`<div class="detail-item"><span class="di-label">Phone</span><span class="di-val">📞 ${b.phone}</span></div>`:''}
       </div>
-      ${b.screenshotB64?`<div style="margin-top:0.8rem;"><img src="${b.screenshotB64}" style="max-width:100%;max-height:250px;border-radius:10px;object-fit:contain;" onclick="window.open(this.src,'_blank')"/></div>`:''}
     </div>
+
+    <!-- Venue -->
+    ${(b.venueName||b.hallName||b.venueAddress||b.address)?`
+    <div class="detail-section"><div class="detail-sec-title">📍 Venue / Jagah</div>
+      <div class="detail-grid">
+        ${(b.venueName||b.hallName)?`<div class="detail-item"><span class="di-label">Hall / Venue</span><span class="di-val">${b.venueName||b.hallName}</span></div>`:''}
+        ${(b.venueAddress||b.address)?`<div class="detail-item full"><span class="di-label">Pata (Address)</span><span class="di-val">${b.venueAddress||b.address}</span></div>`:''}
+        ${b.mapsLink?`<div class="detail-item full"><span class="di-label">Google Maps</span><a class="di-link" href="${b.mapsLink}" target="_blank" rel="noopener">🗺️ Map kholein →</a></div>`:''}
+      </div>
+    </div>`:''}
+
+    <!-- Wedding Events -->
+    <div class="detail-section"><div class="detail-sec-title">📅 Shaadi Ka Program</div>
+      ${evtRow('👥','Mehmaan Aayenge',true,b.guestArrivalDate||b.mehmaan,b.guestArrivalTime||b.mehmaanTime,'')}
+      ${evtRow('💍','Shaadi / Wedding',true,b.weddingDate||b.shadiDate,b.weddingTime||b.shadiTime,'')}
+      ${b.cocktailDate?evtRow('🥂','Cocktail Hour',true,b.cocktailDate,b.cocktailTime,''):''}
+      ${b.dinnerDate?evtRow('🍽️','Dinner Reception',true,b.dinnerDate,b.dinnerTime,''):''}
+      ${(b.mehendiEnabled||b.mehendiDate)?evtRow('🌿','Mehendi',true,b.mehendiDate,b.mehendiTime,b.mehendiVenue||b.mehendiPlace):''}
+      ${(b.haldiEnabled||b.haldiDate)?evtRow('💛','Haldi',true,b.haldiDate,b.haldiTime,b.haldiVenue||b.haldiPlace):''}
+      ${(b.sangeetEnabled||b.sangeetDate)?evtRow('🎵','Sangeet',true,b.sangeetDate,b.sangeetTime,b.sangeetVenue||b.sangeetPlace):''}
+      ${(!b.weddingDate&&!b.shadiDate&&!b.guestArrivalDate)?`<div style="color:#94a3b8;font-size:0.8rem;padding:0.5rem 0;">Dates not provided</div>`:''}
+    </div>
+
+    <!-- Payment Breakdown -->
+    <div class="detail-section"><div class="detail-sec-title">💰 Payment Details</div>
+      <!-- Advance / Balance bar -->
+      <div style="background:var(--surface2);border-radius:12px;padding:1rem;margin-bottom:0.85rem;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:0.55rem;">
+          <span style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:#94a3b8;">Total Amount</span>
+          <span style="font-size:0.95rem;font-weight:800;color:var(--fg);">₹${total.toLocaleString('en-IN')}</span>
+        </div>
+        <!-- Progress bar -->
+        <div style="height:8px;background:#e2e8f0;border-radius:9px;overflow:hidden;margin-bottom:0.7rem;">
+          <div style="height:100%;width:${balPaid?100:pct}%;background:${balPaid?'#16a34a':'#f59e0b'};border-radius:9px;transition:width 0.4s;"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.55rem;">
+          <div style="background:#fff;border:1.5px solid ${advance?'#bbf7d0':'#e2e8f0'};border-radius:10px;padding:0.6rem 0.75rem;">
+            <div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;color:#94a3b8;margin-bottom:0.18rem;">✅ Advance Paid (${pct}%)</div>
+            <div style="font-size:1rem;font-weight:800;color:#16a34a;">₹${advance.toLocaleString('en-IN')}</div>
+          </div>
+          <div style="background:#fff;border:1.5px solid ${balPaid?'#bbf7d0':'#fde68a'};border-radius:10px;padding:0.6rem 0.75rem;">
+            <div style="font-size:0.6rem;font-weight:700;text-transform:uppercase;color:#94a3b8;margin-bottom:0.18rem;">${balPaid?'✅ Balance Paid':'⏳ Balance Due'} (${100-pct}%)</div>
+            <div style="font-size:1rem;font-weight:800;color:${balPaid?'#16a34a':'#d97706'};">₹${balance.toLocaleString('en-IN')}</div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-grid">
+        <div class="detail-item"><span class="di-label">Transaction ID</span><span class="di-val mono">${b.transactionId||b.utrNumber||'—'}</span></div>
+        <div class="detail-item"><span class="di-label">Payment Status</span><span class="di-val">${b.paymentVerified?'✅ Verified':'⏳ Pending'}</span></div>
+        ${b.couponCode?`<div class="detail-item"><span class="di-label">Coupon</span><span class="di-val" style="color:#7c3aed;">🎟️ ${b.couponCode}</span></div>`:''}
+        ${b.discountAmount?`<div class="detail-item"><span class="di-label">Discount</span><span class="di-val" style="color:#16a34a;">−₹${b.discountAmount.toLocaleString('en-IN')}</span></div>`:''}
+      </div>
+      ${b.screenshotURL||b.paymentScreenshot?`<div style="margin-top:0.8rem;"><a href="${b.screenshotURL||b.paymentScreenshot}" target="_blank" style="display:inline-flex;align-items:center;gap:0.4rem;font-size:0.78rem;font-weight:700;color:var(--accent);text-decoration:none;background:var(--accent-lt);padding:0.42rem 0.85rem;border-radius:8px;">🖼️ Payment Screenshot dekhein →</a></div>`:''}
+      ${b.screenshotB64?`<div style="margin-top:0.8rem;"><img src="${b.screenshotB64}" style="max-width:100%;max-height:220px;border-radius:10px;object-fit:contain;cursor:pointer;" onclick="window.open(this.src,'_blank')"/></div>`:''}
+    </div>
+
+    <!-- Admin Actions -->
     <div class="detail-section"><div class="detail-sec-title">⚙️ Admin Actions</div>
-      <div class="admin-action-row"><label class="action-label">Status</label>
+      <div class="admin-action-row"><label class="action-label">Status Change</label>
         <select id="modalStatusSelect" class="action-select">
-          <option value="pending" ${(b.status||'pending')==='pending'?'selected':''}>⏳ Pending</option>
-          <option value="inprogress" ${b.status==='inprogress'?'selected':''}>🔵 In Progress</option>
-          <option value="completed" ${b.status==='completed'?'selected':''}>✅ Completed</option>
-          <option value="cancelled" ${b.status==='cancelled'?'selected':''}>❌ Cancelled</option>
-        </select></div>
-      <div class="admin-action-row"><label class="action-label">Card Link</label>
-        <input type="url" id="modalCardLink" class="action-input" value="${b.cardLink||''}" placeholder="https://..."/></div>
-      <div class="admin-action-row"><label class="action-label">Admin Note</label>
-        <textarea id="modalAdminNote" class="action-textarea">${b.adminNote||''}</textarea></div>
+          <option value="pending"    ${sid==='pending'   ?'selected':''}>⏳ Pending</option>
+          <option value="inprogress" ${sid==='inprogress'?'selected':''}>🔵 In Progress</option>
+          <option value="completed"  ${sid==='completed' ?'selected':''}>✅ Completed</option>
+          <option value="cancelled"  ${sid==='cancelled' ?'selected':''}>❌ Cancelled</option>
+        </select>
+      </div>
       <div class="admin-action-row" style="flex-direction:row;align-items:center;gap:0.8rem;">
-        <input type="checkbox" id="modalPayVerify" ${b.paymentVerified?'checked':''} style="width:18px;height:18px;accent-color:#16a34a;"/>
-        <label for="modalPayVerify" style="font-size:0.85rem;font-weight:600;">✅ Payment Verified</label></div>
+        <input type="checkbox" id="modalPayVerify" ${b.paymentVerified?'checked':''} style="width:18px;height:18px;accent-color:#16a34a;cursor:pointer;"/>
+        <label for="modalPayVerify" style="font-size:0.85rem;font-weight:600;cursor:pointer;">✅ Advance Payment Verified</label>
+      </div>
+      <div class="admin-action-row" style="flex-direction:row;align-items:center;gap:0.8rem;">
+        <input type="checkbox" id="modalBalVerify" ${b.balancePaid?'checked':''} style="width:18px;height:18px;accent-color:#16a34a;cursor:pointer;"/>
+        <label for="modalBalVerify" style="font-size:0.85rem;font-weight:600;cursor:pointer;">✅ Balance Payment Received</label>
+      </div>
+      <div class="admin-action-row"><label class="action-label">Card Link</label>
+        <input type="url" id="modalCardLink" class="action-input" value="${b.cardLink||''}" placeholder="https://..."/>
+      </div>
+      <div class="admin-action-row"><label class="action-label">Admin Note</label>
+        <textarea id="modalAdminNote" class="action-textarea">${b.adminNote||''}</textarea>
+      </div>
       <div class="modal-action-btns">
         <button class="mab-save" onclick="saveBookingChanges('${b._id}')">💾 Save</button>
-        <a class="mab-wa" href="https://wa.me/91${b.whatsapp||''}" target="_blank">💬 WhatsApp</a>
+        ${b.whatsapp?`<a class="mab-wa" href="https://wa.me/91${b.whatsapp}" target="_blank" rel="noopener">💬 WhatsApp</a>`:''}
+        ${b.cardLink?`<a class="mab-link" href="${b.cardLink}" target="_blank" rel="noopener">🔗 Card</a>`:''}
         <button class="mab-delete" onclick="deleteBooking('${b._id}')">🗑️ Delete</button>
-      </div></div></div>`;
+      </div>
+    </div>
+
+  </div>`;
 }
 
 async function saveBookingChanges(id) {
   const status=document.getElementById('modalStatusSelect')?.value;
   const note=document.getElementById('modalAdminNote')?.value.trim();
   const verified=document.getElementById('modalPayVerify')?.checked;
+  const balPaid=document.getElementById('modalBalVerify')?.checked;
   const cardLink=document.getElementById('modalCardLink')?.value.trim();
   const btn=document.querySelector('.mab-save');
   if(btn){btn.disabled=true;btn.textContent='⏳ Saving...';}
   try {
-    await db.collection('bookings').doc(id).update({status,adminNote:note,paymentVerified:verified,cardLink:cardLink||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    await db.collection('bookings').doc(id).update({status,adminNote:note,paymentVerified:verified,balancePaid:balPaid,cardLink:cardLink||'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
     showAdminToast('✅ Updated!','success'); closeModal();
     if(status==='completed'&&cardLink){
       const b=allBookings.find(x=>x._id===id);
