@@ -657,90 +657,88 @@ body { padding-bottom: 86px; }
 }
 
 
-/* ─── CSS WEDDING DOOR ─── */
+/* ─── CSS WEDDING DOOR — Real gradients from actual card CSS files ─── */
 .css-door {
-  position: absolute; inset: 0;
+  position: absolute; inset: 0; overflow: hidden; z-index: 1;
   display: flex; flex-direction: column;
   align-items: center; justify-content: flex-end;
-  padding-bottom: 6%; overflow: hidden; z-index: 1;
+  padding-bottom: 8%;
 }
-.css-door::before {
-  content: ''; position: absolute; top: 0; left: 50%;
-  transform: translateX(-50%);
-  width: 90%; height: 55%;
-  background: radial-gradient(ellipse, rgba(255,255,255,0.1) 0%, transparent 65%);
-  pointer-events: none;
+.door-room {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 70% at 50% 40%, var(--d-wall1), var(--d-wall2));
+}
+.door-glow {
+  position: absolute;
+  width: 58%; height: 44%;
+  top: 20%; left: 50%; transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgba(255,255,255,0.07) 0%, transparent 70%);
+  pointer-events: none; z-index: 1;
 }
 .door-wrap {
-  width: 56%; height: 68%;
+  position: relative; z-index: 2;
+  width: 52%; height: 64%;
   display: flex; flex-direction: column;
-  filter: drop-shadow(0 8px 20px rgba(0,0,0,0.55));
-  position: relative; z-index: 1;
+  filter: drop-shadow(0 6px 18px rgba(0,0,0,0.65));
 }
-.door-pillar {
-  position: absolute; bottom: 4%; width: 9%; height: 52%;
-  background: var(--da); opacity: 0.35;
-  border-radius: 4px 4px 0 0;
+.door-arch {
+  width: 100%; height: 26%; flex-shrink: 0; position: relative;
 }
-.door-pillar-l { left: 12%; }
-.door-pillar-r { right: 12%; }
-.door-arch { width: 100%; height: 30%; flex-shrink: 0; position: relative; }
-.arch-out {
+.arch-outer {
   position: absolute; inset: 0;
   border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-  background: var(--da);
+  background: radial-gradient(ellipse 140% 85% at 50% 32%, var(--c1) 0%, var(--c2) 30%, var(--c3) 62%, var(--c4) 100%);
+  border: 2px solid var(--seam);
+  border-bottom: none;
 }
-.arch-in {
-  position: absolute; top: 4px; left: 4px; right: 4px; bottom: 0;
-  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-  background: var(--db);
+.door-panels {
+  flex: 1; display: flex; position: relative;
+  border-left: 2px solid var(--seam);
+  border-right: 2px solid var(--seam);
+  border-bottom: 2.5px solid var(--seam);
 }
-.arch-gem {
-  position: absolute; top: 22%; left: 50%;
-  transform: translateX(-50%);
-  width: 9px; height: 9px; border-radius: 50%;
-  background: var(--da); box-shadow: 0 0 7px rgba(255,255,255,0.35);
-}
-.door-body {
-  flex: 1; background: var(--db);
-  border-left: 3.5px solid var(--da);
-  border-right: 3.5px solid var(--da);
-  border-bottom: 3.5px solid var(--da);
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 3fr 2fr;
-  gap: 5px; padding: 7px 7px 9px;
+.door-left, .door-right {
+  flex: 1;
+  background: radial-gradient(ellipse 140% 85% at 50% 32%, var(--c1) 0%, var(--c2) 30%, var(--c3) 62%, var(--c4) 100%);
   position: relative;
 }
-.door-panel {
-  border: 1.5px solid var(--da); border-radius: 2px;
-  background: rgba(255,255,255,0.04);
-}
-.door-panel::after {
-  content: ''; display: block; height: 30%; margin: 3px 3px 0;
-  background: rgba(255,255,255,0.06); border-radius: 2px 2px 0 0;
-}
-.door-knob {
-  position: absolute; right: 13%; top: 50%;
-  transform: translateY(-50%);
-  width: 7px; height: 7px; border-radius: 50%;
-  background: var(--da);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.35);
-}
-.door-knob::after {
+.door-left::before, .door-right::before {
   content: ''; position: absolute;
-  top: 100%; left: 50%; transform: translateX(-50%);
-  width: 2px; height: 7px; background: var(--da); border-radius: 1px;
+  inset: 5px 4px 6px 4px;
+  border: 1px solid var(--seam);
+  opacity: 0.45; border-radius: 1px;
+}
+.door-left { border-right: 1px solid var(--seam); }
+.door-right::after {
+  content: ''; position: absolute;
+  left: 18%; top: 50%; transform: translateY(-50%);
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--seam);
+  box-shadow: 0 0 5px rgba(255,255,255,0.3);
+}
+.door-seam-line {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 2px; height: 100%; background: var(--seam); z-index: 2; opacity: 0.7;
 }
 .door-sill {
-  position: absolute; bottom: -4px; left: -5px; right: -5px;
-  height: 5px; background: var(--da); border-radius: 1px; z-index: 0;
+  position: absolute; bottom: -4px; left: -3px; right: -3px;
+  height: 5px; background: var(--seam); border-radius: 1px; z-index: 3;
 }
-.door-ground {
-  width: 74%; height: 7px; background: var(--da); opacity: 0.5;
-  border-radius: 3px 3px 0 0; margin-top: -4px;
-  position: relative; z-index: 0;
+.door-step {
+  position: relative; z-index: 2;
+  width: 72%; height: 7px;
+  background: var(--seam); opacity: 0.45;
+  border-radius: 3px 3px 0 0; margin-top: -3px;
 }
+.door-pl, .door-pr {
+  position: absolute; bottom: 7px;
+  width: 8%; height: 42%; z-index: 1;
+  background: radial-gradient(ellipse 140% 85% at 50% 32%, var(--c1) 0%, var(--c2) 30%, var(--c3) 62%, var(--c4) 100%);
+  border: 1.5px solid var(--seam); border-bottom: none;
+  border-radius: 3px 3px 0 0; opacity: 0.55;
+}
+.door-pl { left: 11%; }
+.door-pr { right: 11%; }
 </style>
   <!-- PWA -->
   <link rel="manifest" href="manifest.json"/>
