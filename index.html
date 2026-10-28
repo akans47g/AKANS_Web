@@ -657,88 +657,203 @@ body { padding-bottom: 86px; }
 }
 
 
-/* ─── CSS WEDDING DOOR — Real gradients from actual card CSS files ─── */
-.css-door {
-  position: absolute; inset: 0; overflow: hidden; z-index: 1;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: flex-end;
-  padding-bottom: 8%;
+/* ═══════════════════════════════════════════════════
+   CARD DOOR PREVIEW — Actual wedding card door, scaled
+   down. Same structure as the real card's #envelope-cover.
+   Variables: --dc1 --dc2 --dc3 --dc4 --dseam
+═══════════════════════════════════════════════════ */
+
+/* Container — replaces #envelope-cover */
+.card-door {
+  position: absolute; inset: 0; overflow: hidden;
+  background: radial-gradient(ellipse 140% 85% at 50% 32%,
+    var(--dc1) 0%, var(--dc2) 30%, var(--dc3) 62%, var(--dc4) 100%);
+  background-size: 130% 130%;
+  animation: cdAmbient 9s ease-in-out infinite;
 }
-.door-room {
+@keyframes cdAmbient {
+  0%,100% { background-position: 50% 40%; }
+  50%     { background-position: 50% 55%; }
+}
+
+/* Dark vignette around edges */
+.card-door::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 0;
+  background: radial-gradient(ellipse 90% 70% at 50% 38%,
+    transparent 35%, rgba(0,0,0,0.5) 100%);
+}
+
+/* Golden dust particles — pure CSS, no extra markup */
+.card-door-inner::before {
+  content: '';
+  position: absolute; inset: -20px;
+  background-image:
+    radial-gradient(2px 2px at 12% 18%,  rgba(255,235,180,0.95), transparent),
+    radial-gradient(1.5px 1.5px at 32% 8%,  rgba(255,255,255,0.9),  transparent),
+    radial-gradient(2.5px 2.5px at 58% 12%, rgba(255,235,180,0.9),  transparent),
+    radial-gradient(2px 2px at 78% 22%,  rgba(255,255,255,0.85), transparent),
+    radial-gradient(3px 3px at 88% 60%,  rgba(255,235,180,0.9),  transparent),
+    radial-gradient(2px 2px at 22% 72%,  rgba(255,255,255,0.8),  transparent),
+    radial-gradient(2.5px 2.5px at 52% 82%, rgba(255,235,180,0.85), transparent),
+    radial-gradient(1.5px 1.5px at 82% 78%, rgba(255,255,255,0.8),  transparent);
+  animation: cdDust 7s ease-in-out infinite alternate;
+  z-index: 1; pointer-events: none;
+}
+@keyframes cdDust {
+  0%   { transform: translateY(0);   opacity: 0.7; }
+  100% { transform: translateY(-5px); opacity: 1;  }
+}
+
+/* ── Door Panels ── */
+.card-door .door-left,
+.card-door .door-right {
+  position: absolute; top: 0; bottom: 0;
+  width: 50%;
+  background-image:
+    linear-gradient(100deg, transparent 42%, rgba(255,238,190,0.20) 49%, rgba(255,238,190,0.20) 53%, transparent 60%),
+    radial-gradient(ellipse 140% 85% at 50% 32%, var(--dc1) 0%, var(--dc2) 30%, var(--dc3) 62%, var(--dc4) 100%);
+  background-size: 260% 100%, 200% 100%;
+  z-index: 2; overflow: hidden;
+}
+.card-door .door-left {
+  left: 0; transform-origin: left center;
+  box-shadow: inset -2px 0 10px rgba(255,238,190,0.2);
+  animation: cdShimL 6s ease-in-out infinite;
+}
+.card-door .door-right {
+  right: 0; transform-origin: right center;
+  box-shadow: inset 2px 0 10px rgba(255,238,190,0.2);
+  animation: cdShimR 6s ease-in-out infinite;
+  animation-delay: 1.2s;
+}
+@keyframes cdShimL {
+  0%   { background-position: 140% 0, 0%   0%; }
+  55%  { background-position: -40% 0, 0%   0%; }
+  100% { background-position: -40% 0, 0%   0%; }
+}
+@keyframes cdShimR {
+  0%   { background-position: 140% 0, 100% 0%; }
+  55%  { background-position: -40% 0, 100% 0%; }
+  100% { background-position: -40% 0, 100% 0%; }
+}
+
+/* Carved fluted grooves */
+.card-door .door-left::before,
+.card-door .door-right::before {
+  content: '';
   position: absolute; inset: 0;
-  background: radial-gradient(ellipse 80% 70% at 50% 40%, var(--d-wall1), var(--d-wall2));
+  background-image:
+    repeating-linear-gradient(90deg,
+      rgba(0,0,0,0.10)       0px, rgba(0,0,0,0.10)       2px,
+      transparent            2px, transparent            22px,
+      rgba(255,241,200,0.16) 22px, rgba(255,241,200,0.16) 24px,
+      transparent            24px, transparent            44px);
 }
-.door-glow {
-  position: absolute;
-  width: 58%; height: 44%;
-  top: 20%; left: 50%; transform: translateX(-50%);
-  background: radial-gradient(ellipse, rgba(255,255,255,0.07) 0%, transparent 70%);
-  pointer-events: none; z-index: 1;
+
+/* Gold seam at center */
+.card-door .door-left::after {
+  content: '';
+  position: absolute; top: 0; right: 0; bottom: 0; width: 2px;
+  background: linear-gradient(to bottom, transparent, var(--dseam) 15%, var(--dseam) 85%, transparent);
+  box-shadow: -2px 0 5px rgba(240,207,126,0.3);
 }
-.door-wrap {
-  position: relative; z-index: 2;
-  width: 52%; height: 64%;
-  display: flex; flex-direction: column;
-  filter: drop-shadow(0 6px 18px rgba(0,0,0,0.65));
+.card-door .door-right::after {
+  content: '';
+  position: absolute; top: 0; left: 0; bottom: 0; width: 2px;
+  background: linear-gradient(to bottom, transparent, var(--dseam) 15%, var(--dseam) 85%, transparent);
+  box-shadow: 2px 0 5px rgba(240,207,126,0.3);
 }
-.door-arch {
-  width: 100%; height: 26%; flex-shrink: 0; position: relative;
+
+/* ── Vertical Light Beam ── */
+.card-door .light-beam {
+  position: absolute; top: 0; bottom: 0; left: 50%;
+  width: 30px; transform: translateX(-50%);
+  z-index: 4; pointer-events: none;
+  background: linear-gradient(to bottom,
+    transparent 0%,
+    rgba(255,235,190,0.28) 12%,
+    rgba(255,245,220,0.45) 50%,
+    rgba(255,235,190,0.28) 88%,
+    transparent 100%);
+  filter: blur(7px); opacity: 0.8;
+  animation: cdBeam 4s ease-in-out infinite;
 }
-.arch-outer {
-  position: absolute; inset: 0;
-  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-  background: radial-gradient(ellipse 140% 85% at 50% 32%, var(--c1) 0%, var(--c2) 30%, var(--c3) 62%, var(--c4) 100%);
-  border: 2px solid var(--seam);
-  border-bottom: none;
+.card-door .light-beam::after {
+  content: '';
+  position: absolute; top: 0; bottom: 0; left: 50%;
+  width: 1.5px; transform: translateX(-50%);
+  background: linear-gradient(to bottom, transparent, rgba(255,250,235,0.95) 18%, rgba(255,250,235,0.95) 82%, transparent);
+  box-shadow: 0 0 8px 3px rgba(255,235,190,0.5);
 }
-.door-panels {
-  flex: 1; display: flex; position: relative;
-  border-left: 2px solid var(--seam);
-  border-right: 2px solid var(--seam);
-  border-bottom: 2.5px solid var(--seam);
+@keyframes cdBeam {
+  0%,100% { opacity: 0.6; }
+  50%     { opacity: 1;   }
 }
-.door-left, .door-right {
-  flex: 1;
-  background: radial-gradient(ellipse 140% 85% at 50% 32%, var(--c1) 0%, var(--c2) 30%, var(--c3) 62%, var(--c4) 100%);
+
+/* ── Center Content ── */
+.card-door-inner {
+  position: absolute; inset: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+
+/* "Tap to Open" circle */
+.card-tap-btn {
   position: relative;
+  width: 46px; height: 46px;
+  background: radial-gradient(circle at 35% 30%, #ffffff 0%, #fdf1f4 55%, #f3e2e6 100%);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 1px;
+  border: 1.5px solid var(--dseam);
+  box-shadow:
+    inset 0 1px 3px rgba(255,255,255,0.9),
+    0 0 0 4px rgba(255,255,255,0.15),
+    0 4px 14px rgba(70,20,40,0.4);
+  animation: cdTapBreathe 3.2s ease-in-out infinite;
 }
-.door-left::before, .door-right::before {
-  content: ''; position: absolute;
-  inset: 5px 4px 6px 4px;
-  border: 1px solid var(--seam);
-  opacity: 0.45; border-radius: 1px;
+/* Rotating ring around tap button */
+.card-tap-btn::before {
+  content: '';
+  position: absolute; inset: -9px; border-radius: 50%;
+  padding: 1.5px;
+  background: conic-gradient(from 0deg,
+    transparent 0%, var(--dseam) 12%, transparent 28%,
+    transparent 72%, var(--dseam) 88%, transparent 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  animation: cdRing 6s linear infinite;
 }
-.door-left { border-right: 1px solid var(--seam); }
-.door-right::after {
-  content: ''; position: absolute;
-  left: 18%; top: 50%; transform: translateY(-50%);
-  width: 5px; height: 5px; border-radius: 50%;
-  background: var(--seam);
-  box-shadow: 0 0 5px rgba(255,255,255,0.3);
+@keyframes cdRing { to { transform: rotate(360deg); } }
+@keyframes cdTapBreathe {
+  0%,100% { box-shadow: inset 0 1px 3px rgba(255,255,255,.9), 0 0 0 4px rgba(255,255,255,.15), 0 4px 14px rgba(70,20,40,.4); }
+  50%     { box-shadow: inset 0 1px 3px rgba(255,255,255,.9), 0 0 0 7px rgba(255,255,255,.08), 0 4px 18px rgba(70,20,40,.5); }
 }
-.door-seam-line {
-  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-  width: 2px; height: 100%; background: var(--seam); z-index: 2; opacity: 0.7;
+/* W letter */
+.card-w-letter {
+  font-family: 'Cinzel', serif;
+  font-size: 14px; font-weight: 600; line-height: 1;
+  background: linear-gradient(135deg, var(--dseam), rgba(255,255,255,.9) 45%, var(--dseam) 90%);
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent; -webkit-text-fill-color: transparent;
 }
-.door-sill {
-  position: absolute; bottom: -4px; left: -3px; right: -3px;
-  height: 5px; background: var(--seam); border-radius: 1px; z-index: 3;
+/* "tap to open" micro text */
+.card-tap-txt {
+  font-family: 'Cinzel', serif;
+  font-size: 4.5px; letter-spacing: 0.4px;
+  color: rgba(255,255,255,0.75); text-transform: uppercase;
 }
-.door-step {
-  position: relative; z-index: 2;
-  width: 72%; height: 7px;
-  background: var(--seam); opacity: 0.45;
-  border-radius: 3px 3px 0 0; margin-top: -3px;
+
+/* ── Corner Frame Accents ── */
+.card-corner {
+  position: absolute; width: 18px; height: 18px;
+  z-index: 5; pointer-events: none; opacity: 0.65;
 }
-.door-pl, .door-pr {
-  position: absolute; bottom: 7px;
-  width: 8%; height: 42%; z-index: 1;
-  background: radial-gradient(ellipse 140% 85% at 50% 32%, var(--c1) 0%, var(--c2) 30%, var(--c3) 62%, var(--c4) 100%);
-  border: 1.5px solid var(--seam); border-bottom: none;
-  border-radius: 3px 3px 0 0; opacity: 0.55;
-}
-.door-pl { left: 11%; }
-.door-pr { right: 11%; }
+.card-corner-tl { top:8px;    left:8px;    border-top:1.5px solid rgba(240,205,150,.7); border-left:1.5px solid rgba(240,205,150,.7); }
+.card-corner-tr { top:8px;    right:8px;   border-top:1.5px solid rgba(240,205,150,.7); border-right:1.5px solid rgba(240,205,150,.7); }
+.card-corner-bl { bottom:8px; left:8px;    border-bottom:1.5px solid rgba(240,205,150,.7); border-left:1.5px solid rgba(240,205,150,.7); }
+.card-corner-br { bottom:8px; right:8px;   border-bottom:1.5px solid rgba(240,205,150,.7); border-right:1.5px solid rgba(240,205,150,.7); }
 </style>
   <!-- PWA -->
   <link rel="manifest" href="manifest.json"/>
@@ -752,7 +867,44 @@ body { padding-bottom: 86px; }
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js"></script>
+  <script>
+  // ── Firebase Config (inline) ─────────────────────────────
+  const firebaseConfig = {
+    apiKey: "AIzaSyBqfFVCakhPXoS5EOD_x_xseYArTsiLI2A",
+    authDomain: "akans-website.firebaseapp.com",
+    projectId: "akans-website",
+    storageBucket: "akans-website.firebasestorage.app",
+    messagingSenderId: "319077212996",
+    appId: "1:319077212996:web:bf6c437bf17e047f65ad11"
+  };
+  if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+  const auth = firebase.auth();
+  const db   = firebase.firestore();
+  const SITE_URL = 'https://akans47g.github.io/AKANS_Web/';
+  function getCurrentUser() {
+    return new Promise(resolve => {
+      const unsub = auth.onAuthStateChanged(user => { unsub(); resolve(user); });
+    });
+  }
+  function showToastGlobal(msg, duration = 2500) {
+    let t = document.getElementById('toast') || document.getElementById('copyToast');
+    if (!t) {
+      t = document.createElement('div'); t.id = 'toast';
+      t.style.cssText = `position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);
+        background:#1a1f3c;color:#fff;font-size:0.82rem;font-weight:600;
+        padding:0.65rem 1.4rem;border-radius:30px;opacity:0;
+        transition:opacity 0.25s,transform 0.25s;z-index:9999;
+        pointer-events:none;white-space:nowrap;font-family:'DM Sans',sans-serif;`;
+      document.body.appendChild(t);
+    }
+    t.textContent = msg; t.style.opacity = '1';
+    t.style.transform = 'translateX(-50%) translateY(0)';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => {
+      t.style.opacity = '0'; t.style.transform = 'translateX(-50%) translateY(20px)';
+    }, duration);
+  }
+  </script>
 </head>
 <body>
 
@@ -914,15 +1066,14 @@ const grid = document.getElementById('templatesGrid');
 grid.innerHTML = `<div style="text-align:center;padding:3rem;color:#7c3aed;grid-column:1/-1;">
   <div style="font-size:2rem;margin-bottom:0.5rem;">⏳</div>Loading templates...</div>`;
 
+// orderBy nahi use karte — composite index ki zaroorat hoti hai
+// Fetch karke client-side sort karte hain
 db.collection('templates')
   .where('active', '==', true)
-  .orderBy('order', 'asc')
   .get()
-  .catch(() =>
-    // 'order' field may not exist — fallback without orderBy
-    db.collection('templates').where('active', '==', true).get()
-  )
   .then(snap => {
+    // Client-side sort by 'order' field
+    snap.docs.sort((a, b) => (a.data().order || 0) - (b.data().order || 0));
     if (snap.empty) {
       grid.innerHTML = `<div style="text-align:center;padding:3rem;color:#888;grid-column:1/-1;">
         Koi template available nahi hai abhi.</div>`;
@@ -934,40 +1085,38 @@ db.collection('templates')
     snap.docs.forEach((doc, i) => {
       const t = doc.data();
 
-      // ── Real door themes — extracted from actual wedding card CSS files ──
-      // Style file → door CSS variables (--door-c1 to --door-c4, --door-seam)
+      // ── Real door themes — 5 CSS files se extract kiye actual variables ──
       const doorThemes = [
         // 1: style_2.css — Default Pink/Rose
-        { c1:'#c98aa0', c2:'#9c5570', c3:'#6b3349', c4:'#3d1f2d', seam:'#b8934a', wall1:'#2a1020', wall2:'#1a0a18' },
+        { dc1:'#c98aa0', dc2:'#9c5570', dc3:'#6b3349', dc4:'#3d1f2d', dseam:'#b8934a' },
         // 2: style2_2.css — Royal Gold
-        { c1:'#F3DEAA', c2:'#B88A2A', c3:'#4A3018', c4:'#160D05', seam:'#E5C77A', wall1:'#1a1208', wall2:'#0d0a04' },
+        { dc1:'#F3DEAA', dc2:'#B88A2A', dc3:'#4A3018', dc4:'#160D05', dseam:'#E5C77A' },
         // 3: style7_5.css — Romantic Rose (dark wine)
-        { c1:'#8a3540', c2:'#5c1620', c3:'#3A0710', c4:'#0d0203', seam:'#C9A45C', wall1:'#1a0508', wall2:'#0a0203' },
-        // 4: style-peony.css — Peony (same door as Romantic Rose)
-        { c1:'#8a3540', c2:'#5c1620', c3:'#3A0710', c4:'#0d0203', seam:'#C9A45C', wall1:'#1a0508', wall2:'#0a0203' },
-        // 5: style-b-e.css — B-E theme (same door as Romantic Rose)
-        { c1:'#8a3540', c2:'#5c1620', c3:'#3A0710', c4:'#0d0203', seam:'#C9A45C', wall1:'#1a0508', wall2:'#0a0203' },
+        { dc1:'#8a3540', dc2:'#5c1620', dc3:'#3A0710', dc4:'#0d0203', dseam:'#C9A45C' },
+        // 4: style-peony.css — Peony
+        { dc1:'#8a3540', dc2:'#5c1620', dc3:'#3A0710', dc4:'#0d0203', dseam:'#C9A45C' },
+        // 5: style-b-e.css — B-E theme
+        { dc1:'#8a3540', dc2:'#5c1620', dc3:'#3A0710', dc4:'#0d0203', dseam:'#C9A45C' },
       ];
       const th = doorThemes[i % doorThemes.length];
+
+      // Actual door HTML — same structure as real wedding card's #envelope-cover
       const doorHtml = `
-        <div class="css-door"
-             style="--c1:${th.c1};--c2:${th.c2};--c3:${th.c3};--c4:${th.c4};--seam:${th.seam};--d-wall1:${th.wall1};--d-wall2:${th.wall2};">
-          <div class="door-room"></div>
-          <div class="door-glow"></div>
-          <div class="door-pl"></div>
-          <div class="door-pr"></div>
-          <div class="door-wrap">
-            <div class="door-arch">
-              <div class="arch-outer"></div>
-            </div>
-            <div class="door-panels">
-              <div class="door-left"></div>
-              <div class="door-right"></div>
-              <div class="door-seam-line"></div>
-              <div class="door-sill"></div>
+        <div class="card-door"
+             style="--dc1:${th.dc1};--dc2:${th.dc2};--dc3:${th.dc3};--dc4:${th.dc4};--dseam:${th.dseam};">
+          <div class="door-left"></div>
+          <div class="door-right"></div>
+          <div class="light-beam"></div>
+          <div class="card-door-inner">
+            <div class="card-tap-btn">
+              <span class="card-w-letter">W</span>
+              <span class="card-tap-txt">tap to open</span>
             </div>
           </div>
-          <div class="door-step"></div>
+          <div class="card-corner card-corner-tl"></div>
+          <div class="card-corner card-corner-tr"></div>
+          <div class="card-corner card-corner-bl"></div>
+          <div class="card-corner card-corner-br"></div>
         </div>`;
 
       // Explicit image — sirf tab jab admin ne manually URL set kiya ho
