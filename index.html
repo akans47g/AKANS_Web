@@ -934,36 +934,41 @@ db.collection('templates')
     snap.docs.forEach((doc, i) => {
       const t = doc.data();
 
-      // ── CSS Door themes — koi screenshot nahi chahiye! ──────
+      // ── Real door themes — extracted from actual wedding card CSS files ──
+      // Style file → door CSS variables (--door-c1 to --door-c4, --door-seam)
       const doorThemes = [
-        { accent:'#c8a023', bg:'#0d3b1a', mid:'#1a5c2a' },  // 1 - Deep green + gold
-        { accent:'#c8a023', bg:'#2d0a14', mid:'#4a1020' },  // 2 - Dark red + gold
-        { accent:'#8b6914', bg:'#c4b07a', mid:'#e8dfc8' },  // 3 - Cream + brown gold
-        { accent:'#e8a0b0', bg:'#8b1a3a', mid:'#c2185b' },  // 4 - Deep rose + blush
-        { accent:'#ffd700', bg:'#9a1045', mid:'#e91e63' },  // 5 - Magenta + gold
-        { accent:'#a78bfa', bg:'#1a0a3a', mid:'#2e1065' },  // 6 - Dark purple + lavender
+        // 1: style_2.css — Default Pink/Rose
+        { c1:'#c98aa0', c2:'#9c5570', c3:'#6b3349', c4:'#3d1f2d', seam:'#b8934a', wall1:'#2a1020', wall2:'#1a0a18' },
+        // 2: style2_2.css — Royal Gold
+        { c1:'#F3DEAA', c2:'#B88A2A', c3:'#4A3018', c4:'#160D05', seam:'#E5C77A', wall1:'#1a1208', wall2:'#0d0a04' },
+        // 3: style7_5.css — Romantic Rose (dark wine)
+        { c1:'#8a3540', c2:'#5c1620', c3:'#3A0710', c4:'#0d0203', seam:'#C9A45C', wall1:'#1a0508', wall2:'#0a0203' },
+        // 4: style-peony.css — Peony (same door as Romantic Rose)
+        { c1:'#8a3540', c2:'#5c1620', c3:'#3A0710', c4:'#0d0203', seam:'#C9A45C', wall1:'#1a0508', wall2:'#0a0203' },
+        // 5: style-b-e.css — B-E theme (same door as Romantic Rose)
+        { c1:'#8a3540', c2:'#5c1620', c3:'#3A0710', c4:'#0d0203', seam:'#C9A45C', wall1:'#1a0508', wall2:'#0a0203' },
       ];
       const th = doorThemes[i % doorThemes.length];
-      const doorHtml = `<div class="css-door" style="--da:${th.accent};--db:${th.bg};background:radial-gradient(ellipse at 50% 25%,${th.mid},${th.bg});">
-        <div class="door-pillar door-pillar-l"></div>
-        <div class="door-pillar door-pillar-r"></div>
-        <div class="door-wrap">
-          <div class="door-arch">
-            <div class="arch-out"></div>
-            <div class="arch-in"></div>
-            <div class="arch-gem"></div>
+      const doorHtml = `
+        <div class="css-door"
+             style="--c1:${th.c1};--c2:${th.c2};--c3:${th.c3};--c4:${th.c4};--seam:${th.seam};--d-wall1:${th.wall1};--d-wall2:${th.wall2};">
+          <div class="door-room"></div>
+          <div class="door-glow"></div>
+          <div class="door-pl"></div>
+          <div class="door-pr"></div>
+          <div class="door-wrap">
+            <div class="door-arch">
+              <div class="arch-outer"></div>
+            </div>
+            <div class="door-panels">
+              <div class="door-left"></div>
+              <div class="door-right"></div>
+              <div class="door-seam-line"></div>
+              <div class="door-sill"></div>
+            </div>
           </div>
-          <div class="door-body">
-            <div class="door-panel"></div>
-            <div class="door-panel"></div>
-            <div class="door-panel"></div>
-            <div class="door-panel"></div>
-            <div class="door-knob"></div>
-            <div class="door-sill"></div>
-          </div>
-        </div>
-        <div class="door-ground"></div>
-      </div>`;
+          <div class="door-step"></div>
+        </div>`;
 
       // Explicit image — sirf tab jab admin ne manually URL set kiya ho
       const _rawImg   = t.img || t.imageUrl || '';
@@ -1006,6 +1011,15 @@ db.collection('templates')
           </div>
         </div>
       `;
+
+      // Card par click karein to template link open ho
+      if (viewLink) {
+        card.addEventListener('click', (e) => {
+          // Button ya anchor click ignore karein — wo khud handle karte hain
+          if (e.target.closest('a, button')) return;
+          window.open(viewLink, '_blank', 'noopener,noreferrer');
+        });
+      }
 
       card.addEventListener('mouseenter', () => {
         card.style.transform  = 'translateY(-6px)';
