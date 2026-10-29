@@ -178,6 +178,21 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
 .code-clear-btn{padding:0.72rem 1rem;border-radius:10px;border:1.5px solid #1e293b;background:transparent;color:#64748b;font-size:0.82rem;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;transition:all 0.2s;}
 .code-clear-btn:hover{background:#7f1d1d;color:#fca5a5;border-color:#7f1d1d;}
 
+/* ── ADMIN CARD — DOOR MINI PREVIEW (image ki jagah) ── */
+.tpl-img-wrap{position:relative;aspect-ratio:2/3;overflow:hidden;background:#0d0203;}
+.tpl-door-mini{position:absolute;inset:0;overflow:hidden;}
+.tdm-left,.tdm-right{position:absolute;top:0;bottom:0;width:50%;background:linear-gradient(105deg,rgba(255,255,255,0.06) 0%,transparent 60%,rgba(0,0,0,0.12) 100%);}
+.tdm-left{left:0;}.tdm-right{right:0;}
+.tdm-seam{position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);width:2px;background:linear-gradient(to bottom,transparent,var(--dseam,#C9A45C) 15%,var(--dseam,#C9A45C) 85%,transparent);box-shadow:0 0 6px var(--dseam,#C9A45C);}
+.tdm-beam{position:absolute;top:-10%;left:50%;transform:translateX(-50%);width:55%;height:120%;background:radial-gradient(ellipse 80% 70% at 50% 0%,rgba(255,255,220,0.16) 0%,transparent 70%);pointer-events:none;}
+.tdm-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,0.4);border:1.5px solid var(--dseam,#C9A45C);color:var(--dseam,#C9A45C);display:flex;align-items:center;justify-content:center;font-size:0.95rem;font-family:serif;}
+.tdm-corner{position:absolute;width:13px;height:13px;border-style:solid;}
+.tdm-tl{top:8px;left:8px;border-width:2px 0 0 2px;}
+.tdm-tr{top:8px;right:8px;border-width:2px 2px 0 0;}
+.tdm-bl{bottom:8px;left:8px;border-width:0 0 2px 2px;}
+.tdm-br{bottom:8px;right:8px;border-width:0 2px 2px 0;}
+.tpl-code-badge{position:absolute;top:8px;right:8px;background:rgba(37,99,235,0.85);color:#fff;font-size:0.6rem;font-weight:700;padding:0.2rem 0.45rem;border-radius:6px;letter-spacing:0.04em;}
+
 /* ── DOOR COLOR PICKERS ─────────────────────────────── */
 .door-colors-wrap{background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:0.9rem;margin-bottom:1rem;}
 .door-colors-title{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--fg2);margin-bottom:0.75rem;display:flex;align-items:center;gap:0.4rem;}
@@ -401,6 +416,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
         </div>
       </div>
       <!-- ═══ END DOOR COLORS ═══ -->
+
 
       <!-- Name + Order -->
       <div class="mf-grid">
