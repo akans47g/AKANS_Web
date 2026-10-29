@@ -1085,20 +1085,14 @@ db.collection('templates')
     snap.docs.forEach((doc, i) => {
       const t = doc.data();
 
-      // ── Real door themes — 5 CSS files se extract kiye actual variables ──
-      const doorThemes = [
-        // 1: style_2.css — Default Pink/Rose
-        { dc1:'#c98aa0', dc2:'#9c5570', dc3:'#6b3349', dc4:'#3d1f2d', dseam:'#b8934a' },
-        // 2: style2_2.css — Royal Gold
-        { dc1:'#F3DEAA', dc2:'#B88A2A', dc3:'#4A3018', dc4:'#160D05', dseam:'#E5C77A' },
-        // 3: style7_5.css — Romantic Rose (dark wine)
-        { dc1:'#8a3540', dc2:'#5c1620', dc3:'#3A0710', dc4:'#0d0203', dseam:'#C9A45C' },
-        // 4: style-peony.css — Peony
-        { dc1:'#8a3540', dc2:'#5c1620', dc3:'#3A0710', dc4:'#0d0203', dseam:'#C9A45C' },
-        // 5: style-b-e.css — B-E theme
-        { dc1:'#8a3540', dc2:'#5c1620', dc3:'#3A0710', dc4:'#0d0203', dseam:'#C9A45C' },
-      ];
-      const th = doorThemes[i % doorThemes.length];
+      // ── Door colors: Firestore se lo (admin panel ne save kiye) — fallback default ──
+      const th = {
+        dc1:   t.doorC1   || '#8a3540',
+        dc2:   t.doorC2   || '#5c1620',
+        dc3:   t.doorC3   || '#3A0710',
+        dc4:   t.doorC4   || '#0d0203',
+        dseam: t.doorSeam || '#C9A45C',
+      };
 
       // Actual door HTML — same structure as real wedding card's #envelope-cover
       const doorHtml = `
