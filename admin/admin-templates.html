@@ -60,7 +60,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
 .tpl-img-wrap{position:relative;aspect-ratio:2/3;overflow:hidden;background:var(--surface2);}
 .tpl-img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.3s;}
 .tpl-card:hover .tpl-img{transform:scale(1.03);}
-/* Image overlay (Firebase upload) — hide kar diya, kaam nahi karta */
 .tpl-img-overlay{display:none!important;}
 .tpl-img-btn{display:none!important;}
 .tpl-badge-pill{position:absolute;top:10px;left:10px;font-size:0.62rem;font-weight:700;padding:0.22rem 0.6rem;border-radius:20px;letter-spacing:0.04em;text-transform:uppercase;}
@@ -116,12 +115,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
 .modal-close:hover{background:#fef2f2;color:var(--danger);}
 .modal-body{padding:1.2rem;max-height:75vh;overflow-y:auto;}
 
-.modal-img-area{border:2px dashed var(--border);border-radius:12px;padding:1.1rem;text-align:center;cursor:pointer;margin-bottom:1rem;transition:all 0.2s;background:var(--surface2);}
-.modal-img-area:hover{border-color:var(--accent);background:var(--accent-lt);}
-.modal-img-preview{width:100%;max-height:190px;object-fit:contain;border-radius:10px;margin-bottom:0.5rem;}
-.modal-img-hint{font-size:0.77rem;color:var(--fg3);font-weight:600;}
-.modal-img-hint span{color:var(--accent);font-weight:700;}
-
 .mf-row{margin-bottom:0.85rem;}
 .mf-label{display:block;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--fg2);margin-bottom:0.35rem;}
 .mf-input,.mf-select,.mf-textarea{width:100%;padding:0.62rem 0.85rem;border:1.5px solid var(--border);border-radius:10px;font-size:0.85rem;font-family:'Inter',sans-serif;color:var(--fg);outline:none;background:var(--surface);transition:border-color 0.2s;}
@@ -134,6 +127,42 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
 .modal-save-btn{width:100%;padding:0.82rem;border-radius:12px;border:none;background:var(--accent);color:#fff;font-size:0.92rem;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;box-shadow:0 4px 16px rgba(37,99,235,0.3);transition:all 0.2s;margin-top:0.3rem;}
 .modal-save-btn:hover{opacity:0.9;transform:translateY(-1px);}
 .modal-save-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+
+/* ── DOOR COLOR PICKERS ─────────────────────────────── */
+.door-colors-wrap{background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:0.9rem;margin-bottom:1rem;}
+.door-colors-title{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--fg2);margin-bottom:0.75rem;display:flex;align-items:center;gap:0.4rem;}
+.door-colors-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:0.5rem;margin-bottom:0.85rem;}
+.dc-item{display:flex;flex-direction:column;align-items:center;gap:0.3rem;}
+.dc-item label{font-size:0.6rem;font-weight:700;color:var(--fg3);text-align:center;line-height:1.3;}
+.dc-item input[type=color]{width:36px;height:36px;border:2px solid var(--border);border-radius:8px;cursor:pointer;padding:2px;background:#fff;}
+.dc-item input[type=color]:hover{border-color:var(--accent);}
+
+/* Preset buttons */
+.door-presets{display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.85rem;}
+.preset-btn{padding:0.32rem 0.65rem;border-radius:20px;border:1.5px solid var(--border);font-size:0.68rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:#fff;color:var(--fg2);transition:all 0.18s;display:flex;align-items:center;gap:0.3rem;}
+.preset-btn:hover{border-color:var(--accent);background:var(--accent-lt);color:var(--accent);}
+.preset-dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+
+/* Mini door preview */
+.door-mini-wrap{border-radius:12px;overflow:hidden;height:180px;position:relative;box-shadow:0 4px 16px rgba(0,0,0,0.25);}
+.door-mini{position:absolute;inset:0;
+  background:radial-gradient(ellipse 140% 85% at 50% 32%,
+    var(--dc1,#8a3540) 0%,var(--dc2,#5c1620) 30%,var(--dc3,#3A0710) 62%,var(--dc4,#0d0203) 100%);
+  overflow:hidden;}
+.dm-panel{position:absolute;top:0;bottom:0;width:50%;background:linear-gradient(105deg,rgba(255,255,255,0.06) 0%,transparent 60%,rgba(0,0,0,0.1) 100%);}
+.dm-left{left:0;border-right:1.5px solid var(--dseam,#C9A45C);}
+.dm-right{right:0;border-left:1.5px solid var(--dseam,#C9A45C);}
+.dm-seam{position:absolute;top:0;bottom:0;left:50%;width:2px;transform:translateX(-50%);background:linear-gradient(to bottom,transparent 0%,var(--dseam,#C9A45C) 15%,var(--dseam,#C9A45C) 85%,transparent 100%);box-shadow:0 0 8px var(--dseam,#C9A45C);}
+.dm-beam{position:absolute;top:-20%;left:50%;transform:translateX(-50%);width:60%;height:130%;background:radial-gradient(ellipse 80% 70% at 50% 0%,rgba(255,255,220,0.18) 0%,transparent 70%);pointer-events:none;}
+.dm-btn-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+.dm-btn{width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,0.45);border:1.5px solid var(--dseam,#C9A45C);display:flex;align-items:center;justify-content:center;color:var(--dseam,#C9A45C);font-size:1.1rem;font-family:serif;font-weight:700;box-shadow:0 0 12px rgba(0,0,0,0.4);position:relative;}
+.dm-btn::after{content:'';position:absolute;inset:-5px;border-radius:50%;border:1px solid rgba(200,160,80,0.35);}
+.dm-corner{position:absolute;width:14px;height:14px;border-color:var(--dseam,#C9A45C);border-style:solid;opacity:0.75;}
+.dm-corner-tl{top:8px;left:8px;border-width:2px 0 0 2px;}
+.dm-corner-tr{top:8px;right:8px;border-width:2px 2px 0 0;}
+.dm-corner-bl{bottom:8px;left:8px;border-width:0 0 2px 2px;}
+.dm-corner-br{bottom:8px;right:8px;border-width:0 2px 2px 0;}
+/* ── END DOOR ─────────────────────────────────────── */
 
 /* TOAST */
 .admin-toast{position:fixed;bottom:calc(var(--nav-h) + 12px);left:50%;transform:translateX(-50%) translateY(20px);font-size:0.82rem;font-weight:700;padding:0.65rem 1.4rem;border-radius:30px;opacity:0;white-space:nowrap;transition:opacity 0.25s,transform 0.25s;z-index:9999;pointer-events:none;font-family:'Inter',sans-serif;}
@@ -169,6 +198,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
   .templates-grid{grid-template-columns:repeat(2,1fr);}
   .mf-grid{grid-template-columns:1fr;}
   .modal-overlay{padding:0.5rem;}
+  .door-colors-grid{grid-template-columns:repeat(5,1fr);}
 }
 </style>
 </head>
@@ -194,15 +224,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
 
     <!-- INFO BANNER -->
     <div class="info-banner">
-      <span class="info-banner-icon">🖼️</span>
+      <span class="info-banner-icon">🚪</span>
       <div class="info-banner-text">
-        <strong>GitHub se Images — Super Simple System!</strong>
+        <strong>Door Color System — Simple aur Powerful!</strong>
         <span>
-          Sirf GitHub repo ke root mein image upload karo:<br>
-          <strong style="color:#1e40af;">t01.jpg</strong> → 1st template &nbsp;·&nbsp;
-          <strong style="color:#1e40af;">t02.jpg</strong> → 2nd template &nbsp;·&nbsp;
-          <strong style="color:#1e40af;">t03.jpg</strong> → 3rd template …<br>
-          Bas itna karo — website pe apne aap dikhegi! Kuch aur karne ki zarurat nahi.
+          Har template ka door design admin se control hota hai.<br>
+          <strong style="color:#1e40af;">5 colors set karo</strong> → Index page pe door wahi dikhega! &nbsp;·&nbsp;
+          Presets se ek click mein theme choose karo ya apne custom colors daalo.
         </span>
       </div>
     </div>
@@ -259,43 +287,70 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
     </div>
     <div class="modal-body">
 
-      <!-- Template Image (GitHub only) -->
-      <div class="mf-row">
-        <label class="mf-label" style="display:flex;align-items:center;gap:0.5rem;">
-          📷 Template Image
-          <span style="font-size:0.63rem;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;padding:0.12rem 0.45rem;border-radius:6px;font-weight:700;">GitHub se</span>
-        </label>
+      <!-- ═══ DOOR COLOR CONFIGURATION ═══ -->
+      <div class="door-colors-wrap">
+        <div class="door-colors-title">🚪 Door Colors
+          <span style="font-size:0.6rem;font-weight:600;color:var(--fg3);text-transform:none;letter-spacing:0;">(index page pe yehi door dikhega)</span>
+        </div>
 
-        <!-- Preview box -->
-        <div style="background:var(--surface2);border:1.5px dashed var(--border);border-radius:12px;overflow:hidden;height:120px;display:flex;align-items:center;justify-content:center;margin-bottom:0.55rem;position:relative;">
-          <img id="tpl-modal-preview" src="" alt="Preview"
-               style="width:100%;height:100%;object-fit:cover;display:none;"
-               onerror="this.style.display='none';document.getElementById('tpl-no-img').style.display='flex'"/>
-          <div id="tpl-no-img" style="display:flex;flex-direction:column;align-items:center;gap:0.3rem;color:var(--fg3);">
-            <span style="font-size:1.8rem;">🖼️</span>
-            <span style="font-size:0.7rem;font-weight:600;">Image naam daalo neeche</span>
+        <!-- 5 Color Pickers -->
+        <div class="door-colors-grid">
+          <div class="dc-item">
+            <input type="color" id="door-c1" value="#8a3540" oninput="updateDoorPreview()"/>
+            <label>Top<br>Light</label>
+          </div>
+          <div class="dc-item">
+            <input type="color" id="door-c2" value="#5c1620" oninput="updateDoorPreview()"/>
+            <label>Mid<br>Color</label>
+          </div>
+          <div class="dc-item">
+            <input type="color" id="door-c3" value="#3A0710" oninput="updateDoorPreview()"/>
+            <label>Deep<br>Color</label>
+          </div>
+          <div class="dc-item">
+            <input type="color" id="door-c4" value="#0d0203" oninput="updateDoorPreview()"/>
+            <label>Bottom<br>Dark</label>
+          </div>
+          <div class="dc-item">
+            <input type="color" id="door-seam" value="#C9A45C" oninput="updateDoorPreview()"/>
+            <label>Gold<br>Seam</label>
           </div>
         </div>
 
-        <!-- Input + Auto button -->
-        <div style="display:flex;gap:0.5rem;">
-          <input class="mf-input" type="text" id="tpl-edit-img-url"
-                 placeholder="t01.jpg"
-                 oninput="previewGithubImg(this.value)"
-                 style="flex:1;font-family:monospace;letter-spacing:0.02em;"/>
-          <button type="button" onclick="autoFillImgName()"
-                  title="Order se naam auto-fill karo (jaise order 1 → t01.jpg)"
-                  style="padding:0.5rem 0.8rem;border-radius:9px;border:1.5px solid #bfdbfe;background:var(--accent-lt);color:var(--accent);font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif;">
-            🔢 Auto
+        <!-- Preset Buttons -->
+        <div class="door-presets">
+          <button class="preset-btn" onclick="applyPreset('pink')">
+            <span class="preset-dot" style="background:#c98aa0;"></span> Pink Rose
+          </button>
+          <button class="preset-btn" onclick="applyPreset('gold')">
+            <span class="preset-dot" style="background:#B88A2A;"></span> Royal Gold
+          </button>
+          <button class="preset-btn" onclick="applyPreset('rose')">
+            <span class="preset-dot" style="background:#8a3540;"></span> Romantic Rose
+          </button>
+          <button class="preset-btn" onclick="applyPreset('dark')">
+            <span class="preset-dot" style="background:#1a0a0a;"></span> Dark Velvet
           </button>
         </div>
-        <div style="font-size:0.7rem;color:var(--fg3);margin-top:0.28rem;line-height:1.55;background:#f8fafc;border-radius:8px;padding:0.45rem 0.6rem;border:1px solid var(--border);">
-          📌 GitHub repo root mein image upload karo:
-          <strong style="color:var(--accent);">t01.jpg</strong> → 1st template,
-          <strong style="color:var(--accent);">t02.jpg</strong> → 2nd template, aur aage bhi…<br>
-          Bas naam yahan daalo aur Save Karo!
+
+        <!-- Live Door Preview -->
+        <div class="door-mini-wrap" id="doorMiniWrap">
+          <div class="door-mini" id="doorMini">
+            <div class="dm-panel dm-left"></div>
+            <div class="dm-panel dm-right"></div>
+            <div class="dm-seam"></div>
+            <div class="dm-beam"></div>
+            <div class="dm-corner dm-corner-tl"></div>
+            <div class="dm-corner dm-corner-tr"></div>
+            <div class="dm-corner dm-corner-bl"></div>
+            <div class="dm-corner dm-corner-br"></div>
+            <div class="dm-btn-wrap">
+              <div class="dm-btn">♥</div>
+            </div>
+          </div>
         </div>
       </div>
+      <!-- ═══ END DOOR COLORS ═══ -->
 
       <!-- Name + Order -->
       <div class="mf-grid">
@@ -353,7 +408,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
       </div>
 
       <!-- Save Button -->
-      <button class="modal-save-btn" id="tplSaveBtn" onclick="saveWithImg()">
+      <button class="modal-save-btn" id="tplSaveBtn" onclick="saveTplChanges()">
         💾 Save Karo
       </button>
 
@@ -373,174 +428,39 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
 <script src="admin-templates.js"></script>
 
 <script>
-// ── GITHUB IMAGE ──────────────────────────────────────────────
-const GH_RAW = 'https://raw.githubusercontent.com/akans47g/AKANS_Web/main/';
+// ══════════════════════════════════════════════════════
+// DOOR PREVIEW — live update on color change
+// ══════════════════════════════════════════════════════
+const DOOR_PRESETS = {
+  pink: { c1:'#c98aa0', c2:'#9c5570', c3:'#6b3349', c4:'#3d1f2d', seam:'#b8934a' },
+  gold: { c1:'#F3DEAA', c2:'#B88A2A', c3:'#4A3018', c4:'#160D05', seam:'#E5C77A' },
+  rose: { c1:'#8a3540', c2:'#5c1620', c3:'#3A0710', c4:'#0d0203', seam:'#C9A45C' },
+  dark: { c1:'#3a1a2a', c2:'#1e0812', c3:'#0e0308', c4:'#040002', seam:'#8a6a30' },
+};
 
-function previewGithubImg(val) {
-  val = (val||'').trim();
-  const preview = document.getElementById('tpl-modal-preview');
-  const hint    = document.querySelector('.modal-img-hint');
-  if (!preview) return;
-  if (!val) {
-    preview.style.display = 'none';
-    if (hint) hint.style.display = '';
-    return;
-  }
-  const url = val.startsWith('http') ? val : GH_RAW + val;
-  preview.src = url;
-  preview.style.display = 'block';
-  if (hint) hint.style.display = 'none';
+function updateDoorPreview() {
+  const d = document.getElementById('doorMini');
+  if (!d) return;
+  const g = id => document.getElementById(id)?.value || '';
+  d.style.setProperty('--dc1',  g('door-c1'));
+  d.style.setProperty('--dc2',  g('door-c2'));
+  d.style.setProperty('--dc3',  g('door-c3'));
+  d.style.setProperty('--dc4',  g('door-c4'));
+  d.style.setProperty('--dseam',g('door-seam'));
+}
+window.updateDoorPreview = updateDoorPreview;
+
+function applyPreset(key) {
+  const p = DOOR_PRESETS[key]; if (!p) return;
+  const s = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+  s('door-c1', p.c1); s('door-c2', p.c2); s('door-c3', p.c3);
+  s('door-c4', p.c4); s('door-seam', p.seam);
+  updateDoorPreview();
 }
 
-// Populate img-url field when editing/adding template
-// Order number se t01.jpg, t02.jpg auto-fill
-function autoFillImgName() {
-  const order = parseInt(document.getElementById('tpl-edit-order')?.value || '1', 10) || 1;
-  const name  = 't' + String(order).padStart(2, '0') + '.jpg';
-  const inp   = document.getElementById('tpl-edit-img-url');
-  if (inp) { inp.value = name; previewGithubImg(name); }
-}
-
-function _populateImgUrl(imgVal) {
-  const inp   = document.getElementById('tpl-edit-img-url');
-  const noImg = document.getElementById('tpl-no-img');
-  if (!inp) return;
-  inp.value = imgVal || '';
-  if (imgVal) {
-    previewGithubImg(imgVal);
-    if (noImg) noImg.style.display = 'none';
-  } else {
-    const p = document.getElementById('tpl-modal-preview');
-    if (p) p.style.display = 'none';
-    if (noImg) noImg.style.display = 'flex';
-  }
-}
-
-// Order se auto naam: order 1 → t01.jpg, order 2 → t02.jpg, ...
-function autoFillImgName() {
-  const order = parseInt(document.getElementById('tpl-edit-order')?.value||'1', 10);
-  const name  = 't' + String(order).padStart(2,'0') + '.jpg';
-  _populateImgUrl(name);
-}
-
-// Show toast helper (works even before admin-all.js defines showToast)
-function _ghToast(msg, type) {
-  const t = document.getElementById('adminToast');
-  if (!t) return;
-  t.textContent = msg;
-  t.className = 'admin-toast show' + (type === 'err' ? ' error' : type === 'ok' ? ' success' : ' info');
-  clearTimeout(t._tid);
-  t._tid = setTimeout(() => t.classList.remove('show'), 3500);
-}
-
-// ── MAIN SAVE: original saveTplChanges + img field Firestore mein save karo ──
-async function saveWithImg() {
-  const imgVal  = (document.getElementById('tpl-edit-img-url')?.value||'').trim();
-  const tplName = (document.getElementById('tpl-edit-name')?.value   ||'').trim();
-  const btn     = document.getElementById('tplSaveBtn');
-
-  if (!tplName) { _ghToast('⚠️ Pehle template naam daalo','err'); return; }
-
-  // CRITICAL: editingTplId PEHLE capture karo — original save closeTplModal() call karta hai
-  // jo editingTplId = null kar deta hai
-  let docId = null;
-  try { docId = editingTplId; } catch(e) {}   // admin-templates.js global let
-  if (!docId) {
-    try {
-      const found = allTemplates.find(t => t.name === tplName);
-      if (found && !(found._id||'').startsWith('default-')) docId = found._id;
-    } catch(e) {}
-  }
-  const isNew = !docId;
-
-  // 1. Original save call karo (name/desc/link/badge/active/order)
-  const origFn = window.saveTplChanges_orig || window.saveTplChanges;
-  if (typeof origFn === 'function') {
-    try { origFn(); } catch(e) { console.warn('[AKANS]', e); }
-  }
-
-  // 2. img field save karo
-  if (imgVal && window.db) {
-    if (btn) { btn.disabled=true; btn.textContent='📷 Image...'; }
-    try {
-      if (!isNew && docId) {
-        // EDITING: doc ID pata hai → direct update, sirf thoda wait to avoid race
-        await new Promise(r=>setTimeout(r,400));
-        await window.db.collection('templates').doc(docId).update({ img: imgVal });
-        _ghToast('✅ Image save → '+imgVal,'ok');
-      } else {
-        // NEW: original async add() ke khatam hone ka wait karo
-        await new Promise(r=>setTimeout(r,2500));
-        const snap = await window.db.collection('templates').where('name','==',tplName).get();
-        if (snap.empty) {
-          _ghToast('⚠️ Template nahi mila. Dobara "Save Karo" dabao.','err');
-        } else {
-          const ups=[]; snap.forEach(d=>ups.push(d.ref.update({img:imgVal})));
-          await Promise.all(ups);
-          _ghToast('✅ Image save → '+imgVal,'ok');
-        }
-      }
-    } catch(e) {
-      _ghToast('❌ Error: '+e.message,'err');
-    }
-    if (btn) { btn.disabled=false; btn.textContent='💾 Save Karo'; }
-  }
-}
-
-// ── PATCH openEditTemplate / editTemplate to populate img field ──
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => {
-    // Store orig saveTplChanges under a different name (so saveWithImg can call it)
-    if (typeof window.saveTplChanges === 'function') {
-      window.saveTplChanges_orig = window.saveTplChanges;
-    }
-
-    // openEditTemplate ko patch karo
-    // openEditTemplate: id (string) leta hai
-    // img field populate karo — agar t.img nahi hai to order se auto-suggest karo
-    const _origEdit = window.openEditTemplate;
-    if (typeof _origEdit === 'function') {
-      window.openEditTemplate = function(id) {
-        _origEdit.apply(this, arguments);
-        setTimeout(() => {
-          try {
-            const tpl = allTemplates.find(t => t._id === id);
-            if (tpl) {
-              if (tpl.img) {
-                // Saved img hai → show karo
-                _populateImgUrl(tpl.img);
-              } else {
-                // img nahi hai → order se auto-suggest karo (t01.jpg etc.)
-                const suggestedName = 't' + String(tpl.order||1).padStart(2,'0') + '.jpg';
-                _populateImgUrl(suggestedName);
-              }
-            } else {
-              _populateImgUrl('');
-            }
-          } catch(e) { _populateImgUrl(''); }
-        }, 130);
-      };
-    }
-
-    // openAddTemplate: naye template ka order se naam suggest karo
-    const _origAdd = window.openAddTemplate;
-    if (typeof _origAdd === 'function') {
-      window.openAddTemplate = function() {
-        _origAdd.apply(this, arguments);
-        setTimeout(() => {
-          try {
-            const nextOrder = allTemplates.length + 1;
-            const suggestedName = 't' + String(nextOrder).padStart(2,'0') + '.jpg';
-            _populateImgUrl(suggestedName);
-          } catch(e) { _populateImgUrl(''); }
-        }, 130);
-      };
-    }
-  }, 800);
-});
-
-// ── STATS COUNTS ──────────────────────────────────────────────
-// Stats counts update — preserved from original
+// ══════════════════════════════════════════════════════
+// STATS COUNTS
+// ══════════════════════════════════════════════════════
 const _origRender = renderTemplatesGrid;
 renderTemplatesGrid = function() {
   _origRender();
@@ -548,15 +468,18 @@ renderTemplatesGrid = function() {
   const inactive = allTemplates.length - active;
   const aC = document.getElementById('tpl-active-count');
   const iC = document.getElementById('tpl-inactive-count');
-  if(aC) aC.textContent = active;
-  if(iC) iC.textContent = inactive;
+  if (aC) aC.textContent = active;
+  if (iC) iC.textContent = inactive;
 };
+
 // Header avatar
 const sess = JSON.parse(localStorage.getItem('adminSession')||'{}');
 const av = document.querySelector('.header-av');
-if(av && sess.displayName) av.textContent = sess.displayName.charAt(0).toUpperCase();
+if (av && sess.displayName) av.textContent = sess.displayName.charAt(0).toUpperCase();
 
-// More menu
+// ══════════════════════════════════════════════════════
+// MORE MENU
+// ══════════════════════════════════════════════════════
 function toggleMoreMenu(){
   const m=document.getElementById('moreMenu'),
         o=document.getElementById('moreOverlay'),
@@ -565,7 +488,9 @@ function toggleMoreMenu(){
   document.body.style.overflow=open?'hidden':'';
 }
 
-// PWA Install
+// ══════════════════════════════════════════════════════
+// PWA INSTALL
+// ══════════════════════════════════════════════════════
 let _dp=null;
 window.addEventListener('beforeinstallprompt',e=>{
   e.preventDefault();_dp=e;
@@ -575,17 +500,9 @@ window.addEventListener('beforeinstallprompt',e=>{
 function installAdminApp(){
   if(!_dp)return;
   _dp.prompt();
-  _dp.userChoice.then(()=>{
-    _dp=null;
-    const b=document.getElementById('installBtn');
-    if(b)b.style.display='none';
-  });
+  _dp.userChoice.then(()=>{_dp=null;const b=document.getElementById('installBtn');if(b)b.style.display='none';});
 }
-window.addEventListener('appinstalled',()=>{
-  _dp=null;
-  const b=document.getElementById('installBtn');
-  if(b)b.style.display='none';
-});
+window.addEventListener('appinstalled',()=>{_dp=null;const b=document.getElementById('installBtn');if(b)b.style.display='none';});
 if('serviceWorker'in navigator)navigator.serviceWorker.register('../sw.js').catch(()=>{});
 </script>
 
