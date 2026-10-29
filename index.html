@@ -1094,34 +1094,11 @@ db.collection('templates')
         dseam: t.doorSeam || '#C9A45C',
       };
 
-      // Actual door HTML — same structure as real wedding card's #envelope-cover
-      const doorHtml = `
-        <div class="card-door"
-             style="--dc1:${th.dc1};--dc2:${th.dc2};--dc3:${th.dc3};--dc4:${th.dc4};--dseam:${th.dseam};">
-          <div class="door-left"></div>
-          <div class="door-right"></div>
-          <div class="light-beam"></div>
-          <div class="card-door-inner">
-            <div class="card-tap-btn">
-              <span class="card-w-letter">W</span>
-              <span class="card-tap-txt">tap to open</span>
-            </div>
-          </div>
-          <div class="card-corner card-corner-tl"></div>
-          <div class="card-corner card-corner-tr"></div>
-          <div class="card-corner card-corner-bl"></div>
-          <div class="card-corner card-corner-br"></div>
-        </div>`;
-
-      // Explicit image — sirf tab jab admin ne manually URL set kiya ho
-      const _rawImg   = t.img || t.imageUrl || '';
-      const imgUrl    = _rawImg
-        ? (_rawImg.startsWith('http') ? _rawImg : GITHUB_IMG_BASE + _rawImg)
-        : '';
       const badgeClass = t.badgeClass || 'badge-new';
       const badge      = t.badge      || 'New';
       const bgColor    = fallbackColors[i % fallbackColors.length];
       const viewLink   = t.link || t.previewLink || t.demoUrl || t.url || t.templateUrl || t.preview || '';
+      const doorCode   = t.doorCode || '';
 
       const card = document.createElement('div');
       card.className        = 'template-card';
@@ -1133,16 +1110,29 @@ db.collection('templates')
               class="btn-select" style="width:100%;font-size:0.8rem;text-align:center;text-decoration:none;display:block;">View Template →</a>`
         : `<span class="btn-select" style="width:100%;font-size:0.8rem;text-align:center;display:block;opacity:0.5;cursor:default;">View Template →</span>`;
 
+      // ── Door preview: doorCode (iframe) ya color-based door ──
+      const doorPreviewHtml = doorCode
+        ? `<iframe class="card-door-iframe" scrolling="no" frameborder="0"
+              style="position:absolute;inset:0;width:100%;height:100%;border:none;display:block;z-index:2;pointer-events:none;"
+              data-code="${encodeURIComponent('<!DOCTYPE html><html><head><meta charset=\'utf-8\'/><style>*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}html,body{width:100%;height:100%;overflow:hidden;background:transparent;}</style></head><body>' + doorCode + '</body></html>')}"></iframe>`
+        : `<div class="card-door"
+               style="--dc1:${th.dc1};--dc2:${th.dc2};--dc3:${th.dc3};--dc4:${th.dc4};--dseam:${th.dseam};z-index:2;">
+             <div class="door-left"></div><div class="door-right"></div>
+             <div class="light-beam"></div>
+             <div class="card-door-inner">
+               <div class="card-tap-btn">
+                 <span class="card-w-letter">W</span>
+                 <span class="card-tap-txt">tap to open</span>
+               </div>
+             </div>
+             <div class="card-corner card-corner-tl"></div><div class="card-corner card-corner-tr"></div>
+             <div class="card-corner card-corner-bl"></div><div class="card-corner card-corner-br"></div>
+           </div>`;
+
       card.innerHTML = `
         <div class="template-img" style="background:${bgColor}; position:relative;">
           <span class="badge ${badgeClass}" style="z-index:3;">${badge}</span>
-          ${doorHtml}
-          ${imgUrl ? `<img
-            src="${imgUrl}"
-            alt="${t.name || 'Template'}"
-            style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;border-radius:0;z-index:2;"
-            onerror="this.style.display='none';"
-          />` : ''}
+          ${doorPreviewHtml}
         </div>
         <div class="template-info">
           <div class="template-name">${t.name || 'Template'}</div>
@@ -1174,6 +1164,22 @@ db.collection('templates')
       });
 
       grid.appendChild(card);
+
+      // doorCode wale iframes ko srcdoc set karo (attribute encoding se bachne ke liye JS se set)
+      if (doorCode) {
+        const fr = card.querySelector('.card-door-iframe');
+        if (fr) {
+          const encoded = fr.getAttribute('data-code');
+          if (encoded) {
+            try {
+              fr.srcdoc = decodeURIComponent(encoded);
+            } catch(e) {
+              fr.srcdoc = '<!DOCTYPE html><html><body style="background:#0d0203;"></body></html>';
+            }
+            fr.removeAttribute('data-code');
+          }
+        }
+      }
     });
   })
   .catch(err => {
