@@ -128,6 +128,56 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
 .modal-save-btn:hover{opacity:0.9;transform:translateY(-1px);}
 .modal-save-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
 
+/* ── TEMPLATE CARD — DOOR MINI PREVIEW ─────────────── */
+.tpl-img-wrap{position:relative;aspect-ratio:3/4;overflow:hidden;background:#0d0203;}
+.tpl-door-mini{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 140% 85% at 50% 32%,
+    var(--dc1,#8a3540) 0%,var(--dc2,#5c1620) 30%,var(--dc3,#3A0710) 62%,var(--dc4,#0d0203) 100%);
+  overflow:hidden;
+}
+.tdm-left,.tdm-right{position:absolute;top:0;bottom:0;width:50%;background:linear-gradient(105deg,rgba(255,255,255,0.06) 0%,transparent 60%,rgba(0,0,0,0.1) 100%);}
+.tdm-left{left:0;border-right:1.5px solid var(--dseam,#C9A45C);}
+.tdm-right{right:0;border-left:1.5px solid var(--dseam,#C9A45C);}
+.tdm-seam{position:absolute;top:0;bottom:0;left:50%;width:2px;transform:translateX(-50%);background:linear-gradient(to bottom,transparent 0%,var(--dseam,#C9A45C) 15%,var(--dseam,#C9A45C) 85%,transparent 100%);box-shadow:0 0 8px var(--dseam,#C9A45C);}
+.tdm-beam{position:absolute;top:-20%;left:50%;transform:translateX(-50%);width:60%;height:130%;background:radial-gradient(ellipse 80% 70% at 50% 0%,rgba(255,255,220,0.15) 0%,transparent 70%);pointer-events:none;}
+.tdm-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,0.45);border:1.5px solid var(--dseam,#C9A45C);display:flex;align-items:center;justify-content:center;color:var(--dseam,#C9A45C);font-size:1rem;font-family:serif;box-shadow:0 0 12px rgba(0,0,0,0.4);}
+.tdm-corner{position:absolute;width:12px;height:12px;border-color:var(--dseam,#C9A45C);border-style:solid;opacity:0.75;}
+.tdm-tl{top:8px;left:8px;border-width:2px 0 0 2px;}
+.tdm-tr{top:8px;right:8px;border-width:2px 2px 0 0;}
+.tdm-bl{bottom:8px;left:8px;border-width:0 0 2px 2px;}
+.tdm-br{bottom:8px;right:8px;border-width:0 2px 2px 0;}
+.tpl-code-badge{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);color:#a0d9a0;font-size:0.6rem;font-weight:700;padding:0.2rem 0.55rem;border-radius:20px;white-space:nowrap;border:1px solid rgba(100,200,100,0.4);}
+.tpl-btn-code{background:#1a2a1a;color:#4ade80;border-color:#166534;font-size:0.85rem;padding:0.34rem 0.6rem;}
+.tpl-btn-code.code-set{background:#166534;color:#bbf7d0;border-color:#15803d;}
+.tpl-btn-code:hover{background:#15803d;color:#fff;border-color:#15803d;}
+
+/* ── CODE EDITOR MODAL ───────────────────────────────── */
+.code-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(5px);z-index:600;display:none;align-items:flex-start;justify-content:center;padding:1rem;overflow-y:auto;}
+.code-modal-overlay.open{display:flex;}
+.code-modal-box{background:#0f172a;border-radius:20px;width:100%;max-width:700px;box-shadow:0 24px 60px rgba(0,0,0,0.6);animation:modalIn 0.3s ease both;margin:auto;overflow:hidden;border:1px solid #1e293b;}
+.code-modal-header{display:flex;align-items:center;justify-content:space-between;padding:0.9rem 1.2rem;border-bottom:1px solid #1e293b;background:#0f172a;}
+.code-modal-title{font-size:0.9rem;font-weight:800;color:#e2e8f0;}
+.code-modal-sub{font-size:0.72rem;color:#64748b;font-weight:500;margin-top:0.1rem;}
+.code-modal-close{background:none;border:none;cursor:pointer;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;color:#64748b;transition:all 0.2s;}
+.code-modal-close:hover{background:#7f1d1d;color:#fca5a5;}
+.code-modal-body{display:grid;grid-template-columns:1fr 1fr;gap:0;min-height:400px;}
+@media(max-width:600px){.code-modal-body{grid-template-columns:1fr;}}
+.code-editor-side{padding:1rem;background:#0a0f1a;border-right:1px solid #1e293b;display:flex;flex-direction:column;gap:0.55rem;}
+.code-preview-side{background:#050810;display:flex;flex-direction:column;}
+.code-section-label{font-size:0.63rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#475569;margin-bottom:0.2rem;}
+#door-code-textarea{width:100%;flex:1;min-height:300px;background:#060d1a;color:#a5d8ff;border:1.5px solid #1e293b;border-radius:10px;padding:0.75rem;font-size:0.72rem;font-family:'Courier New',monospace;resize:vertical;line-height:1.6;outline:none;transition:border-color 0.2s;}
+#door-code-textarea:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,0.12);}
+#door-code-textarea::placeholder{color:#334155;}
+.code-preview-label{font-size:0.63rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#475569;padding:0.75rem 1rem 0.3rem;}
+#door-code-preview-iframe{flex:1;width:100%;border:none;min-height:320px;background:#050810;display:block;}
+.code-modal-footer{padding:0.85rem 1.2rem;border-top:1px solid #1e293b;display:flex;gap:0.65rem;background:#0f172a;}
+.code-save-btn{flex:1;padding:0.72rem;border-radius:10px;border:none;background:#16a34a;color:#fff;font-size:0.88rem;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;transition:all 0.2s;}
+.code-save-btn:hover{opacity:0.9;}
+.code-save-btn:disabled{opacity:0.6;cursor:not-allowed;}
+.code-clear-btn{padding:0.72rem 1rem;border-radius:10px;border:1.5px solid #1e293b;background:transparent;color:#64748b;font-size:0.82rem;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;transition:all 0.2s;}
+.code-clear-btn:hover{background:#7f1d1d;color:#fca5a5;border-color:#7f1d1d;}
+
 /* ── DOOR COLOR PICKERS ─────────────────────────────── */
 .door-colors-wrap{background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:0.9rem;margin-bottom:1rem;}
 .door-colors-title{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--fg2);margin-bottom:0.75rem;display:flex;align-items:center;gap:0.4rem;}
@@ -412,6 +462,48 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
         💾 Save Karo
       </button>
 
+    </div>
+  </div>
+</div>
+
+<!-- ════ DOOR CODE EDITOR MODAL ════ -->
+<div class="code-modal-overlay" id="codeModal" onclick="if(event.target===this)closeDoorCodeModal()">
+  <div class="code-modal-box">
+    <div class="code-modal-header">
+      <div>
+        <div class="code-modal-title">🖥️ Door Code — <span id="codeModalTplName">Template</span></div>
+        <div class="code-modal-sub">Apna door HTML code paste karo — jo bhi design hogi woh index page pe dikhegi</div>
+      </div>
+      <button class="code-modal-close" onclick="closeDoorCodeModal()">✕</button>
+    </div>
+    <div class="code-modal-body">
+      <!-- Left: Code Editor -->
+      <div class="code-editor-side">
+        <div class="code-section-label">📋 HTML Code Paste Karo</div>
+        <textarea id="door-code-textarea"
+          placeholder="Yahan apna door HTML code paste karo...
+
+Example:
+<style>
+  #envelope-cover { ... }
+  .door-left { ... }
+</style>
+<div id=&quot;envelope-cover&quot;>
+  <div class=&quot;door-left&quot;></div>
+  <div class=&quot;door-right&quot;></div>
+  ...
+</div>"
+          oninput="updateCodePreview()"></textarea>
+      </div>
+      <!-- Right: Live Preview -->
+      <div class="code-preview-side">
+        <div class="code-preview-label">👁️ Live Preview</div>
+        <iframe id="door-code-preview-iframe" scrolling="no" frameborder="0"></iframe>
+      </div>
+    </div>
+    <div class="code-modal-footer">
+      <button class="code-clear-btn" onclick="clearDoorCode()">🗑️ Clear</button>
+      <button class="code-save-btn" id="codeSaveBtn" onclick="saveDoorCode()">💾 Save Code</button>
     </div>
   </div>
 </div>
