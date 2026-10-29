@@ -69,8 +69,20 @@ function buildTplCard(t,i) {
     </div></div>`;
 }
 
-function openEditTemplate(id){const t=allTemplates.find(x=>x._id===id);if(!t)return;editingTplId=id;uploadedImgUrl='';document.getElementById('tplModalTitle').textContent='✏️ Edit Template';document.getElementById('tpl-edit-name').value=t.name||'';document.getElementById('tpl-edit-desc').value=t.desc||'';document.getElementById('tpl-edit-link').value=t.previewLink||'';document.getElementById('tpl-edit-badge-text').value=t.badge||'';document.getElementById('tpl-edit-badge-class').value=t.badgeClass||'badge-new';document.getElementById('tpl-edit-order').value=t.order||1;document.getElementById('tpl-edit-active').checked=t.active!==false;const prev=document.getElementById('tpl-modal-preview');if(prev){prev.src=t.imageUrl||(GITHUB_BASE+(t.imgFile||'w1.jpg'));prev.style.display='block';}document.getElementById('tplModal').classList.add('open');}
-function openAddTemplate(){editingTplId=null;uploadedImgUrl='';document.getElementById('tplModalTitle').textContent='➕ Add Template';['tpl-edit-name','tpl-edit-desc','tpl-edit-link','tpl-edit-badge-text'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});document.getElementById('tpl-edit-badge-text').value='New';document.getElementById('tpl-edit-badge-class').value='badge-new';document.getElementById('tpl-edit-order').value=allTemplates.length+1;document.getElementById('tpl-edit-active').checked=true;const p=document.getElementById('tpl-modal-preview');if(p)p.style.display='none';document.getElementById('tplModal').classList.add('open');}
+function openEditTemplate(id){const t=allTemplates.find(x=>x._id===id);if(!t)return;editingTplId=id;uploadedImgUrl='';document.getElementById('tplModalTitle').textContent='✏️ Edit Template';document.getElementById('tpl-edit-name').value=t.name||'';document.getElementById('tpl-edit-desc').value=t.desc||'';document.getElementById('tpl-edit-link').value=t.previewLink||'';document.getElementById('tpl-edit-badge-text').value=t.badge||'';document.getElementById('tpl-edit-badge-class').value=t.badgeClass||'badge-new';document.getElementById('tpl-edit-order').value=t.order||1;document.getElementById('tpl-edit-active').checked=t.active!==false;
+  // Door colors load karo
+  const _sc=(eid,val,def)=>{const el=document.getElementById(eid);if(el)el.value=val||def;};
+  _sc('door-c1', t.doorC1, '#8a3540'); _sc('door-c2', t.doorC2, '#5c1620');
+  _sc('door-c3', t.doorC3, '#3A0710'); _sc('door-c4', t.doorC4, '#0d0203');
+  _sc('door-seam', t.doorSeam, '#C9A45C');
+  setTimeout(()=>{ if(window.updateDoorPreview) updateDoorPreview(); }, 60);
+  document.getElementById('tplModal').classList.add('open');}
+function openAddTemplate(){editingTplId=null;uploadedImgUrl='';document.getElementById('tplModalTitle').textContent='➕ Add Template';['tpl-edit-name','tpl-edit-desc','tpl-edit-link','tpl-edit-badge-text'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});document.getElementById('tpl-edit-badge-text').value='New';document.getElementById('tpl-edit-badge-class').value='badge-new';document.getElementById('tpl-edit-order').value=allTemplates.length+1;document.getElementById('tpl-edit-active').checked=true;
+  // Default door colors reset
+  const _sd=(eid,val)=>{const el=document.getElementById(eid);if(el)el.value=val;};
+  _sd('door-c1','#8a3540');_sd('door-c2','#5c1620');_sd('door-c3','#3A0710');_sd('door-c4','#0d0203');_sd('door-seam','#C9A45C');
+  setTimeout(()=>{ if(window.updateDoorPreview) updateDoorPreview(); }, 60);
+  document.getElementById('tplModal').classList.add('open');}
 function closeTplModal(){document.getElementById('tplModal')?.classList.remove('open');editingTplId=null;uploadedImgUrl='';}
 function triggerImgUpload(id){document.getElementById('img-input-'+id)?.click();}
 function triggerModalImgUpload(){document.getElementById('tpl-modal-img-input')?.click();}
@@ -89,7 +101,9 @@ async function handleImageUpload(input,tplId) {
 
 async function saveTplChanges() {
   const name=document.getElementById('tpl-edit-name').value.trim();if(!name){showAdminToast('⚠️ Naam daalo','warning');return;}
-  const data={name,desc:document.getElementById('tpl-edit-desc').value.trim(),previewLink:document.getElementById('tpl-edit-link').value.trim(),badge:document.getElementById('tpl-edit-badge-text').value.trim(),badgeClass:document.getElementById('tpl-edit-badge-class').value,order:parseInt(document.getElementById('tpl-edit-order').value)||1,active:document.getElementById('tpl-edit-active').checked,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  // Door colors — admin ne jo set kiye (ya defaults)
+  const _dc = id => document.getElementById(id)?.value || '';
+  const data={name,desc:document.getElementById('tpl-edit-desc').value.trim(),previewLink:document.getElementById('tpl-edit-link').value.trim(),badge:document.getElementById('tpl-edit-badge-text').value.trim(),badgeClass:document.getElementById('tpl-edit-badge-class').value,order:parseInt(document.getElementById('tpl-edit-order').value)||1,active:document.getElementById('tpl-edit-active').checked,doorC1:_dc('door-c1')||'#8a3540',doorC2:_dc('door-c2')||'#5c1620',doorC3:_dc('door-c3')||'#3A0710',doorC4:_dc('door-c4')||'#0d0203',doorSeam:_dc('door-seam')||'#C9A45C',updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
   if(uploadedImgUrl)data.imageUrl=uploadedImgUrl;
   const btn=document.getElementById('tplSaveBtn');if(btn){btn.disabled=true;btn.textContent='⏳ Saving...';}
   try{
