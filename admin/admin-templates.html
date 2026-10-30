@@ -473,6 +473,23 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
         </div>
       </div>
 
+      <!-- Door Code Section -->
+      <div class="mf-row" style="margin-top:1rem;">
+        <div class="mf-label" style="display:flex;align-items:center;justify-content:space-between;">
+          <span>🖥️ DOOR HTML CODE <span style="font-weight:400;color:#888;font-size:0.72rem;">(Optional)</span></span>
+          <span id="tpl-edit-code-status" style="font-size:0.72rem;color:#22c55e;"></span>
+        </div>
+        <textarea id="tpl-edit-door-code"
+          placeholder="Yahan apna poora door HTML file ka code paste karo...&#10;&#10;&#10;index page ke card mein yahi design dikhega ✨"
+          style="width:100%;min-height:130px;background:#0d1117;color:#c9d1d9;border:1.5px solid #30363d;border-radius:10px;padding:12px;font-family:monospace;font-size:0.75rem;line-height:1.5;resize:vertical;margin-top:0.4rem;outline:none;"
+          onfocus="this.style.borderColor='#3b82f6'"
+          onblur="this.style.borderColor='#30363d'"></textarea>
+        <button type="button" onclick="clearEditDoorCode()"
+          style="margin-top:0.5rem;padding:0.35rem 0.8rem;background:#1e293b;color:#94a3b8;border:1px solid #334155;border-radius:6px;font-size:0.75rem;cursor:pointer;">
+          🗑️ Code Hatao
+        </button>
+      </div>
+
       <!-- Save Button -->
       <button class="modal-save-btn" id="tplSaveBtn" onclick="saveTplChanges()">
         💾 Save Karo
