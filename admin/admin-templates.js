@@ -140,8 +140,9 @@ async function saveDoorCode() {
   const code=(ta?.value||'').trim();
   const btn=document.getElementById('codeSaveBtn');
   if(btn){btn.disabled=true;btn.textContent='⏳ Saving...';}
+  const _timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('Internet slow hai — dobara try karo')),30000));
   try{
-    await db.collection('templates').doc(editingTplId).update({doorCode:code});
+    await Promise.race([db.collection('templates').doc(editingTplId).update({doorCode:code}),_timeout]);
     const t=allTemplates.find(x=>x._id===editingTplId);
     if(t)t.doorCode=code;
     showAdminToast('✅ Door code save ho gaya!','success');
@@ -217,7 +218,9 @@ function closeTplModal(){document.getElementById('tplModal')?.classList.remove('
 async function saveTplChanges() {
   const name=document.getElementById('tpl-edit-name').value.trim();if(!name){showAdminToast('⚠️ Naam daalo','warning');return;}
   const _dc=id=>document.getElementById(id)?.value||'';
-  const data={
+  const doorCodeValue=(document.getElementById('tpl-edit-door-code')?.value||'').trim();
+  // Main data — doorCode alag save hoga (large file slow network pe hang karta tha)
+  const mainData={
     name,
     desc:document.getElementById('tpl-edit-desc').value.trim(),
     previewLink:document.getElementById('tpl-edit-link').value.trim(),
@@ -230,15 +233,32 @@ async function saveTplChanges() {
     doorC3:_dc('door-c3')||'#3A0710',
     doorC4:_dc('door-c4')||'#0d0203',
     doorSeam:_dc('door-seam')||'#C9A45C',
-    doorCode:(document.getElementById('tpl-edit-door-code')?.value||'').trim(),
     updatedAt:firebase.firestore.FieldValue.serverTimestamp()
   };
   const btn=document.getElementById('tplSaveBtn');if(btn){btn.disabled=true;btn.textContent='⏳ Saving...';}
+  const _to=ms=>new Promise((_,rej)=>setTimeout(()=>rej(new Error('Network slow hai — retry karo')),ms));
   try{
-    if(editingTplId){await db.collection('templates').doc(editingTplId).update(data);showAdminToast('✅ Updated!','success');}
-    else{data.createdAt=firebase.firestore.FieldValue.serverTimestamp();await db.collection('templates').add(data);showAdminToast('✅ Added!','success');}
-    closeTplModal();await loadTemplates();
-  }catch(e){showAdminToast('❌ '+e.message,'error');if(btn){btn.disabled=false;btn.textContent='💾 Save';}}
+    let docId=editingTplId;
+    if(editingTplId){
+      await Promise.race([db.collection('templates').doc(editingTplId).update(mainData),_to(12000)]);
+    }else{
+      mainData.createdAt=firebase.firestore.FieldValue.serverTimestamp();
+      const ref=await Promise.race([db.collection('templates').add(mainData),_to(12000)]);
+      docId=ref.id;
+    }
+    showAdminToast('✅ Saved!','success');
+    closeTplModal();
+    await loadTemplates();
+    // Step 2: Door code alag save karo (bada data, zyada time)
+    if(docId){
+      try{
+        await Promise.race([db.collection('templates').doc(docId).update({doorCode:doorCodeValue}),_to(30000)]);
+        const t2=allTemplates.find(x=>x._id===docId);
+        if(t2)t2.doorCode=doorCodeValue;
+        renderTemplatesGrid();
+      }catch(cErr){showAdminToast('⚠️ Door code save nahi hua — 🖥️ button se dobara try karo','warning');}
+    }
+  }catch(e){showAdminToast('❌ '+e.message,'error');if(btn){btn.disabled=false;btn.textContent='💾 Save Karo';}}
 }
 
 async function toggleTemplateActive(id,newActive){try{await db.collection('templates').doc(id).update({active:newActive});showAdminToast(newActive?'✅ Active':'⭕ Inactive','success');await loadTemplates();}catch(e){showAdminToast('❌ '+e.message,'error');}}
