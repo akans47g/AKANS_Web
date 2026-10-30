@@ -19,9 +19,12 @@ const DEFAULT_TEMPLATES=[
 ];
 const BADGE_OPTIONS=[{value:'badge-new',label:'🟠 New'},{value:'badge-hot',label:'🔴 Popular'},{value:'badge-liked',label:'🟣 Most Liked'},{value:'badge-limited',label:'🟢 Limited'},{value:'badge-fav',label:'⭐ Fan Fav'}];
 
-// ── Door code ko full HTML page mein wrap karo (iframe ke liye) ──
+// ── Door code ko iframe ke liye prepare karo ──
+// Full HTML document ho to as-is use karo; snippet ho to wrap karo
 function wrapDoorCode(code) {
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><style>*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}html,body{width:100%;height:100%;overflow:hidden;background:transparent;}</style></head><body>${code}</body></html>`;
+  const t = code.trim();
+  if (/^<!doctype\s+html/i.test(t) || /^<html/i.test(t)) return t;
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><style>*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}html,body{width:100%;height:100%;overflow:hidden;background:transparent;}</style></head><body>${t}</body></html>`;
 }
 
 async function initTemplates() {
@@ -155,6 +158,13 @@ function clearDoorCode() {
   updateCodePreview();
 }
 
+function clearEditDoorCode() {
+  const ta=document.getElementById('tpl-edit-door-code');
+  if(ta)ta.value='';
+  const st=document.getElementById('tpl-edit-code-status');
+  if(st)st.textContent='';
+}
+
 // ════════════════════════════════════════════════════════════════
 // EDIT / ADD MODAL
 // ════════════════════════════════════════════════════════════════
@@ -175,6 +185,11 @@ function openEditTemplate(id){
   _sc('door-c1',t.doorC1,'#8a3540'); _sc('door-c2',t.doorC2,'#5c1620');
   _sc('door-c3',t.doorC3,'#3A0710'); _sc('door-c4',t.doorC4,'#0d0203');
   _sc('door-seam',t.doorSeam,'#C9A45C');
+  // Door code load karo
+  const dcEl=document.getElementById('tpl-edit-door-code');
+  if(dcEl)dcEl.value=t.doorCode||'';
+  const stEl=document.getElementById('tpl-edit-code-status');
+  if(stEl)stEl.textContent=(t.doorCode&&t.doorCode.trim())?'✅ Code saved':'';
   setTimeout(()=>{ if(window.updateDoorPreview)updateDoorPreview(); },60);
   document.getElementById('tplModal').classList.add('open');
 }
@@ -190,6 +205,9 @@ function openAddTemplate(){
   // Default door colors reset
   const _sd=(eid,val)=>{const el=document.getElementById(eid);if(el)el.value=val;};
   _sd('door-c1','#8a3540');_sd('door-c2','#5c1620');_sd('door-c3','#3A0710');_sd('door-c4','#0d0203');_sd('door-seam','#C9A45C');
+  // Door code clear karo
+  const dcEl2=document.getElementById('tpl-edit-door-code');if(dcEl2)dcEl2.value='';
+  const stEl2=document.getElementById('tpl-edit-code-status');if(stEl2)stEl2.textContent='';
   setTimeout(()=>{ if(window.updateDoorPreview)updateDoorPreview(); },60);
   document.getElementById('tplModal').classList.add('open');
 }
@@ -212,6 +230,7 @@ async function saveTplChanges() {
     doorC3:_dc('door-c3')||'#3A0710',
     doorC4:_dc('door-c4')||'#0d0203',
     doorSeam:_dc('door-seam')||'#C9A45C',
+    doorCode:(document.getElementById('tpl-edit-door-code')?.value||'').trim(),
     updatedAt:firebase.firestore.FieldValue.serverTimestamp()
   };
   const btn=document.getElementById('tplSaveBtn');if(btn){btn.disabled=true;btn.textContent='⏳ Saving...';}
