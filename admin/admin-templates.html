@@ -56,12 +56,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
 .tpl-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,0.1);}
 .tpl-card.tpl-inactive{opacity:0.55;}
 @keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-
-.tpl-img-wrap{position:relative;aspect-ratio:2/3;overflow:hidden;background:var(--surface2);}
-.tpl-img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.3s;}
-.tpl-card:hover .tpl-img{transform:scale(1.03);}
-.tpl-img-overlay{display:none!important;}
-.tpl-img-btn{display:none!important;}
 .tpl-badge-pill{position:absolute;top:10px;left:10px;font-size:0.62rem;font-weight:700;padding:0.22rem 0.6rem;border-radius:20px;letter-spacing:0.04em;text-transform:uppercase;}
 .badge-new{background:#f59e0b;color:#fff;}
 .badge-hot{background:#ef4444;color:#fff;}
@@ -128,26 +122,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
 .modal-save-btn:hover{opacity:0.9;transform:translateY(-1px);}
 .modal-save-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
 
-/* ── TEMPLATE CARD — DOOR MINI PREVIEW ─────────────── */
-.tpl-img-wrap{position:relative;aspect-ratio:3/4;overflow:hidden;background:#0d0203;}
-.tpl-door-mini{
-  position:absolute;inset:0;
-  background:radial-gradient(ellipse 140% 85% at 50% 32%,
-    var(--dc1,#8a3540) 0%,var(--dc2,#5c1620) 30%,var(--dc3,#3A0710) 62%,var(--dc4,#0d0203) 100%);
-  overflow:hidden;
-}
-.tdm-left,.tdm-right{position:absolute;top:0;bottom:0;width:50%;background:linear-gradient(105deg,rgba(255,255,255,0.06) 0%,transparent 60%,rgba(0,0,0,0.1) 100%);}
-.tdm-left{left:0;border-right:1.5px solid var(--dseam,#C9A45C);}
-.tdm-right{right:0;border-left:1.5px solid var(--dseam,#C9A45C);}
-.tdm-seam{position:absolute;top:0;bottom:0;left:50%;width:2px;transform:translateX(-50%);background:linear-gradient(to bottom,transparent 0%,var(--dseam,#C9A45C) 15%,var(--dseam,#C9A45C) 85%,transparent 100%);box-shadow:0 0 8px var(--dseam,#C9A45C);}
-.tdm-beam{position:absolute;top:-20%;left:50%;transform:translateX(-50%);width:60%;height:130%;background:radial-gradient(ellipse 80% 70% at 50% 0%,rgba(255,255,220,0.15) 0%,transparent 70%);pointer-events:none;}
-.tdm-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,0.45);border:1.5px solid var(--dseam,#C9A45C);display:flex;align-items:center;justify-content:center;color:var(--dseam,#C9A45C);font-size:1rem;font-family:serif;box-shadow:0 0 12px rgba(0,0,0,0.4);}
-.tdm-corner{position:absolute;width:12px;height:12px;border-color:var(--dseam,#C9A45C);border-style:solid;opacity:0.75;}
-.tdm-tl{top:8px;left:8px;border-width:2px 0 0 2px;}
-.tdm-tr{top:8px;right:8px;border-width:2px 2px 0 0;}
-.tdm-bl{bottom:8px;left:8px;border-width:0 0 2px 2px;}
-.tdm-br{bottom:8px;right:8px;border-width:0 2px 2px 0;}
-.tpl-code-badge{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);color:#a0d9a0;font-size:0.6rem;font-weight:700;padding:0.2rem 0.55rem;border-radius:20px;white-space:nowrap;border:1px solid rgba(100,200,100,0.4);}
+/* ── TEMPLATE CARD — CODE BUTTON ─────────────── */
 .tpl-btn-code{background:#1a2a1a;color:#4ade80;border-color:#166534;font-size:0.85rem;padding:0.34rem 0.6rem;}
 .tpl-btn-code.code-set{background:#166534;color:#bbf7d0;border-color:#15803d;}
 .tpl-btn-code:hover{background:#15803d;color:#fff;border-color:#15803d;}
@@ -178,20 +153,27 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
 .code-clear-btn{padding:0.72rem 1rem;border-radius:10px;border:1.5px solid #1e293b;background:transparent;color:#64748b;font-size:0.82rem;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;transition:all 0.2s;}
 .code-clear-btn:hover{background:#7f1d1d;color:#fca5a5;border-color:#7f1d1d;}
 
-/* ── ADMIN CARD — DOOR MINI PREVIEW (image ki jagah) ── */
+/* ── TEMPLATE CARD — DOOR MINI PREVIEW (consolidated, fixed) ── */
 .tpl-img-wrap{position:relative;aspect-ratio:2/3;overflow:hidden;background:#0d0203;}
-.tpl-door-mini{position:absolute;inset:0;overflow:hidden;}
+/* 🔴 BUG FIX: gradient yahan ZAROORI hai — warna card plain black dikhta hai */
+.tpl-door-mini{
+  position:absolute;inset:0;overflow:hidden;
+  background:radial-gradient(ellipse 140% 85% at 50% 32%,
+    var(--dc1,#8a3540) 0%,var(--dc2,#5c1620) 30%,
+    var(--dc3,#3A0710) 62%,var(--dc4,#0d0203) 100%);
+}
 .tdm-left,.tdm-right{position:absolute;top:0;bottom:0;width:50%;background:linear-gradient(105deg,rgba(255,255,255,0.06) 0%,transparent 60%,rgba(0,0,0,0.12) 100%);}
 .tdm-left{left:0;}.tdm-right{right:0;}
 .tdm-seam{position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);width:2px;background:linear-gradient(to bottom,transparent,var(--dseam,#C9A45C) 15%,var(--dseam,#C9A45C) 85%,transparent);box-shadow:0 0 6px var(--dseam,#C9A45C);}
 .tdm-beam{position:absolute;top:-10%;left:50%;transform:translateX(-50%);width:55%;height:120%;background:radial-gradient(ellipse 80% 70% at 50% 0%,rgba(255,255,220,0.16) 0%,transparent 70%);pointer-events:none;}
-.tdm-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,0.4);border:1.5px solid var(--dseam,#C9A45C);color:var(--dseam,#C9A45C);display:flex;align-items:center;justify-content:center;font-size:0.95rem;font-family:serif;}
-.tdm-corner{position:absolute;width:13px;height:13px;border-style:solid;}
+.tdm-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,0.45);border:1.5px solid var(--dseam,#C9A45C);color:var(--dseam,#C9A45C);display:flex;align-items:center;justify-content:center;font-size:0.95rem;font-family:serif;box-shadow:0 0 10px rgba(0,0,0,0.5);}
+.tdm-corner{position:absolute;width:13px;height:13px;border-style:solid;border-color:var(--dseam,#C9A45C);opacity:0.7;}
 .tdm-tl{top:8px;left:8px;border-width:2px 0 0 2px;}
 .tdm-tr{top:8px;right:8px;border-width:2px 2px 0 0;}
 .tdm-bl{bottom:8px;left:8px;border-width:0 0 2px 2px;}
 .tdm-br{bottom:8px;right:8px;border-width:0 2px 2px 0;}
-.tpl-code-badge{position:absolute;top:8px;right:8px;background:rgba(37,99,235,0.85);color:#fff;font-size:0.6rem;font-weight:700;padding:0.2rem 0.45rem;border-radius:6px;letter-spacing:0.04em;}
+/* Code badge — bottom center, green */
+.tpl-code-badge{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.75);color:#86efac;font-size:0.58rem;font-weight:700;padding:0.18rem 0.55rem;border-radius:20px;white-space:nowrap;border:1px solid rgba(134,239,172,0.4);letter-spacing:0.03em;}
 
 /* ── DOOR COLOR PICKERS ─────────────────────────────── */
 .door-colors-wrap{background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:0.9rem;margin-bottom:1rem;}
@@ -291,11 +273,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
     <div class="info-banner">
       <span class="info-banner-icon">🚪</span>
       <div class="info-banner-text">
-        <strong>Door Color System — Simple aur Powerful!</strong>
+        <strong>Door System — 2 tarike se customize karo!</strong>
         <span>
-          Har template ka door design admin se control hota hai.<br>
-          <strong style="color:#1e40af;">5 colors set karo</strong> → Index page pe door wahi dikhega! &nbsp;·&nbsp;
-          Presets se ek click mein theme choose karo ya apne custom colors daalo.
+          <strong style="color:#1e40af;">1. Colors:</strong> ✏️ Edit → 5 colors set karo → gradient door banata hai &nbsp;·&nbsp;
+          <strong style="color:#1e40af;">2. Custom HTML:</strong> 🖥️ button → apna poora door design paste karo<br>
+          <span style="font-size:0.74rem;color:#3b82f6;">💡 Card pe <strong>#number</strong> = template ka order (index.html DOOR_OVERRIDE mein yahi number use karo)</span>
         </span>
       </div>
     </div>
@@ -475,19 +457,29 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
 
       <!-- Door Code Section -->
       <div class="mf-row" style="margin-top:1rem;">
-        <div class="mf-label" style="display:flex;align-items:center;justify-content:space-between;">
-          <span>🖥️ DOOR HTML CODE <span style="font-weight:400;color:#888;font-size:0.72rem;">(Optional)</span></span>
-          <span id="tpl-edit-code-status" style="font-size:0.72rem;color:#22c55e;"></span>
+        <div class="mf-label" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.3rem;">
+          <span>🖥️ DOOR HTML CODE <span style="font-weight:400;color:#888;font-size:0.72rem;">(Optional — 🖥️ button se bhi add kar sakte ho)</span></span>
+          <span id="tpl-edit-code-status" style="font-size:0.72rem;color:#22c55e;font-weight:700;"></span>
         </div>
         <textarea id="tpl-edit-door-code"
-          placeholder="Yahan apna poora door HTML file ka code paste karo...&#10;&#10;&#10;index page ke card mein yahi design dikhega ✨"
-          style="width:100%;min-height:130px;background:#0d1117;color:#c9d1d9;border:1.5px solid #30363d;border-radius:10px;padding:12px;font-family:monospace;font-size:0.75rem;line-height:1.5;resize:vertical;margin-top:0.4rem;outline:none;"
+          placeholder="Yahan apna poora door HTML code paste karo...
+
+Tip: 🖥️ button se bada editor aur live preview milta hai!"
+          style="width:100%;min-height:110px;background:#0d1117;color:#c9d1d9;border:1.5px solid #30363d;border-radius:10px;padding:12px;font-family:monospace;font-size:0.75rem;line-height:1.5;resize:vertical;margin-top:0.4rem;outline:none;"
           onfocus="this.style.borderColor='#3b82f6'"
-          onblur="this.style.borderColor='#30363d'"></textarea>
-        <button type="button" onclick="clearEditDoorCode()"
-          style="margin-top:0.5rem;padding:0.35rem 0.8rem;background:#1e293b;color:#94a3b8;border:1px solid #334155;border-radius:6px;font-size:0.75rem;cursor:pointer;">
-          🗑️ Code Hatao
-        </button>
+          onblur="this.style.borderColor='#30363d'"
+          oninput="const s=document.getElementById('tpl-edit-code-status');if(s)s.textContent=this.value.trim()?'✏️ Edited':'';"></textarea>
+        <div style="display:flex;gap:0.5rem;margin-top:0.5rem;flex-wrap:wrap;">
+          <button type="button" onclick="clearEditDoorCode()"
+            style="padding:0.35rem 0.8rem;background:#1e293b;color:#94a3b8;border:1px solid #334155;border-radius:6px;font-size:0.75rem;cursor:pointer;">
+            🗑️ Code Hatao
+          </button>
+          <button type="button"
+            onclick="const c=document.getElementById('tpl-edit-door-code')?.value||'';if(!c.trim()){showAdminToast('⚠️ Pehle code paste karo','warning');return;}const f=document.createElement('iframe');f.style.cssText='position:fixed;inset:0;z-index:9999;width:100%;height:100%;border:none;background:#000';f.srcdoc=c;const cl=document.createElement('button');cl.textContent='✕ Close';cl.style.cssText='position:fixed;top:16px;right:16px;z-index:10000;padding:0.5rem 1rem;background:#e11d48;color:#fff;border:none;border-radius:8px;font-size:0.9rem;cursor:pointer;font-family:Inter,sans-serif;font-weight:700';cl.onclick=()=>{f.remove();cl.remove()};document.body.appendChild(f);document.body.appendChild(cl);"
+            style="padding:0.35rem 0.8rem;background:#0e2a4a;color:#60a5fa;border:1px solid #1e3a5f;border-radius:6px;font-size:0.75rem;cursor:pointer;">
+            👁️ Quick Preview
+          </button>
+        </div>
       </div>
 
       <!-- Save Button -->
