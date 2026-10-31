@@ -64,12 +64,13 @@ function renderTemplatesGrid() {
   grid.innerHTML=allTemplates.map((t,i)=>buildTplCard(t,i)).join('')+`<div class="tpl-add-card" onclick="openAddTemplate()"><div class="tpl-add-icon">+</div><div class="tpl-add-label">Naya Template</div></div>`;
 }
 
-// ── Template card — image nahi, door mini preview dikhata hai ──
+// ── Template card — door mini preview + order number ──
 function buildTplCard(t,i) {
   const dc1=t.doorC1||'#8a3540', dc2=t.doorC2||'#5c1620';
   const dc3=t.doorC3||'#3A0710', dc4=t.doorC4||'#0d0203';
   const dseam=t.doorSeam||'#C9A45C';
   const hasCode=!!(t.doorCode&&t.doorCode.trim());
+  const orderNum=t.order||i+1;
 
   return `<div class="tpl-card ${t.active?'':'tpl-inactive'}" id="tpl-card-${t._id}">
     <div class="tpl-img-wrap">
@@ -80,14 +81,16 @@ function buildTplCard(t,i) {
         <div class="tdm-corner tdm-tl"></div><div class="tdm-corner tdm-tr"></div>
         <div class="tdm-corner tdm-bl"></div><div class="tdm-corner tdm-br"></div>
       </div>
-      ${hasCode?`<div class="tpl-code-badge">🖥️ Code Added ✓</div>`:''}
-      ${t.badge?`<span class="tpl-badge-pill ${t.badgeClass||''}">${t.badge}</span>`:''}
+      <!-- Order number badge (top-left) -->
+      <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.6);color:#e2c77a;font-size:0.62rem;font-weight:800;padding:0.18rem 0.5rem;border-radius:20px;border:1px solid rgba(201,164,92,0.4);">#${orderNum}</div>
+      ${hasCode?`<div class="tpl-code-badge">🖥️ Code ✓</div>`:''}
+      ${t.badge?`<span class="tpl-badge-pill ${t.badgeClass||''}" style="top:10px;right:8px;left:auto;">${t.badge}</span>`:''}
       ${!t.active?`<div class="tpl-inactive-overlay">INACTIVE</div>`:''}
     </div>
     <div class="tpl-info">
       <div class="tpl-name">${t.name||'Untitled'}</div>
       <div class="tpl-desc">${t.desc||'—'}</div>
-      ${t.previewLink?`<a href="${t.previewLink}" target="_blank" class="tpl-preview-link">🔗 Preview</a>`:`<span class="tpl-no-link">⚠️ No link</span>`}
+      ${t.previewLink?`<a href="${t.previewLink}" target="_blank" class="tpl-preview-link">🔗 Preview</a>`:`<span class="tpl-no-link">⚠️ No preview link</span>`}
     </div>
     <div class="tpl-footer">
       <div class="tpl-toggle-row" onclick="toggleTemplateActive('${t._id}',${!t.active})">
