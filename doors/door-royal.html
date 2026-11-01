@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden}
+body{
+  background:radial-gradient(ellipse 160% 90% at 50% 20%,
+    #3a1060 0%, #220840 28%, #120422 56%, #060110 82%, #020008 100%);
+}
+.panel{
+  position:absolute;top:0;bottom:0;width:50%;
+  background:linear-gradient(115deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,.01) 45%,rgba(0,0,0,.08) 100%);
+  border:1px solid rgba(201,164,92,.12);
+}
+.panel.left{left:0;border-right:none;}
+.panel.right{right:0;border-left:none;}
+.panel .tl,.panel .tr,.panel .bl,.panel .br{
+  position:absolute;width:16px;height:16px;
+  border-style:solid;border-color:rgba(201,164,92,.65);
+}
+.panel .tl{top:7px;left:7px;border-width:2px 0 0 2px;}
+.panel .tr{top:7px;right:7px;border-width:2px 2px 0 0;}
+.panel .bl{bottom:7px;left:7px;border-width:0 0 2px 2px;}
+.panel .br{bottom:7px;right:7px;border-width:0 2px 2px 0;}
+.beam{
+  position:absolute;top:0;bottom:0;left:50%;width:36px;
+  transform:translateX(-50%);
+  background:linear-gradient(to bottom,
+    transparent 0%,rgba(220,180,255,.28) 15%,
+    rgba(240,210,255,.42) 50%,rgba(220,180,255,.28) 85%,transparent 100%);
+  filter:blur(7px);pointer-events:none;
+  animation:glow 4s ease-in-out infinite;
+}
+@keyframes glow{0%,100%{opacity:.5}50%{opacity:1}}
+.seam{
+  position:absolute;top:0;bottom:0;left:50%;width:2px;
+  transform:translateX(-50%);
+  background:linear-gradient(to bottom,
+    transparent 0%,#c9a45c 12%,#e8c878 50%,#c9a45c 88%,transparent 100%);
+  box-shadow:0 0 8px 1px rgba(201,164,92,.6);
+}
+.knob{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:46px;height:46px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#fffff8 0%,#f8eff0 50%,#e8d8f8 100%);
+  border:2.5px solid rgba(201,164,92,.85);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;line-height:1;
+  box-shadow:
+    0 0 0 6px rgba(201,164,92,.18),
+    0 0 0 11px rgba(201,164,92,.07),
+    0 5px 16px rgba(18,4,34,.65);
+  animation:pulse 3s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%,100%{box-shadow:0 0 0 6px rgba(201,164,92,.18),0 0 0 11px rgba(201,164,92,.07),0 5px 16px rgba(18,4,34,.65)}
+  50%{box-shadow:0 0 0 10px rgba(201,164,92,.12),0 0 0 18px rgba(201,164,92,.05),0 5px 22px rgba(18,4,34,.8)}
+}
+.spark{
+  position:absolute;border-radius:50%;
+  background:#d4a8ff;
+  animation:twinkle 3.5s ease-in-out infinite;
+}
+.sk1{width:3px;height:3px;top:14%;left:22%;animation-delay:0s}
+.sk2{width:4px;height:4px;top:24%;right:18%;animation-delay:.7s}
+.sk3{width:2px;height:2px;top:10%;right:35%;animation-delay:1.5s}
+.sk4{width:3px;height:3px;bottom:30%;left:16%;animation-delay:.3s}
+.sk5{width:2px;height:2px;bottom:20%;right:22%;animation-delay:1.2s}
+.sk6{width:3px;height:3px;top:58%;left:10%;animation-delay:2s}
+@keyframes twinkle{
+  0%,100%{opacity:.2;transform:scale(1)}
+  50%{opacity:1;transform:scale(2.5)}
+}
+</style>
+</head>
+<body>
+<div class="panel left"><div class="tl"></div><div class="tr"></div><div class="bl"></div><div class="br"></div></div>
+<div class="panel right"><div class="tl"></div><div class="tr"></div><div class="bl"></div><div class="br"></div></div>
+<div class="beam"></div>
+<div class="seam"></div>
+<div class="knob">♛</div>
+<div class="spark sk1"></div>
+<div class="spark sk2"></div>
+<div class="spark sk3"></div>
+<div class="spark sk4"></div>
+<div class="spark sk5"></div>
+<div class="spark sk6"></div>
+</body>
+</html>

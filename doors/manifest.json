@@ -1,0 +1,46 @@
+{
+  "doors": [
+    {
+      "id": "door-crimson",
+      "name": "Crimson Rose",
+      "desc": "Deep red + gold, rose petals animation",
+      "color": "#b03050",
+      "file": "doors/door-crimson.html"
+    },
+    {
+      "id": "door-emerald",
+      "name": "Emerald Noir",
+      "desc": "Deep green + gold, elegant corner accents",
+      "color": "#1a6040",
+      "file": "doors/door-emerald.html"
+    },
+    {
+      "id": "door-garden",
+      "name": "Garden Romance",
+      "desc": "Soft green + floral, nature theme",
+      "color": "#2d5a30",
+      "file": "doors/door-garden.html"
+    },
+    {
+      "id": "door-midnight",
+      "name": "Midnight Royal",
+      "desc": "Navy blue + silver stars, crescent moon",
+      "color": "#1a2a6c",
+      "file": "doors/door-midnight.html"
+    },
+    {
+      "id": "door-rosegold",
+      "name": "Rose Gold Blush",
+      "desc": "Blush pink + rose gold, floral accents",
+      "color": "#c0607a",
+      "file": "doors/door-rosegold.html"
+    },
+    {
+      "id": "door-royal",
+      "name": "Royal Elegance",
+      "desc": "Deep purple + gold, palace motifs",
+      "color": "#3a1060",
+      "file": "doors/door-royal.html"
+    }
+  ]
+}
