@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden}
+
+body{
+  background:radial-gradient(ellipse 160% 90% at 50% 20%,
+    #b03050 0%, #7a1828 28%, #4a0812 56%, #150206 82%, #050001 100%);
+}
+
+/* ── Two door panels ── */
+.panel{
+  position:absolute;top:0;bottom:0;width:50%;
+  background:linear-gradient(115deg,
+    rgba(255,255,255,.08) 0%, rgba(255,255,255,.02) 45%,
+    rgba(0,0,0,.06) 100%);
+  border:1px solid rgba(201,164,92,.12);
+}
+.panel.left{left:0; border-right:none;}
+.panel.right{right:0; border-left:none;}
+
+/* ── Corner brackets ── */
+.panel .tl,.panel .tr,.panel .bl,.panel .br{
+  position:absolute;width:16px;height:16px;
+  border-style:solid;border-color:rgba(201,164,92,.65);
+}
+.panel .tl{top:7px;left:7px; border-width:2px 0 0 2px;}
+.panel .tr{top:7px;right:7px; border-width:2px 2px 0 0;}
+.panel .bl{bottom:7px;left:7px; border-width:0 0 2px 2px;}
+.panel .br{bottom:7px;right:7px; border-width:0 2px 2px 0;}
+
+/* ── Gold glow beam ── */
+.beam{
+  position:absolute;top:0;bottom:0;left:50%;width:36px;
+  transform:translateX(-50%);
+  background:linear-gradient(to bottom,
+    transparent 0%, rgba(255,230,160,.32) 15%,
+    rgba(255,245,200,.5) 50%, rgba(255,230,160,.32) 85%, transparent 100%);
+  filter:blur(7px);pointer-events:none;
+  animation:glow 3.5s ease-in-out infinite;
+}
+@keyframes glow{0%,100%{opacity:.55}50%{opacity:1}}
+
+/* ── Center vertical seam ── */
+.seam{
+  position:absolute;top:0;bottom:0;left:50%;width:2px;
+  transform:translateX(-50%);
+  background:linear-gradient(to bottom,
+    transparent 0%, #c9a45c 12%, #e8c878 50%, #c9a45c 88%, transparent 100%);
+  box-shadow:0 0 8px 1px rgba(201,164,92,.6);
+}
+
+/* ── Heart knob ── */
+.knob{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:46px;height:46px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,
+    #fff8f8 0%, #fde0e6 50%, #f0c0cc 100%);
+  border:2.5px solid rgba(201,164,92,.85);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;line-height:1;
+  box-shadow:
+    0 0 0 6px rgba(201,164,92,.18),
+    0 0 0 11px rgba(201,164,92,.07),
+    0 5px 16px rgba(80,5,15,.55);
+  animation:pulse 2.8s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%,100%{box-shadow:0 0 0 6px rgba(201,164,92,.18),0 0 0 11px rgba(201,164,92,.07),0 5px 16px rgba(80,5,15,.55)}
+  50%{box-shadow:0 0 0 9px rgba(201,164,92,.13),0 0 0 16px rgba(201,164,92,.05),0 5px 20px rgba(80,5,15,.65)}
+}
+
+/* ── Floating rose petals ── */
+.petal{
+  position:absolute;font-size:10px;opacity:0;
+  animation:fall 6s ease-in infinite;
+}
+.p1{left:18%;animation-delay:0s}
+.p2{left:35%;animation-delay:1.5s}
+.p3{left:55%;animation-delay:3s}
+.p4{left:72%;animation-delay:4.5s}
+.p5{left:85%;animation-delay:2s}
+@keyframes fall{
+  0%{top:-5%;opacity:0;transform:rotate(0deg)}
+  10%{opacity:.55}
+  90%{opacity:.3}
+  100%{top:105%;opacity:0;transform:rotate(180deg)}
+}
+</style>
+</head>
+<body>
+
+<div class="panel left">
+  <div class="tl"></div><div class="tr"></div>
+  <div class="bl"></div><div class="br"></div>
+</div>
+<div class="panel right">
+  <div class="tl"></div><div class="tr"></div>
+  <div class="bl"></div><div class="br"></div>
+</div>
+
+<div class="beam"></div>
+<div class="seam"></div>
+<div class="knob">♥</div>
+
+<div class="petal p1">🌹</div>
+<div class="petal p2">🌸</div>
+<div class="petal p3">🌹</div>
+<div class="petal p4">🌸</div>
+<div class="petal p5">🌹</div>
+
+</body>
+</html>
