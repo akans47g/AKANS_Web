@@ -518,25 +518,31 @@ async function saveTplChanges() {
 
   const btn=document.getElementById('tplSaveBtn');
   if(btn){btn.disabled=true;btn.textContent='⏳ Saving...';}
-  const _to=ms=>new Promise((_,rej)=>setTimeout(()=>rej(new Error('Network slow — local save hua hai ✓')),ms));
+  const _to=ms=>new Promise((_,rej)=>setTimeout(()=>rej(new Error('Network slow hai — 5s baad try karo')),ms));
 
   try{
     if(editingTplId){
-      await Promise.race([db.collection('templates').doc(editingTplId).update(mainData),_to(10000)]);
+      await Promise.race([db.collection('templates').doc(editingTplId).update(mainData),_to(5000)]);
     }else{
       mainData.createdAt=firebase.firestore.FieldValue.serverTimestamp();
       mainData.viewCount=0; mainData.bookingCount=0;
-      await Promise.race([db.collection('templates').add(mainData),_to(10000)]);
+      await Promise.race([db.collection('templates').add(mainData),_to(5000)]);
     }
+    // Local update immediately — no await on loadTemplates (background mein reload)
+    const t=allTemplates.find(x=>x._id===editingTplId);
+    if(t) Object.assign(t,{...mainData});
+    renderTemplatesGrid();
+    updateAnalyticsBar();
     showAdminToast('✅ Saved!','success');
     closeTplModal();
-    await loadTemplates();
+    loadTemplates(); // background reload — no await
   }catch(e){
     showAdminToast('⚠️ '+e.message,'warning');
     const t=allTemplates.find(x=>x._id===editingTplId);
     if(t){ Object.assign(t,{...mainData}); renderTemplatesGrid(); }
-    if(btn){btn.disabled=false;btn.textContent='💾 Save Karo';}
     closeTplModal();
+  } finally {
+    if(btn){btn.disabled=false;btn.textContent='💾 Save Karo';}
   }
 }
 
