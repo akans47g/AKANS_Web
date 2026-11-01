@@ -247,6 +247,85 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
   .modal-overlay{padding:0.5rem;}
   .door-colors-grid{grid-template-columns:repeat(5,1fr);}
 }
+
+/* ══════════════════════════════════════════════
+   🔍 SEARCH & FILTER BAR
+══════════════════════════════════════════════ */
+.tpl-search-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:0.8rem 1rem;margin-bottom:1rem;box-shadow:var(--shadow);}
+.tpl-search-row{display:flex;gap:0.6rem;align-items:center;margin-bottom:0.65rem;}
+.tpl-search-input{flex:1;padding:0.58rem 0.9rem;border:1.5px solid var(--border);border-radius:10px;font-size:0.82rem;font-family:'Inter',sans-serif;color:var(--fg);outline:none;background:var(--surface);transition:border-color 0.2s;}
+.tpl-search-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,0.08);}
+.tpl-search-clear{padding:0.48rem 0.8rem;border:1.5px solid var(--border);border-radius:9px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:var(--surface);color:var(--fg2);transition:all 0.18s;white-space:nowrap;}
+.tpl-search-clear:hover{background:#fef2f2;color:var(--danger);border-color:#fecaca;}
+.filter-chips{display:flex;gap:0.4rem;flex-wrap:wrap;}
+.filter-chip{padding:0.32rem 0.7rem;border-radius:20px;border:1.5px solid var(--border);font-size:0.71rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:var(--surface);color:var(--fg2);transition:all 0.18s;}
+.filter-chip.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.filter-chip:hover:not(.active){background:var(--accent-lt);color:var(--accent);border-color:#bfdbfe;}
+
+/* ══════════════════════════════════════════════
+   📊 ANALYTICS ROW
+══════════════════════════════════════════════ */
+.analytics-row{display:flex;gap:0.65rem;margin-bottom:1.1rem;overflow-x:auto;padding-bottom:0.2rem;-webkit-overflow-scrolling:touch;}
+.analytics-row::-webkit-scrollbar{height:4px;}
+.analytics-row::-webkit-scrollbar-track{background:transparent;}
+.analytics-row::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.an-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0.7rem 1rem;min-width:120px;box-shadow:var(--shadow);flex-shrink:0;text-align:left;}
+.an-val{font-size:1.35rem;font-weight:800;color:var(--accent);line-height:1;}
+.an-label{font-size:0.65rem;color:var(--fg3);margin-top:0.22rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;}
+.an-sub{font-size:0.6rem;color:var(--fg3);margin-top:0.08rem;}
+.an-card.an-green .an-val{color:var(--success);}
+.an-card.an-warn .an-val{color:var(--warn);}
+
+/* ══════════════════════════════════════════════
+   💰 PRICE TAG on card
+══════════════════════════════════════════════ */
+.tpl-price-tag{display:flex;align-items:center;gap:0.3rem;margin-bottom:0.3rem;flex-wrap:wrap;}
+.tpl-price{font-size:0.9rem;font-weight:800;color:var(--success);}
+.tpl-orig-price{font-size:0.72rem;color:var(--fg3);text-decoration:line-through;}
+.tpl-premium-pill{font-size:0.58rem;font-weight:700;background:#fef3c7;color:#d97706;border:1px solid #fcd34d;border-radius:20px;padding:0.1rem 0.38rem;letter-spacing:0.04em;}
+.tpl-no-price{font-size:0.7rem;color:var(--fg3);margin-bottom:0.3rem;}
+
+/* ══════════════════════════════════════════════
+   🏷️ TAGS on card
+══════════════════════════════════════════════ */
+.tpl-tags{display:flex;gap:0.25rem;flex-wrap:wrap;margin-bottom:0.3rem;}
+.tpl-tag{font-size:0.6rem;font-weight:600;background:var(--accent-lt);color:var(--accent);border-radius:20px;padding:0.1rem 0.42rem;border:1px solid #bfdbfe;}
+
+/* ══════════════════════════════════════════════
+   📈 ANALYTICS BADGES on card
+══════════════════════════════════════════════ */
+.tpl-analytics-row{display:flex;gap:0.3rem;padding:0 0.9rem 0.45rem;flex-wrap:wrap;}
+.tpl-an-badge{font-size:0.62rem;font-weight:700;background:var(--surface2);color:var(--fg3);border:1px solid var(--border);border-radius:20px;padding:0.12rem 0.45rem;}
+
+/* ══════════════════════════════════════════════
+   ↕ DRAG & DROP
+══════════════════════════════════════════════ */
+.tpl-drag-handle{position:absolute;top:8px;right:40px;cursor:grab;color:rgba(255,255,255,0.6);font-size:1rem;padding:0.18rem 0.3rem;border-radius:4px;background:rgba(0,0,0,0.4);z-index:3;user-select:none;line-height:1;}
+.tpl-drag-handle:active{cursor:grabbing;}
+.tpl-card.dragging{opacity:0.35;border:2px dashed var(--accent);box-shadow:none;}
+.tpl-card.drag-over{border:2px solid var(--accent);transform:scale(1.02);box-shadow:0 0 0 3px rgba(37,99,235,0.18);}
+
+/* ══════════════════════════════════════════════
+   ⧉ DUPLICATE BUTTON
+══════════════════════════════════════════════ */
+.tpl-btn-dup{background:#fffbeb;color:#d97706;border-color:#fed7aa;}
+.tpl-btn-dup:hover{background:#d97706;color:#fff;border-color:#d97706;}
+
+/* ══════════════════════════════════════════════
+   💰 PRICING SECTION in modal
+══════════════════════════════════════════════ */
+.price-section{background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:0.9rem;margin-bottom:1rem;}
+.price-section-title{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--fg2);margin-bottom:0.75rem;display:flex;align-items:center;gap:0.4rem;}
+.price-input-wrap{position:relative;}
+.price-input-wrap::before{content:'₹';position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--fg2);font-weight:700;font-size:0.88rem;pointer-events:none;}
+.price-input-wrap input{padding-left:1.6rem !important;}
+
+/* ══════════════════════════════════════════════
+   🏷️ TAGS in modal
+══════════════════════════════════════════════ */
+.tags-preview{display:flex;gap:0.3rem;flex-wrap:wrap;margin-top:0.4rem;min-height:1.2rem;}
+.tags-help{font-size:0.68rem;color:var(--fg3);margin-top:0.25rem;}
+.desc-count{font-size:0.65rem;color:var(--fg3);float:right;margin-top:0.2rem;}
 </style>
 </head>
 <body>
@@ -284,9 +363,51 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
 
     <!-- STATS -->
     <div class="tpl-stats">
-      <div class="tpl-stat"><span id="tpl-count">—</span> Total Templates</div>
+      <div class="tpl-stat"><span id="tpl-count">—</span> Total</div>
       <div class="tpl-stat"><span id="tpl-active-count">—</span> Active</div>
       <div class="tpl-stat"><span id="tpl-inactive-count">—</span> Inactive</div>
+    </div>
+
+    <!-- ANALYTICS ROW -->
+    <div class="analytics-row">
+      <div class="an-card">
+        <div class="an-val" id="an-total-views">0</div>
+        <div class="an-label">Total Views</div>
+      </div>
+      <div class="an-card an-green">
+        <div class="an-val" id="an-total-bookings">0</div>
+        <div class="an-label">Total Bookings</div>
+      </div>
+      <div class="an-card an-warn">
+        <div class="an-val" id="an-with-price">—</div>
+        <div class="an-label">Price Set</div>
+      </div>
+      <div class="an-card">
+        <div class="an-val" id="an-with-door">—</div>
+        <div class="an-label">Door Set</div>
+      </div>
+      <div class="an-card" style="min-width:160px;">
+        <div class="an-val" style="font-size:0.85rem;color:var(--success);" id="an-top-tpl">—</div>
+        <div class="an-label">🏆 Top Template</div>
+      </div>
+    </div>
+
+    <!-- SEARCH & FILTER BAR -->
+    <div class="tpl-search-wrap">
+      <div class="tpl-search-row">
+        <input class="tpl-search-input" id="tpl-search-input" type="search"
+          placeholder="🔍  Template naam ya tag se search karo..."
+          oninput="setSearch(this.value)"/>
+        <button class="tpl-search-clear" onclick="clearFilters()">✕ Clear</button>
+      </div>
+      <div class="filter-chips">
+        <span style="font-size:0.68rem;color:var(--fg3);font-weight:700;margin-right:0.2rem;align-self:center;">Status:</span>
+        <button class="filter-chip active" data-status="all"      onclick="setFilter('all')">All</button>
+        <button class="filter-chip"        data-status="active"   onclick="setFilter('active')">✅ Active</button>
+        <button class="filter-chip"        data-status="inactive" onclick="setFilter('inactive')">⭕ Inactive</button>
+        <button class="filter-chip"        data-status="premium"  onclick="setFilter('premium')">⭐ Premium</button>
+        <button class="filter-chip"        data-status="door"     onclick="setFilter('door')">🚪 Has Door</button>
+      </div>
     </div>
 
     <!-- TEMPLATES GRID -->
@@ -414,9 +535,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
 
       <!-- Description -->
       <div class="mf-row">
-        <label class="mf-label">Description</label>
-        <textarea class="mf-textarea" id="tpl-edit-desc"
-                  placeholder="Template ki chhoti si description..."></textarea>
+        <label class="mf-label">Description <span class="desc-count" id="desc-char-count">0/200</span></label>
+        <textarea class="mf-textarea" id="tpl-edit-desc" maxlength="200"
+                  placeholder="Template ki chhoti si description..."
+                  oninput="updateDescCount()"></textarea>
       </div>
 
       <!-- Preview Link -->
@@ -444,6 +566,44 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
         </div>
       </div>
 
+      <!-- Tags -->
+      <div class="mf-row">
+        <label class="mf-label">🏷️ Tags (comma se alag karo)</label>
+        <input class="mf-input" type="text" id="tpl-edit-tags"
+               placeholder="jaise: floral, royal, modern, pink"
+               oninput="renderTagsPreview(this.value)"/>
+        <div class="tags-preview" id="tags-preview-area"></div>
+        <div class="tags-help">Tags se search + filter ho sakti hai. Example: <em>floral, dark, minimal</em></div>
+      </div>
+
+      <!-- Pricing -->
+      <div class="price-section">
+        <div class="price-section-title">💰 Pricing</div>
+        <div class="mf-grid">
+          <div class="mf-row" style="margin-bottom:0;">
+            <label class="mf-label">Price (₹)</label>
+            <div class="price-input-wrap">
+              <input class="mf-input" type="number" id="tpl-edit-price" min="0" placeholder="999"/>
+            </div>
+          </div>
+          <div class="mf-row" style="margin-bottom:0;">
+            <label class="mf-label">Original Price ~~strikethrough~~</label>
+            <div class="price-input-wrap">
+              <input class="mf-input" type="number" id="tpl-edit-orig-price" min="0" placeholder="1499"/>
+            </div>
+          </div>
+        </div>
+        <div class="mf-row" style="margin-top:0.75rem;margin-bottom:0;">
+          <div class="mf-toggle-row" onclick="document.getElementById('tpl-edit-premium').click()">
+            <input type="checkbox" id="tpl-edit-premium"
+                   style="width:18px;height:18px;accent-color:#d97706;cursor:pointer;"/>
+            <label class="mf-toggle-label" for="tpl-edit-premium">
+              ⭐ Premium Template (card pe ⭐ dikhega)
+            </label>
+          </div>
+        </div>
+      </div>
+
       <!-- Active Toggle -->
       <div class="mf-row">
         <div class="mf-toggle-row" onclick="document.getElementById('tpl-edit-active').click()">
@@ -456,30 +616,17 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
       </div>
 
       <!-- Door Code Section -->
+      <!-- Door selection status (read-only — 🚪 button se change karo) -->
       <div class="mf-row" style="margin-top:1rem;">
-        <div class="mf-label" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.3rem;">
-          <span>🖥️ DOOR HTML CODE <span style="font-weight:400;color:#888;font-size:0.72rem;">(Optional — 🖥️ button se bhi add kar sakte ho)</span></span>
-          <span id="tpl-edit-code-status" style="font-size:0.72rem;color:#22c55e;font-weight:700;"></span>
-        </div>
-        <textarea id="tpl-edit-door-code"
-          placeholder="Yahan apna poora door HTML code paste karo...
-
-Tip: 🖥️ button se bada editor aur live preview milta hai!"
-          style="width:100%;min-height:110px;background:#0d1117;color:#c9d1d9;border:1.5px solid #30363d;border-radius:10px;padding:12px;font-family:monospace;font-size:0.75rem;line-height:1.5;resize:vertical;margin-top:0.4rem;outline:none;"
-          onfocus="this.style.borderColor='#3b82f6'"
-          onblur="this.style.borderColor='#30363d'"
-          oninput="const s=document.getElementById('tpl-edit-code-status');if(s)s.textContent=this.value.trim()?'✏️ Edited':'';"></textarea>
-        <div style="display:flex;gap:0.5rem;margin-top:0.5rem;flex-wrap:wrap;">
-          <button type="button" onclick="clearEditDoorCode()"
-            style="padding:0.35rem 0.8rem;background:#1e293b;color:#94a3b8;border:1px solid #334155;border-radius:6px;font-size:0.75rem;cursor:pointer;">
-            🗑️ Code Hatao
-          </button>
-          <button type="button"
-            onclick="const c=document.getElementById('tpl-edit-door-code')?.value||'';if(!c.trim()){showAdminToast('⚠️ Pehle code paste karo','warning');return;}const f=document.createElement('iframe');f.style.cssText='position:fixed;inset:0;z-index:9999;width:100%;height:100%;border:none;background:#000';f.srcdoc=c;const cl=document.createElement('button');cl.textContent='✕ Close';cl.style.cssText='position:fixed;top:16px;right:16px;z-index:10000;padding:0.5rem 1rem;background:#e11d48;color:#fff;border:none;border-radius:8px;font-size:0.9rem;cursor:pointer;font-family:Inter,sans-serif;font-weight:700';cl.onclick=()=>{f.remove();cl.remove()};document.body.appendChild(f);document.body.appendChild(cl);"
-            style="padding:0.35rem 0.8rem;background:#0e2a4a;color:#60a5fa;border:1px solid #1e3a5f;border-radius:6px;font-size:0.75rem;cursor:pointer;">
-            👁️ Quick Preview
+        <div class="mf-label">🚪 DOOR DESIGN</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;background:#0a0f1a;border:1.5px solid #1e2d45;border-radius:10px;padding:0.7rem 1rem;margin-top:0.4rem;gap:0.5rem;">
+          <span id="tpl-edit-code-status" style="font-size:0.8rem;color:#94a3b8;">—  Koi door set nahi</span>
+          <button type="button" onclick="if(editingTplId)openDoorSelectModal(editingTplId)"
+            style="padding:0.35rem 0.9rem;background:#1e3a5f;color:#60a5fa;border:none;border-radius:8px;font-size:0.75rem;font-weight:700;cursor:pointer;white-space:nowrap;">
+            🚪 Door Change
           </button>
         </div>
+        <div style="font-size:0.68rem;color:#475569;margin-top:0.3rem;">Door select karne ke liye card wala 🚪 button use karo ya upar "Door Change" dabao</div>
       </div>
 
       <!-- Save Button -->
@@ -491,47 +638,68 @@ Tip: 🖥️ button se bada editor aur live preview milta hai!"
   </div>
 </div>
 
-<!-- ════ DOOR CODE EDITOR MODAL ════ -->
-<div class="code-modal-overlay" id="codeModal" onclick="if(event.target===this)closeDoorCodeModal()">
-  <div class="code-modal-box">
-    <div class="code-modal-header">
-      <div>
-        <div class="code-modal-title">🖥️ Door Code — <span id="codeModalTplName">Template</span></div>
-        <div class="code-modal-sub">Apna door HTML code paste karo — jo bhi design hogi woh index page pe dikhegi</div>
-      </div>
-      <button class="code-modal-close" onclick="closeDoorCodeModal()">✕</button>
-    </div>
-    <div class="code-modal-body">
-      <!-- Left: Code Editor -->
-      <div class="code-editor-side">
-        <div class="code-section-label">📋 HTML Code Paste Karo</div>
-        <textarea id="door-code-textarea"
-          placeholder="Yahan apna door HTML code paste karo...
-
-Example:
+<!-- ════ DOOR SELECT MODAL ════ -->
 <style>
-  #envelope-cover { ... }
-  .door-left { ... }
+/* ── Door Select Modal ── */
+.doorsel-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;display:none;align-items:center;justify-content:center;padding:1rem;}
+.doorsel-overlay.open{display:flex;}
+.doorsel-box{background:#0f1623;border:1.5px solid #1e2d45;border-radius:18px;width:min(680px,96vw);max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.6);}
+.doorsel-header{padding:1rem 1.25rem 0.75rem;border-bottom:1px solid #1e2d45;display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem;}
+.doorsel-title{color:#e2c77a;font-size:0.95rem;font-weight:700;}
+.doorsel-sub{color:#64748b;font-size:0.75rem;margin-top:0.2rem;}
+.doorsel-current{color:#94a3b8;font-size:0.72rem;margin-top:0.15rem;}
+.doorsel-close{background:none;border:none;color:#64748b;font-size:1.1rem;cursor:pointer;padding:0.25rem;border-radius:6px;transition:color 0.2s;flex-shrink:0;}
+.doorsel-close:hover{color:#e2e8f0;}
+/* Grid of door cards */
+.doorsel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;padding:1.25rem;overflow-y:auto;flex:1;}
+.door-sel-card{background:#0a0f1a;border:2px solid #1e2d45;border-radius:12px;overflow:hidden;cursor:pointer;transition:all 0.2s;position:relative;}
+.door-sel-card:hover{border-color:#4a6fa0;transform:translateY(-2px);}
+.door-sel-card.door-sel-selected{border-color:#e2c77a;background:#0d1220;}
+.door-sel-preview{aspect-ratio:2/3;position:relative;overflow:hidden;background:#050810;}
+.door-sel-preview iframe{position:absolute;inset:0;width:100%;height:100%;border:none;pointer-events:none;}
+.door-sel-info{padding:0.6rem 0.75rem 0.4rem;}
+.door-sel-name{color:#e2e8f0;font-size:0.8rem;font-weight:700;}
+.door-sel-desc{color:#64748b;font-size:0.68rem;margin-top:0.15rem;}
+.door-sel-btn{width:calc(100% - 1.5rem);margin:0 0.75rem 0.6rem;display:block;padding:0.45rem;background:#1e3a5f;color:#60a5fa;border:none;border-radius:8px;font-size:0.75rem;font-weight:700;cursor:pointer;text-align:center;transition:background 0.2s;}
+.door-sel-btn:hover{background:#2a4f80;}
+.door-sel-tick{width:calc(100% - 1.5rem);margin:0 0.75rem 0.6rem;display:block;padding:0.45rem;background:#14532d;color:#4ade80;border-radius:8px;font-size:0.75rem;font-weight:700;text-align:center;}
+/* Footer */
+.doorsel-footer{padding:0.85rem 1.25rem;border-top:1px solid #1e2d45;display:flex;gap:0.6rem;justify-content:space-between;align-items:center;}
+.doorsel-status{font-size:0.75rem;color:#64748b;min-height:1em;}
 </style>
-<div id=&quot;envelope-cover&quot;>
-  <div class=&quot;door-left&quot;></div>
-  <div class=&quot;door-right&quot;></div>
-  ...
-</div>"
-          oninput="updateCodePreview()"></textarea>
+
+<div class="doorsel-overlay" id="doorSelModal" onclick="if(event.target===this)closeDoorSelectModal()">
+  <div class="doorsel-box">
+    <div class="doorsel-header">
+      <div>
+        <div class="doorsel-title">🚪 Door Select — <span id="doorSelTplName">Template</span></div>
+        <div class="doorsel-sub">Neeche se koi bhi door design select karo</div>
+        <div class="doorsel-current">Current: <span id="doorSelCurrent">—</span></div>
       </div>
-      <!-- Right: Live Preview -->
-      <div class="code-preview-side">
-        <div class="code-preview-label">👁️ Live Preview</div>
-        <iframe id="door-code-preview-iframe" scrolling="no" frameborder="0"></iframe>
-      </div>
+      <button class="doorsel-close" onclick="closeDoorSelectModal()">✕</button>
     </div>
-    <div class="code-modal-footer">
-      <button class="code-clear-btn" onclick="clearDoorCode()">🗑️ Clear</button>
-      <button class="code-save-btn" id="codeSaveBtn" onclick="saveDoorCode()">💾 Save Code</button>
+    <!-- Door cards grid (manifest se populate hoga) -->
+    <div class="doorsel-grid" id="doorSelGrid">
+      <div style="grid-column:1/-1;text-align:center;padding:2rem;color:#64748b;">Loading doors...</div>
+    </div>
+    <div class="doorsel-footer">
+      <button onclick="clearDoorSelection()"
+        style="padding:0.6rem 0.9rem;border-radius:9px;border:1.5px solid #2d1515;background:transparent;color:#f87171;font-size:0.8rem;font-weight:700;cursor:pointer;">
+        🗑️ Door Hatao
+      </button>
+      <div style="display:flex;gap:0.6rem;align-items:center;">
+        <span class="doorsel-status" id="doorSelSaveStatus"></span>
+        <button onclick="closeDoorSelectModal()"
+          style="padding:0.6rem 1rem;border-radius:9px;border:1.5px solid #1e2d45;background:transparent;color:#94a3b8;font-size:0.8rem;font-weight:600;cursor:pointer;">
+          Cancel
+        </button>
+      </div>
     </div>
   </div>
 </div>
+
+<!-- Old modal (kept for backward compat — redirects to new) -->
+<div style="display:none" id="codeModal"></div>
 
 <div class="admin-toast" id="adminToast"></div>
 
@@ -576,18 +744,16 @@ function applyPreset(key) {
 }
 
 // ══════════════════════════════════════════════════════
-// STATS COUNTS
+// TAGS PREVIEW (modal ke andar live)
 // ══════════════════════════════════════════════════════
-const _origRender = renderTemplatesGrid;
-renderTemplatesGrid = function() {
-  _origRender();
-  const active   = allTemplates.filter(t => t.active !== false).length;
-  const inactive = allTemplates.length - active;
-  const aC = document.getElementById('tpl-active-count');
-  const iC = document.getElementById('tpl-inactive-count');
-  if (aC) aC.textContent = active;
-  if (iC) iC.textContent = inactive;
-};
+function renderTagsPreview(val) {
+  const area = document.getElementById('tags-preview-area');
+  if(!area) return;
+  const tags = val.split(',').map(s=>s.trim()).filter(Boolean);
+  area.innerHTML = tags.map(t=>`<span class="tpl-tag">#${t}</span>`).join('');
+}
+
+// (stats now handled inside renderTemplatesGrid in admin-templates.js)
 
 // Header avatar
 const sess = JSON.parse(localStorage.getItem('adminSession')||'{}');
