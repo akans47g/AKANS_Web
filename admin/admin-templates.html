@@ -153,63 +153,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
 .code-clear-btn{padding:0.72rem 1rem;border-radius:10px;border:1.5px solid #1e293b;background:transparent;color:#64748b;font-size:0.82rem;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;transition:all 0.2s;}
 .code-clear-btn:hover{background:#7f1d1d;color:#fca5a5;border-color:#7f1d1d;}
 
-/* ── TEMPLATE CARD — DOOR MINI PREVIEW (consolidated, fixed) ── */
+/* ── TEMPLATE CARD IMAGE WRAP ── */
 .tpl-img-wrap{position:relative;aspect-ratio:2/3;overflow:hidden;background:#0d0203;}
-/* 🔴 BUG FIX: gradient yahan ZAROORI hai — warna card plain black dikhta hai */
-.tpl-door-mini{
-  position:absolute;inset:0;overflow:hidden;
-  background:radial-gradient(ellipse 140% 85% at 50% 32%,
-    var(--dc1,#8a3540) 0%,var(--dc2,#5c1620) 30%,
-    var(--dc3,#3A0710) 62%,var(--dc4,#0d0203) 100%);
-}
-.tdm-left,.tdm-right{position:absolute;top:0;bottom:0;width:50%;background:linear-gradient(105deg,rgba(255,255,255,0.06) 0%,transparent 60%,rgba(0,0,0,0.12) 100%);}
-.tdm-left{left:0;}.tdm-right{right:0;}
-.tdm-seam{position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);width:2px;background:linear-gradient(to bottom,transparent,var(--dseam,#C9A45C) 15%,var(--dseam,#C9A45C) 85%,transparent);box-shadow:0 0 6px var(--dseam,#C9A45C);}
-.tdm-beam{position:absolute;top:-10%;left:50%;transform:translateX(-50%);width:55%;height:120%;background:radial-gradient(ellipse 80% 70% at 50% 0%,rgba(255,255,220,0.16) 0%,transparent 70%);pointer-events:none;}
-.tdm-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,0.45);border:1.5px solid var(--dseam,#C9A45C);color:var(--dseam,#C9A45C);display:flex;align-items:center;justify-content:center;font-size:0.95rem;font-family:serif;box-shadow:0 0 10px rgba(0,0,0,0.5);}
-.tdm-corner{position:absolute;width:13px;height:13px;border-style:solid;border-color:var(--dseam,#C9A45C);opacity:0.7;}
-.tdm-tl{top:8px;left:8px;border-width:2px 0 0 2px;}
-.tdm-tr{top:8px;right:8px;border-width:2px 2px 0 0;}
-.tdm-bl{bottom:8px;left:8px;border-width:0 0 2px 2px;}
-.tdm-br{bottom:8px;right:8px;border-width:0 2px 2px 0;}
-/* Code badge — bottom center, green */
-.tpl-code-badge{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.75);color:#86efac;font-size:0.58rem;font-weight:700;padding:0.18rem 0.55rem;border-radius:20px;white-space:nowrap;border:1px solid rgba(134,239,172,0.4);letter-spacing:0.03em;}
-
-/* ── DOOR COLOR PICKERS ─────────────────────────────── */
-.door-colors-wrap{background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:0.9rem;margin-bottom:1rem;}
-.door-colors-title{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--fg2);margin-bottom:0.75rem;display:flex;align-items:center;gap:0.4rem;}
-.door-colors-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:0.5rem;margin-bottom:0.85rem;}
-.dc-item{display:flex;flex-direction:column;align-items:center;gap:0.3rem;}
-.dc-item label{font-size:0.6rem;font-weight:700;color:var(--fg3);text-align:center;line-height:1.3;}
-.dc-item input[type=color]{width:36px;height:36px;border:2px solid var(--border);border-radius:8px;cursor:pointer;padding:2px;background:#fff;}
-.dc-item input[type=color]:hover{border-color:var(--accent);}
-
-/* Preset buttons */
-.door-presets{display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.85rem;}
-.preset-btn{padding:0.32rem 0.65rem;border-radius:20px;border:1.5px solid var(--border);font-size:0.68rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:#fff;color:var(--fg2);transition:all 0.18s;display:flex;align-items:center;gap:0.3rem;}
-.preset-btn:hover{border-color:var(--accent);background:var(--accent-lt);color:var(--accent);}
-.preset-dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
-
-/* Mini door preview */
-.door-mini-wrap{border-radius:12px;overflow:hidden;height:180px;position:relative;box-shadow:0 4px 16px rgba(0,0,0,0.25);}
-.door-mini{position:absolute;inset:0;
-  background:radial-gradient(ellipse 140% 85% at 50% 32%,
-    var(--dc1,#8a3540) 0%,var(--dc2,#5c1620) 30%,var(--dc3,#3A0710) 62%,var(--dc4,#0d0203) 100%);
-  overflow:hidden;}
-.dm-panel{position:absolute;top:0;bottom:0;width:50%;background:linear-gradient(105deg,rgba(255,255,255,0.06) 0%,transparent 60%,rgba(0,0,0,0.1) 100%);}
-.dm-left{left:0;border-right:1.5px solid var(--dseam,#C9A45C);}
-.dm-right{right:0;border-left:1.5px solid var(--dseam,#C9A45C);}
-.dm-seam{position:absolute;top:0;bottom:0;left:50%;width:2px;transform:translateX(-50%);background:linear-gradient(to bottom,transparent 0%,var(--dseam,#C9A45C) 15%,var(--dseam,#C9A45C) 85%,transparent 100%);box-shadow:0 0 8px var(--dseam,#C9A45C);}
-.dm-beam{position:absolute;top:-20%;left:50%;transform:translateX(-50%);width:60%;height:130%;background:radial-gradient(ellipse 80% 70% at 50% 0%,rgba(255,255,220,0.18) 0%,transparent 70%);pointer-events:none;}
-.dm-btn-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
-.dm-btn{width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,0.45);border:1.5px solid var(--dseam,#C9A45C);display:flex;align-items:center;justify-content:center;color:var(--dseam,#C9A45C);font-size:1.1rem;font-family:serif;font-weight:700;box-shadow:0 0 12px rgba(0,0,0,0.4);position:relative;}
-.dm-btn::after{content:'';position:absolute;inset:-5px;border-radius:50%;border:1px solid rgba(200,160,80,0.35);}
-.dm-corner{position:absolute;width:14px;height:14px;border-color:var(--dseam,#C9A45C);border-style:solid;opacity:0.75;}
-.dm-corner-tl{top:8px;left:8px;border-width:2px 0 0 2px;}
-.dm-corner-tr{top:8px;right:8px;border-width:2px 2px 0 0;}
-.dm-corner-bl{bottom:8px;left:8px;border-width:0 0 2px 2px;}
-.dm-corner-br{bottom:8px;right:8px;border-width:0 2px 2px 0;}
-/* ── END DOOR ─────────────────────────────────────── */
+/* Blank state when no door set */
+.tpl-door-blank{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.3rem;background:#0d0203;color:#334155;}
+.tpl-door-blank span{font-size:2rem;opacity:0.4;}
+.tpl-door-blank small{font-size:0.6rem;font-weight:600;letter-spacing:0.05em;color:#334155;}
+/* Door badge */
+.tpl-code-badge{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.75);color:#86efac;font-size:0.58rem;font-weight:700;padding:0.18rem 0.55rem;border-radius:20px;white-space:nowrap;border:1px solid rgba(134,239,172,0.4);letter-spacing:0.03em;z-index:2;}
 
 /* TOAST */
 .admin-toast{position:fixed;bottom:calc(var(--nav-h) + 12px);left:50%;transform:translateX(-50%) translateY(20px);font-size:0.82rem;font-weight:700;padding:0.65rem 1.4rem;border-radius:30px;opacity:0;white-space:nowrap;transition:opacity 0.25s,transform 0.25s;z-index:9999;pointer-events:none;font-family:'Inter',sans-serif;}
@@ -352,11 +303,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
     <div class="info-banner">
       <span class="info-banner-icon">🚪</span>
       <div class="info-banner-text">
-        <strong>Door System — 2 tarike se customize karo!</strong>
+        <strong>Door System — GitHub se select karo!</strong>
         <span>
-          <strong style="color:#1e40af;">1. Colors:</strong> ✏️ Edit → 5 colors set karo → gradient door banata hai &nbsp;·&nbsp;
-          <strong style="color:#1e40af;">2. Custom HTML:</strong> 🖥️ button → apna poora door design paste karo<br>
-          <span style="font-size:0.74rem;color:#3b82f6;">💡 Card pe <strong>#number</strong> = template ka order (index.html DOOR_OVERRIDE mein yahi number use karo)</span>
+          Card pe 🚪 button dabao → apni door select karo (doors/ folder se).<br>
+          <span style="font-size:0.74rem;color:#3b82f6;">Agar koi door select nahi hai to card blank dikhega. Pehle doors/ folder mein apni door upload karo.</span>
         </span>
       </div>
     </div>
@@ -454,72 +404,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
       <button class="modal-close" onclick="closeTplModal()">✕</button>
     </div>
     <div class="modal-body">
-
-      <!-- ═══ DOOR COLOR CONFIGURATION ═══ -->
-      <div class="door-colors-wrap">
-        <div class="door-colors-title">🚪 Door Colors
-          <span style="font-size:0.6rem;font-weight:600;color:var(--fg3);text-transform:none;letter-spacing:0;">(index page pe yehi door dikhega)</span>
-        </div>
-
-        <!-- 5 Color Pickers -->
-        <div class="door-colors-grid">
-          <div class="dc-item">
-            <input type="color" id="door-c1" value="#8a3540" oninput="updateDoorPreview()"/>
-            <label>Top<br>Light</label>
-          </div>
-          <div class="dc-item">
-            <input type="color" id="door-c2" value="#5c1620" oninput="updateDoorPreview()"/>
-            <label>Mid<br>Color</label>
-          </div>
-          <div class="dc-item">
-            <input type="color" id="door-c3" value="#3A0710" oninput="updateDoorPreview()"/>
-            <label>Deep<br>Color</label>
-          </div>
-          <div class="dc-item">
-            <input type="color" id="door-c4" value="#0d0203" oninput="updateDoorPreview()"/>
-            <label>Bottom<br>Dark</label>
-          </div>
-          <div class="dc-item">
-            <input type="color" id="door-seam" value="#C9A45C" oninput="updateDoorPreview()"/>
-            <label>Gold<br>Seam</label>
-          </div>
-        </div>
-
-        <!-- Preset Buttons -->
-        <div class="door-presets">
-          <button class="preset-btn" onclick="applyPreset('pink')">
-            <span class="preset-dot" style="background:#c98aa0;"></span> Pink Rose
-          </button>
-          <button class="preset-btn" onclick="applyPreset('gold')">
-            <span class="preset-dot" style="background:#B88A2A;"></span> Royal Gold
-          </button>
-          <button class="preset-btn" onclick="applyPreset('rose')">
-            <span class="preset-dot" style="background:#8a3540;"></span> Romantic Rose
-          </button>
-          <button class="preset-btn" onclick="applyPreset('dark')">
-            <span class="preset-dot" style="background:#1a0a0a;"></span> Dark Velvet
-          </button>
-        </div>
-
-        <!-- Live Door Preview -->
-        <div class="door-mini-wrap" id="doorMiniWrap">
-          <div class="door-mini" id="doorMini">
-            <div class="dm-panel dm-left"></div>
-            <div class="dm-panel dm-right"></div>
-            <div class="dm-seam"></div>
-            <div class="dm-beam"></div>
-            <div class="dm-corner dm-corner-tl"></div>
-            <div class="dm-corner dm-corner-tr"></div>
-            <div class="dm-corner dm-corner-bl"></div>
-            <div class="dm-corner dm-corner-br"></div>
-            <div class="dm-btn-wrap">
-              <div class="dm-btn">♥</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- ═══ END DOOR COLORS ═══ -->
-
 
       <!-- Name + Order -->
       <div class="mf-grid">
@@ -713,36 +597,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
 <script src="admin-templates.js"></script>
 
 <script>
-// ══════════════════════════════════════════════════════
-// DOOR PREVIEW — live update on color change
-// ══════════════════════════════════════════════════════
-const DOOR_PRESETS = {
-  pink: { c1:'#c98aa0', c2:'#9c5570', c3:'#6b3349', c4:'#3d1f2d', seam:'#b8934a' },
-  gold: { c1:'#F3DEAA', c2:'#B88A2A', c3:'#4A3018', c4:'#160D05', seam:'#E5C77A' },
-  rose: { c1:'#8a3540', c2:'#5c1620', c3:'#3A0710', c4:'#0d0203', seam:'#C9A45C' },
-  dark: { c1:'#3a1a2a', c2:'#1e0812', c3:'#0e0308', c4:'#040002', seam:'#8a6a30' },
-};
-
-function updateDoorPreview() {
-  const d = document.getElementById('doorMini');
-  if (!d) return;
-  const g = id => document.getElementById(id)?.value || '';
-  d.style.setProperty('--dc1',  g('door-c1'));
-  d.style.setProperty('--dc2',  g('door-c2'));
-  d.style.setProperty('--dc3',  g('door-c3'));
-  d.style.setProperty('--dc4',  g('door-c4'));
-  d.style.setProperty('--dseam',g('door-seam'));
-}
-window.updateDoorPreview = updateDoorPreview;
-
-function applyPreset(key) {
-  const p = DOOR_PRESETS[key]; if (!p) return;
-  const s = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
-  s('door-c1', p.c1); s('door-c2', p.c2); s('door-c3', p.c3);
-  s('door-c4', p.c4); s('door-seam', p.seam);
-  updateDoorPreview();
-}
-
 // ══════════════════════════════════════════════════════
 // TAGS PREVIEW (modal ke andar live)
 // ══════════════════════════════════════════════════════
