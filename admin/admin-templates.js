@@ -439,7 +439,9 @@ function openEditTemplate(id){
   updateDescCount();
   const stEl=document.getElementById('tpl-edit-code-status');
   if(stEl)stEl.textContent=t.doorFile?('🚪 '+_getDoorName(t.doorFile)):'— Koi door set nahi';
-  document.getElementById('tplModal').classList.add('open');
+  const modal=document.getElementById('tplModal');
+  if(modal) modal.dataset.tplId=id;
+  modal.classList.add('open');
 }
 
 function openAddTemplate(){
@@ -456,7 +458,8 @@ function openAddTemplate(){
   const premEl=document.getElementById('tpl-edit-premium');if(premEl)premEl.checked=false;
   const stEl2=document.getElementById('tpl-edit-code-status');if(stEl2)stEl2.textContent='';
   updateDescCount();
-  document.getElementById('tplModal').classList.add('open');
+  const modal2=document.getElementById('tplModal');
+  if(modal2){modal2.dataset.tplId='';modal2.classList.add('open');}
 }
 
 function closeTplModal(){document.getElementById('tplModal')?.classList.remove('open');editingTplId=null;uploadedImgUrl='';}
