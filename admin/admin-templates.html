@@ -505,7 +505,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);overflo
         <div class="mf-label">🚪 DOOR DESIGN</div>
         <div style="display:flex;align-items:center;justify-content:space-between;background:#0a0f1a;border:1.5px solid #1e2d45;border-radius:10px;padding:0.7rem 1rem;margin-top:0.4rem;gap:0.5rem;">
           <span id="tpl-edit-code-status" style="font-size:0.8rem;color:#94a3b8;">—  Koi door set nahi</span>
-          <button type="button" onclick="if(editingTplId)openDoorSelectModal(editingTplId)"
+          <button type="button" onclick="window._openDoorFromModal()"
             style="padding:0.35rem 0.9rem;background:#1e3a5f;color:#60a5fa;border:none;border-radius:8px;font-size:0.75rem;font-weight:700;cursor:pointer;white-space:nowrap;">
             🚪 Door Change
           </button>
@@ -606,6 +606,13 @@ function renderTagsPreview(val) {
   const tags = val.split(',').map(s=>s.trim()).filter(Boolean);
   area.innerHTML = tags.map(t=>`<span class="tpl-tag">#${t}</span>`).join('');
 }
+
+// Door Change button ke liye — editingTplId window pe expose karo
+window._openDoorFromModal = function() {
+  var id = document.getElementById('tplModal').dataset.tplId;
+  if (!id) { return; }
+  if (typeof openDoorSelectModal === 'function') openDoorSelectModal(id);
+};
 
 // (stats now handled inside renderTemplatesGrid in admin-templates.js)
 
