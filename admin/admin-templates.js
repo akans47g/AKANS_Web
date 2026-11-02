@@ -173,13 +173,9 @@ function clearFilters(){
 // 🃏 BUILD TEMPLATE CARD (enhanced)
 // ════════════════════════════════════════════════════════════════
 function buildTplCard(t,i) {
-  const dc1=t.doorC1||'#8a3540', dc2=t.doorC2||'#5c1620';
-  const dc3=t.doorC3||'#3A0710', dc4=t.doorC4||'#0d0203';
-  const dseam=t.doorSeam||'#C9A45C';
   const hasDoorFile=!!(t.doorFile&&t.doorFile.trim());
-  const hasDoorCode=!!(t.doorCode&&t.doorCode.trim());
-  const hasDoor=hasDoorFile||hasDoorCode;
-  const doorBadgeText=hasDoorFile?'🚪 '+(_getDoorName(t.doorFile)||'Door ✓'):(hasDoorCode?'🖥️ Code ✓':'');
+  const hasDoor=hasDoorFile;
+  const doorBadgeText=hasDoorFile?'🚪 '+(_getDoorName(t.doorFile)||'Door ✓'):'';
   const orderNum=t.order||i+1;
 
   // Price display
@@ -210,16 +206,13 @@ function buildTplCard(t,i) {
     <!-- Drag handle -->
     <div class="tpl-drag-handle" title="Drag to reorder">⠿</div>
     <div class="tpl-img-wrap">
-      <div class="tpl-door-mini" style="--dc1:${dc1};--dc2:${dc2};--dc3:${dc3};--dc4:${dc4};--dseam:${dseam};">
-        <div class="tdm-left"></div><div class="tdm-right"></div>
-        <div class="tdm-seam"></div><div class="tdm-beam"></div>
-        <div class="tdm-btn">♥</div>
-        <div class="tdm-corner tdm-tl"></div><div class="tdm-corner tdm-tr"></div>
-        <div class="tdm-corner tdm-bl"></div><div class="tdm-corner tdm-br"></div>
-      </div>
-      <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.6);color:#e2c77a;font-size:0.62rem;font-weight:800;padding:0.18rem 0.5rem;border-radius:20px;border:1px solid rgba(201,164,92,0.4);">#${orderNum}</div>
-      ${hasDoor?`<div class="tpl-code-badge" style="background:${hasDoorFile?'#1a5c2a':'#2a3a1a'};">${doorBadgeText}</div>`:''}
-      ${t.badge?`<span class="tpl-badge-pill ${t.badgeClass||''}" style="top:10px;right:8px;left:auto;">${t.badge}</span>`:''}
+      ${hasDoorFile
+        ? `<iframe src="../${t.doorFile}" scrolling="no" frameborder="0"
+             style="position:absolute;inset:0;width:100%;height:100%;border:none;pointer-events:none;z-index:1;"></iframe>`
+        : `<div class="tpl-door-blank"><span>🚪</span><small>Door set nahi</small></div>`}
+      <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.6);color:#e2c77a;font-size:0.62rem;font-weight:800;padding:0.18rem 0.5rem;border-radius:20px;border:1px solid rgba(201,164,92,0.4);z-index:2;">#${orderNum}</div>
+      ${hasDoor?`<div class="tpl-code-badge">${doorBadgeText}</div>`:''}
+      ${t.badge?`<span class="tpl-badge-pill ${t.badgeClass||''}" style="top:10px;right:8px;left:auto;z-index:2;">${t.badge}</span>`:''}
       ${t.active===false?`<div class="tpl-inactive-overlay">INACTIVE</div>`:''}
     </div>
     <div class="tpl-info">
@@ -258,10 +251,7 @@ async function duplicateTemplate(id) {
     badge: t.badge||'',
     badgeClass: t.badgeClass||'badge-new',
     order: newOrder,
-    active: false, // copy starts inactive
-    doorC1: t.doorC1||'#8a3540', doorC2: t.doorC2||'#5c1620',
-    doorC3: t.doorC3||'#3A0710', doorC4: t.doorC4||'#0d0203',
-    doorSeam: t.doorSeam||'#C9A45C',
+    active: false,
     doorFile: t.doorFile||'',
     price: t.price||'',
     origPrice: t.origPrice||'',
@@ -447,14 +437,8 @@ function openEditTemplate(id){
   // Tags
   _sv('tpl-edit-tags', t.tags||'');
   updateDescCount();
-  // Door colors
-  const _sc=(eid,val,def)=>{const el=document.getElementById(eid);if(el)el.value=val||def;};
-  _sc('door-c1',t.doorC1,'#8a3540'); _sc('door-c2',t.doorC2,'#5c1620');
-  _sc('door-c3',t.doorC3,'#3A0710'); _sc('door-c4',t.doorC4,'#0d0203');
-  _sc('door-seam',t.doorSeam,'#C9A45C');
   const stEl=document.getElementById('tpl-edit-code-status');
-  if(stEl)stEl.textContent=t.doorFile?('🚪 '+_getDoorName(t.doorFile)):(t.doorCode?'🖥️ Custom Code':'');
-  setTimeout(()=>{ if(window.updateDoorPreview)updateDoorPreview(); },60);
+  if(stEl)stEl.textContent=t.doorFile?('🚪 '+_getDoorName(t.doorFile)):'— Koi door set nahi';
   document.getElementById('tplModal').classList.add('open');
 }
 
@@ -470,11 +454,8 @@ function openAddTemplate(){
   document.getElementById('tpl-edit-order').value=allTemplates.length+1;
   document.getElementById('tpl-edit-active').checked=true;
   const premEl=document.getElementById('tpl-edit-premium');if(premEl)premEl.checked=false;
-  const _sd=(eid,val)=>{const el=document.getElementById(eid);if(el)el.value=val;};
-  _sd('door-c1','#8a3540');_sd('door-c2','#5c1620');_sd('door-c3','#3A0710');_sd('door-c4','#0d0203');_sd('door-seam','#C9A45C');
   const stEl2=document.getElementById('tpl-edit-code-status');if(stEl2)stEl2.textContent='';
   updateDescCount();
-  setTimeout(()=>{ if(window.updateDoorPreview)updateDoorPreview(); },60);
   document.getElementById('tplModal').classList.add('open');
 }
 
@@ -504,11 +485,6 @@ async function saveTplChanges() {
     badgeClass:document.getElementById('tpl-edit-badge-class').value,
     order:orderVal,
     active:document.getElementById('tpl-edit-active').checked,
-    doorC1:_dc('door-c1')||'#8a3540',
-    doorC2:_dc('door-c2')||'#5c1620',
-    doorC3:_dc('door-c3')||'#3A0710',
-    doorC4:_dc('door-c4')||'#0d0203',
-    doorSeam:_dc('door-seam')||'#C9A45C',
     price: priceVal,
     origPrice: origPriceVal,
     isPremium: isPremium,
