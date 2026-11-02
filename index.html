@@ -1102,15 +1102,6 @@ async function _preloadDoorFiles(templateList) {
 function _buildTemplateCard(doc, i, fallbackColors) {
   const t = doc.data();
 
-  // Door colors (CSS fallback gradient)
-  const th = {
-    dc1:   t.doorC1   || '#8a3540',
-    dc2:   t.doorC2   || '#5c1620',
-    dc3:   t.doorC3   || '#3A0710',
-    dc4:   t.doorC4   || '#0d0203',
-    dseam: t.doorSeam || '#C9A45C',
-  };
-
   const badgeClass = t.badgeClass || 'badge-new';
   const badge      = t.badge      || 'New';
   const bgColor    = fallbackColors[i % fallbackColors.length];
@@ -1139,19 +1130,9 @@ function _buildTemplateCard(doc, i, fallbackColors) {
     ? `<iframe class="card-door-iframe" scrolling="no" frameborder="0"
           style="position:absolute;inset:0;width:100%;height:100%;border:none;display:block;z-index:2;pointer-events:none;"
           data-code="${encodeURIComponent(_wrappedCode)}"></iframe>`
-    : `<div class="card-door"
-             style="--dc1:${th.dc1};--dc2:${th.dc2};--dc3:${th.dc3};--dc4:${th.dc4};--dseam:${th.dseam};z-index:2;">
-           <div class="door-left"></div><div class="door-right"></div>
-           <div class="light-beam"></div>
-           <div class="card-door-inner">
-             <div class="card-tap-btn">
-               <span class="card-w-letter">W</span>
-               <span class="card-tap-txt">tap to open</span>
-             </div>
-           </div>
-           <div class="card-corner card-corner-tl"></div><div class="card-corner card-corner-tr"></div>
-           <div class="card-corner card-corner-bl"></div><div class="card-corner card-corner-br"></div>
-         </div>`;
+    : `<div style="position:absolute;inset:0;background:#0d0203;z-index:2;display:flex;align-items:center;justify-content:center;">
+         <span style="font-size:2.5rem;opacity:0.15;">🚪</span>
+       </div>`;
 
   card.innerHTML = `
     <div class="template-img" style="background:${bgColor}; position:relative;">
